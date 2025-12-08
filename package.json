@@ -1,16 +1,53 @@
 {
-  "name": "ussd-state-machine",
-  "version": "1.0.0",
-  "description": "A flexible state machine for building USSD applications",
+  "name": "ussd-state-builder",
+  "version": "2.3.0",
+  "description": "A complete state machine for building USSD applications with back navigation, lifecycle hooks, middleware, validation, i18n, testing utilities, health checks, and multiple storage adapters",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --forceExit"
   },
-  "keywords": ["ussd", "state-machine", "nodejs"],
+  "keywords": [
+    "ussd",
+    "state-machine",
+    "nodejs",
+    "mobile",
+    "africa",
+    "telecom",
+    "sms",
+    "menu",
+    "navigation",
+    "middleware",
+    "validation",
+    "redis",
+    "mongodb",
+    "postgresql",
+    "i18n",
+    "testing",
+    "caching",
+    "analytics"
+  ],
   "author": "ANTHONY KIPLIMO",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthonylimo/ussd-state-machine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anthonylimo/ussd-state-machine/issues"
+  },
+  "homepage": "https://github.com/anthonylimo/ussd-state-machine#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {},
+  "optionalDependencies": {
+    "redis": "^4.0.0",
+    "mongodb": "^6.0.0",
+    "pg": "^8.0.0"
+  },
   "devDependencies": {
     "jest": "^27.0.6"
   }
