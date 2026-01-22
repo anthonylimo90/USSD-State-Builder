@@ -121,6 +121,16 @@ export interface LifecycleHooks {
 }
 
 /**
+ * Logger interface for the state machine
+ */
+export interface Logger {
+    error: (message: string, ...args: any[]) => void;
+    warn?: (message: string, ...args: any[]) => void;
+    info?: (message: string, ...args: any[]) => void;
+    debug?: (message: string, ...args: any[]) => void;
+}
+
+/**
  * Configuration for the USSD State Machine
  */
 export interface USSDConfig {
@@ -136,6 +146,8 @@ export interface USSDConfig {
     enableBackNavigation?: boolean;
     /** Lifecycle hooks */
     hooks?: LifecycleHooks;
+    /** Custom logger (default: console). Set to null to disable logging. */
+    logger?: Logger | null;
 }
 
 /**
@@ -162,6 +174,8 @@ export class USSDStateMachine {
     enableBackNavigation: boolean;
     /** Lifecycle hooks */
     hooks?: LifecycleHooks;
+    /** Logger instance (null if logging is disabled) */
+    logger: Logger | null;
 
     /**
      * Create a new USSD State Machine
@@ -200,10 +214,25 @@ export class USSDStateMachine {
 }
 
 /**
+ * In-memory storage options
+ */
+export interface InMemoryStorageOptions {
+    /**
+     * Maximum number of states to keep in history (default: 20).
+     * Prevents unbounded memory growth from repeated back/forward navigation.
+     * Set to 0 for unlimited history.
+     */
+    maxHistorySize?: number;
+}
+
+/**
  * In-memory storage implementation
  */
 export class InMemoryStorage implements StorageAdapter {
-    constructor();
+    /** Maximum history size (default: 20) */
+    maxHistorySize: number;
+
+    constructor(options?: InMemoryStorageOptions);
     getState(sessionId: string): Promise<string | null>;
     setState(sessionId: string, state: string, timeout: number): Promise<void>;
     getData(sessionId: string): Promise<Record<string, any> | null>;
@@ -214,6 +243,10 @@ export class InMemoryStorage implements StorageAdapter {
     pushStateHistory(sessionId: string, state: string): Promise<void>;
     popStateHistory(sessionId: string): Promise<string | undefined>;
     cleanup(): void;
+    /** Get the number of active sessions */
+    size(): number;
+    /** Clear all sessions */
+    clear(): void;
 }
 
 /**
@@ -522,9 +555,29 @@ export interface MetricsResult {
 export function createLoggingMiddleware(options?: LoggingMiddlewareOptions): MiddlewareFunction;
 
 /**
- * Create a rate limiting middleware
+ * Rate limit middleware result
+ *
+ * IMPORTANT: This middleware uses in-memory storage for tracking requests.
+ * It will NOT work correctly in distributed/clustered environments.
+ * For distributed systems, use a Redis-based rate limiting solution.
  */
-export function createRateLimitMiddleware(options?: RateLimitMiddlewareOptions): MiddlewareFunction;
+export interface RateLimitMiddlewareResult {
+    /** The middleware function to use */
+    middleware: MiddlewareFunction;
+    /** Call this to stop the cleanup interval (for graceful shutdown) */
+    cleanup: () => void;
+    /** Reset all rate limit counters */
+    reset: () => void;
+}
+
+/**
+ * Create a rate limiting middleware
+ *
+ * IMPORTANT: This middleware uses in-memory storage for tracking requests.
+ * It will NOT work correctly in distributed/clustered environments.
+ * For distributed systems, use a Redis-based rate limiting solution.
+ */
+export function createRateLimitMiddleware(options?: RateLimitMiddlewareOptions): RateLimitMiddlewareResult;
 
 /**
  * Create a session timeout middleware

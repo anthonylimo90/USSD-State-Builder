@@ -115,17 +115,19 @@ describe('createLoggingMiddleware', () => {
 
 describe('createRateLimitMiddleware', () => {
     test('should allow requests under limit', async () => {
-        const middleware = createRateLimitMiddleware({ maxRequests: 5 });
+        const { middleware, cleanup } = createRateLimitMiddleware({ maxRequests: 5 });
         const context = { sessionId: 'rate-test' };
 
         for (let i = 0; i < 5; i++) {
             await middleware(context, async () => { });
             expect(context.blocked).toBeFalsy();
         }
+
+        cleanup();
     });
 
     test('should block requests over limit', async () => {
-        const middleware = createRateLimitMiddleware({ maxRequests: 2 });
+        const { middleware, cleanup } = createRateLimitMiddleware({ maxRequests: 2 });
         const context = { sessionId: 'rate-test-2' };
 
         await middleware(context, async () => { });
@@ -134,6 +136,39 @@ describe('createRateLimitMiddleware', () => {
 
         expect(context.blocked).toBe(true);
         expect(context.response).toContain('END');
+
+        cleanup();
+    });
+
+    test('should provide cleanup method to stop interval', () => {
+        const { middleware, cleanup, reset } = createRateLimitMiddleware({ maxRequests: 5 });
+
+        expect(typeof middleware).toBe('function');
+        expect(typeof cleanup).toBe('function');
+        expect(typeof reset).toBe('function');
+
+        // Cleanup should not throw
+        expect(() => cleanup()).not.toThrow();
+    });
+
+    test('should reset counters with reset method', async () => {
+        const { middleware, cleanup, reset } = createRateLimitMiddleware({ maxRequests: 2 });
+        const context = { sessionId: 'rate-reset-test' };
+
+        await middleware(context, async () => { });
+        await middleware(context, async () => { });
+        await middleware(context, async () => { });
+
+        expect(context.blocked).toBe(true);
+
+        // Reset and try again
+        reset();
+        context.blocked = false;
+
+        await middleware(context, async () => { });
+        expect(context.blocked).toBeFalsy();
+
+        cleanup();
     });
 });
 
