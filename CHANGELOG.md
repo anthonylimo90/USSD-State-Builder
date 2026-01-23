@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-01-23
+
+### Added
+- **Debug Utility** - Lightweight debug logging with namespace support (`DEBUG=ussd:*`)
+- **StateInspector** - State machine introspection tools
+  - `getSummary()` - Overview of state machine configuration
+  - `getStateInfo(state)` - Detailed state information
+  - `toAsciiDiagram()` - ASCII visualization of state transitions
+  - `toDotGraph()` - GraphViz DOT format export
+  - `validate()` - Configuration validation
+- **ESM Support** - Native ES modules with `index.mjs` wrapper
+- **Tree-shaking** - Added `sideEffects: false` for better bundler optimization
+- **I18n Caching** - LRU cache for translation lookups with `getCacheStats()`
+
+### Fixed
+- **Memory leak** in rate limiting middleware - now returns cleanup functions
+- **Unbounded history growth** - Added `maxHistorySize` option to InMemoryStorage (default: 20)
+- **Hardcoded logging** - USSDStateMachine now accepts injectable logger
+
+### Security
+- Added security documentation for input validation requirements
+- Documented rate limiting limitations for distributed systems
+
+## [2.3.0] - 2025-12-08
+
+### Added
+- Complete implementation of all 30 improvement items
+- All features from 2.0.0-2.2.0 fully integrated and tested
+- 201 passing tests across 10 test suites
+- Published to npm as ussd-state-builder
+
+### Changed
+- Consolidated all features into stable release
+- Enhanced documentation and examples
+
 ## [2.2.0] - 2025-12-08
 
 ### Added
@@ -130,7 +165,9 @@ No breaking changes. New features are additive.
 
 ---
 
-[Unreleased]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v1.0.0...v2.0.0

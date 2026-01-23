@@ -9,11 +9,16 @@ A flexible and powerful state machine for building USSD applications in Node.js.
 
 - 🚀 **Simple API** - Easy to learn and use
 - 🔙 **Back Navigation** - Built-in support for navigating to previous states
-- 📦 **Pluggable Storage** - In-memory, Redis, or custom adapters
+- 📦 **Pluggable Storage** - In-memory, Redis, MongoDB, PostgreSQL adapters
 - 🪝 **Lifecycle Hooks** - onStateEnter, onStateExit, onError callbacks
 - 🛠️ **Response Builder** - Utilities for common USSD patterns
 - 📝 **TypeScript Support** - Full type definitions included
-- ✅ **Validation Support** - Input validation with custom validators
+- ✅ **Validation Support** - Rich validation library with 15+ validators
+- 🔌 **Middleware System** - Pluggable middleware for logging, rate limiting, etc.
+- 🌍 **Internationalization** - Built-in i18n support (EN, SW, FR)
+- 🔍 **State Inspector** - Visualize and debug state machines
+- 🐛 **Debug Utility** - Namespace-based debug logging
+- ⚡ **ESM Support** - Works with CommonJS and ES modules
 
 ## Installation
 
@@ -386,13 +391,75 @@ const config: USSDConfig = {
 const ussd = new USSDStateMachine(config);
 ```
 
+## Debug Utility
+
+Enable debug logging with namespace support:
+
+```bash
+# Enable all USSD debug logs
+DEBUG=ussd:* node app.js
+
+# Enable specific namespaces
+DEBUG=ussd:state,ussd:middleware node app.js
+```
+
+```javascript
+const { Debug } = require('ussd-state-builder');
+
+const debug = Debug.create('ussd:myapp');
+debug.log('Processing request', { sessionId: '123' });
+debug.warn('Session expiring soon');
+debug.error('Failed to connect', error);
+```
+
+## State Inspector
+
+Inspect and visualize your state machine:
+
+```javascript
+const { StateInspector } = require('ussd-state-builder');
+
+const inspector = new StateInspector(ussd);
+
+// Get state machine summary
+console.log(inspector.getSummary());
+// { totalStates: 5, initialState: 'WELCOME', ... }
+
+// Get detailed state info
+console.log(inspector.getStateInfo('MENU'));
+// { hasHandler: true, hasValidator: false, ... }
+
+// Generate ASCII diagram
+console.log(inspector.toAsciiDiagram());
+// WELCOME -> MENU -> CHECKOUT -> END
+
+// Export to GraphViz DOT format
+console.log(inspector.toDotGraph());
+
+// Validate configuration
+const issues = inspector.validate();
+```
+
+## ESM Support
+
+The package supports both CommonJS and ES modules:
+
+```javascript
+// CommonJS
+const { USSDStateMachine } = require('ussd-state-builder');
+
+// ES Modules
+import { USSDStateMachine } from 'ussd-state-builder';
+```
+
 ## Examples
 
 See the [examples](./examples) directory for complete working examples:
 
-- [Basic Event Registration](./examples/event-registration.js)
-- [Banking USSD App](./examples/banking.js)
-- [Multi-language Support](./examples/multi-language.js)
+- [Basic Menu](./examples/basic-menu.js) - Simple USSD menu flow
+- [Express Integration](./examples/express-integration.js) - Full Express.js setup
+- [Multi-language Support](./examples/multi-language.js) - i18n implementation
+- [With Validation](./examples/with-validation.js) - Input validation patterns
 
 ## Testing
 
