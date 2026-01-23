@@ -168,3 +168,88 @@ describe('LanguageDetector', () => {
         });
     });
 });
+
+describe('I18n Caching', () => {
+    let i18n;
+
+    beforeEach(() => {
+        i18n = new I18n({ cacheSize: 100 });
+        i18n.addTranslations('en', {
+            greeting: 'Hello',
+            welcome: 'Welcome, {{name}}!',
+            counter: '{{count}} items'
+        });
+    });
+
+    test('should cache translation results', () => {
+        // First call - cache miss
+        const result1 = i18n.t('greeting');
+        const stats1 = i18n.getCacheStats();
+        expect(stats1.misses).toBe(1);
+
+        // Second call - cache hit
+        const result2 = i18n.t('greeting');
+        const stats2 = i18n.getCacheStats();
+        expect(stats2.hits).toBe(1);
+        expect(result1).toBe(result2);
+    });
+
+    test('should cache interpolated translations', () => {
+        // First call
+        i18n.t('welcome', { params: { name: 'John' } });
+        const stats1 = i18n.getCacheStats();
+        expect(stats1.misses).toBe(1);
+
+        // Same params - cache hit
+        i18n.t('welcome', { params: { name: 'John' } });
+        const stats2 = i18n.getCacheStats();
+        expect(stats2.hits).toBe(1);
+
+        // Different params - cache miss
+        i18n.t('welcome', { params: { name: 'Jane' } });
+        const stats3 = i18n.getCacheStats();
+        expect(stats3.misses).toBe(2);
+    });
+
+    test('should clear cache when adding translations', () => {
+        i18n.t('greeting');
+        expect(i18n.getCacheStats().size).toBe(1);
+
+        i18n.addTranslations('en', { newKey: 'New Value' });
+        expect(i18n.getCacheStats().size).toBe(0);
+    });
+
+    test('should clear cache when clearing translations', () => {
+        i18n.t('greeting');
+        expect(i18n.getCacheStats().size).toBe(1);
+
+        i18n.clearTranslations();
+        expect(i18n.getCacheStats().size).toBe(0);
+    });
+
+    test('should respect custom cache size', () => {
+        const smallCache = new I18n({ cacheSize: 2 });
+        smallCache.addTranslations('en', {
+            a: 'A', b: 'B', c: 'C', d: 'D'
+        });
+
+        // Fill cache
+        smallCache.t('a');
+        smallCache.t('b');
+        expect(smallCache.getCacheStats().size).toBe(2);
+
+        // This should trigger eviction
+        smallCache.t('c');
+        expect(smallCache.getCacheStats().size).toBe(2);
+        expect(smallCache.getCacheStats().evictions).toBe(1);
+    });
+
+    test('should report cache hit rate', () => {
+        i18n.t('greeting'); // miss
+        i18n.t('greeting'); // hit
+        i18n.t('greeting'); // hit
+
+        const stats = i18n.getCacheStats();
+        expect(stats.hitRate).toBe('66.67%');
+    });
+});

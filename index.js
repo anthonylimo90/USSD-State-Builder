@@ -70,6 +70,13 @@ const {
   GracefulShutdown,
   HotReloader
 } = require('./lib/Lifecycle');
+const {
+  createDebug,
+  debuggers,
+  isDebugEnabled,
+  getEnabledNamespaces
+} = require('./lib/Debug');
+const { StateInspector } = require('./lib/StateInspector');
 
 module.exports = {
   // Core
@@ -142,5 +149,14 @@ module.exports = {
   // Lifecycle management
   HealthCheck,
   GracefulShutdown,
-  HotReloader
+  HotReloader,
+
+  // Debug utilities
+  createDebug,
+  debuggers,
+  isDebugEnabled,
+  getEnabledNamespaces,
+
+  // State introspection
+  StateInspector
 };

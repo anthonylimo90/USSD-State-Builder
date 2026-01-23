@@ -694,3 +694,344 @@ export function when(
     condition: (input: string, context?: any) => boolean | Promise<boolean>,
     validator: ValidatorFunction
 ): ValidatorFunction;
+
+// ==================== Debug Utilities ====================
+
+/**
+ * Debug logger function
+ */
+export interface DebugFunction {
+    (...args: any[]): void;
+    /** Whether this debug logger is enabled */
+    enabled: boolean;
+    /** The namespace of this debug logger */
+    namespace: string;
+}
+
+/**
+ * Pre-configured debug loggers for USSD State Machine components
+ */
+export interface Debuggers {
+    /** State machine operations */
+    state: DebugFunction;
+    /** Middleware execution */
+    middleware: DebugFunction;
+    /** Storage operations */
+    storage: DebugFunction;
+    /** Session management */
+    session: DebugFunction;
+    /** Validation */
+    validation: DebugFunction;
+    /** I18n/translations */
+    i18n: DebugFunction;
+    /** Lifecycle events */
+    lifecycle: DebugFunction;
+    /** Performance metrics */
+    performance: DebugFunction;
+}
+
+/**
+ * Create a debug logger for a specific namespace
+ * @param namespace - The namespace for this debug logger (e.g., 'ussd:state')
+ * @returns Debug logging function
+ */
+export function createDebug(namespace: string): DebugFunction;
+
+/**
+ * Pre-configured debug loggers for USSD State Machine components
+ */
+export const debuggers: Debuggers;
+
+/**
+ * Check if any debug logging is enabled
+ * @returns Whether any debug logging is enabled
+ */
+export function isDebugEnabled(): boolean;
+
+/**
+ * Get all enabled debug namespaces
+ * @returns Array of enabled patterns
+ */
+export function getEnabledNamespaces(): string[];
+
+// ==================== State Inspector ====================
+
+/**
+ * State machine summary
+ */
+export interface StateMachineSummary {
+    totalStates: number;
+    initialState: string;
+    backNavigationEnabled: boolean;
+    sessionTimeout: number;
+    states: string[];
+    statesWithValidators: number;
+    statesWithOnEnter: number;
+    statesWithOnExit: number;
+}
+
+/**
+ * State information
+ */
+export interface StateInfo {
+    name: string;
+    isInitialState: boolean;
+    hasHandler: boolean;
+    hasValidator: boolean;
+    hasOnEnter: boolean;
+    hasOnExit: boolean;
+    handlerType: string;
+}
+
+/**
+ * Validation error or warning
+ */
+export interface ValidationIssue {
+    type: string;
+    message: string;
+    state?: string;
+}
+
+/**
+ * Validation result
+ */
+export interface ValidationResult {
+    valid: boolean;
+    errors: ValidationIssue[];
+    warnings: ValidationIssue[];
+    stateCount: number;
+}
+
+/**
+ * State machine introspection utility
+ */
+export class StateInspector {
+    /**
+     * Create a new StateInspector
+     * @param stateMachine - USSDStateMachine instance or config object
+     */
+    constructor(stateMachine: USSDStateMachine | USSDConfig);
+
+    /**
+     * Get a summary of the state machine configuration
+     * @returns Summary object with stats and state list
+     */
+    getSummary(): StateMachineSummary;
+
+    /**
+     * Get detailed information about a specific state
+     * @param stateName - Name of the state to inspect
+     * @returns State info or null if not found
+     */
+    getStateInfo(stateName: string): StateInfo | null;
+
+    /**
+     * Get all states that reference a given state (potential transitions to it)
+     * @param stateName - Target state name
+     * @returns Array of state names that might transition to the target
+     */
+    getPotentialTransitionsTo(stateName: string): string[];
+
+    /**
+     * Generate an ASCII diagram of the state machine
+     * @returns ASCII representation of states
+     */
+    toAsciiDiagram(): string;
+
+    /**
+     * Validate the state machine configuration
+     * @returns Validation result with errors and warnings
+     */
+    validate(): ValidationResult;
+
+    /**
+     * Export state machine structure as JSON
+     * @returns JSON-serializable structure
+     */
+    toJSON(): Record<string, any>;
+
+    /**
+     * Generate a DOT graph representation (for Graphviz)
+     * @returns DOT language graph
+     */
+    toDotGraph(): string;
+}
+
+// ==================== I18n (Updated with caching) ====================
+
+/**
+ * I18n cache statistics
+ */
+export interface I18nCacheStats {
+    hits: number;
+    misses: number;
+    evictions: number;
+    size: number;
+    maxSize: number;
+    hitRate: string;
+}
+
+/**
+ * I18n configuration options
+ */
+export interface I18nOptions {
+    /** Default language code (default: 'en') */
+    defaultLanguage?: string;
+    /** Fallback language code (default: 'en') */
+    fallbackLanguage?: string;
+    /** Initial translations */
+    translations?: Record<string, Record<string, string>>;
+    /** Maximum cache size for translations (default: 1000) */
+    cacheSize?: number;
+}
+
+/**
+ * Translation options
+ */
+export interface TranslateOptions {
+    /** Language code */
+    language?: string;
+    /** Interpolation parameters */
+    params?: Record<string, any>;
+    /** Count for pluralization */
+    count?: number;
+    /** Default value if not found */
+    defaultValue?: string;
+}
+
+/**
+ * Internationalization manager
+ */
+export class I18n {
+    /** Default language code */
+    defaultLanguage: string;
+    /** Fallback language code */
+    fallbackLanguage: string;
+    /** All translations */
+    translations: Record<string, Record<string, string>>;
+    /** Custom formatters */
+    formatters: Record<string, (value: any, options?: any) => string>;
+
+    constructor(options?: I18nOptions);
+
+    /**
+     * Add translations for a language
+     * @param language - Language code
+     * @param translations - Translation key-value pairs
+     * @returns this for chaining
+     */
+    addTranslations(language: string, translations: Record<string, any>): I18n;
+
+    /**
+     * Load translations from an object
+     * @param allTranslations - Object with language codes as keys
+     * @returns this for chaining
+     */
+    loadTranslations(allTranslations: Record<string, Record<string, any>>): I18n;
+
+    /**
+     * Get translation for a key
+     * @param key - Translation key
+     * @param options - Translation options
+     * @returns Translated string
+     */
+    t(key: string, options?: TranslateOptions): string;
+
+    /**
+     * Alias for t()
+     */
+    translate(key: string, options?: TranslateOptions): string;
+
+    /**
+     * Check if a translation exists
+     * @param key - Translation key
+     * @param language - Language code
+     * @returns Whether translation exists
+     */
+    hasTranslation(key: string, language?: string): boolean;
+
+    /**
+     * Get all available languages
+     * @returns Array of language codes
+     */
+    getLanguages(): string[];
+
+    /**
+     * Set the default language
+     * @param language - Language code
+     * @returns this for chaining
+     */
+    setDefaultLanguage(language: string): I18n;
+
+    /**
+     * Get the current default language
+     * @returns Default language code
+     */
+    getDefaultLanguage(): string;
+
+    /**
+     * Create a bound translator for a specific language
+     * @param language - Language code
+     * @returns Translator function
+     */
+    createTranslator(language: string): (key: string, options?: TranslateOptions) => string;
+
+    /**
+     * Create translations namespace
+     * @param namespace - Namespace prefix
+     * @returns Namespaced translator
+     */
+    ns(namespace: string): (key: string, options?: TranslateOptions) => string;
+
+    /**
+     * Add a custom formatter
+     * @param name - Formatter name
+     * @param formatter - Formatter function
+     * @returns this for chaining
+     */
+    addFormatter(name: string, formatter: (value: any, options?: any) => string): I18n;
+
+    /**
+     * Export all translations
+     * @returns All translations
+     */
+    exportTranslations(): Record<string, Record<string, string>>;
+
+    /**
+     * Clear all translations
+     */
+    clearTranslations(): void;
+
+    /**
+     * Get cache statistics
+     * @returns Cache statistics
+     */
+    getCacheStats(): I18nCacheStats;
+}
+
+/**
+ * Create a pre-configured i18n instance for USSD
+ * @param options - I18n options
+ * @returns Pre-configured I18n instance
+ */
+export function createUSSDI18n(options?: I18nOptions): I18n;
+
+/**
+ * Language detection utilities
+ */
+export namespace LanguageDetector {
+    /**
+     * Detect language from phone number prefix
+     * @param phoneNumber - Phone number
+     * @returns Language code or null
+     */
+    export function fromPhoneNumber(phoneNumber: string): string | null;
+
+    /**
+     * Detect language from USSD code
+     * @param ussdCode - USSD code
+     * @param codeMap - Map of codes to languages
+     * @returns Language code or null
+     */
+    export function fromUSSDCode(ussdCode: string, codeMap?: Record<string, string>): string | null;
+}
