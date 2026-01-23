@@ -1,3 +1,9 @@
 tests/
+coverage/
+.github/
+.claude/
 .gitignore
 .travis.yml
+*.tgz
+CLAUDE.md
+IMPROVEMENTS.md
