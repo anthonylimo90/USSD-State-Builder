@@ -83,6 +83,202 @@ describe('HealthCheck', () => {
             expect(status.timestamp).toBeDefined();
         });
     });
+
+    describe('Liveness', () => {
+        test('should return alive status', async () => {
+            const health = new HealthCheck();
+            const result = await health.liveness();
+
+            expect(result.status).toBe('alive');
+            expect(result.timestamp).toBeDefined();
+        });
+    });
+
+    describe('Readiness', () => {
+        test('should return ready when no startup checks', async () => {
+            const health = new HealthCheck();
+            const result = await health.readiness();
+
+            expect(result.status).toBe('ready');
+        });
+
+        test('should return not_ready before startup checks complete', async () => {
+            const health = new HealthCheck({
+                startupChecks: {
+                    database: async () => ({ healthy: true, message: 'ok' })
+                }
+            });
+
+            const result = await health.readiness();
+            expect(result.status).toBe('not_ready');
+            expect(result.reason).toBe('startup_incomplete');
+        });
+
+        test('should return ready after startup checks pass', async () => {
+            const health = new HealthCheck({
+                startupChecks: {
+                    database: async () => ({ healthy: true, message: 'ok' })
+                }
+            });
+
+            await health.runStartupChecks();
+            const result = await health.readiness();
+            expect(result.status).toBe('ready');
+        });
+
+        test('should remain not_ready if startup checks fail', async () => {
+            const health = new HealthCheck({
+                startupChecks: {
+                    database: async () => ({ healthy: false, message: 'down' })
+                }
+            });
+
+            await health.runStartupChecks();
+            const result = await health.readiness();
+            expect(result.status).toBe('not_ready');
+            expect(result.reason).toBe('startup_incomplete');
+        });
+    });
+
+    describe('Startup Checks', () => {
+        test('should run all startup checks', async () => {
+            const health = new HealthCheck({
+                startupChecks: {
+                    db: async () => ({ healthy: true, message: 'connected' }),
+                    cache: async () => ({ healthy: true, message: 'ready' })
+                }
+            });
+
+            const result = await health.runStartupChecks();
+            expect(result.ready).toBe(true);
+            expect(result.checks.db.healthy).toBe(true);
+            expect(result.checks.cache.healthy).toBe(true);
+        });
+
+        test('should handle startup check errors', async () => {
+            const health = new HealthCheck({
+                startupChecks: {
+                    db: async () => { throw new Error('Connection refused'); }
+                }
+            });
+
+            const result = await health.runStartupChecks();
+            expect(result.ready).toBe(false);
+            expect(result.checks.db.healthy).toBe(false);
+            expect(result.checks.db.message).toContain('Connection refused');
+        });
+    });
+
+    describe('Result caching', () => {
+        test('should cache results when cacheTTL is set', async () => {
+            let checkCount = 0;
+            const health = new HealthCheck({
+                cacheTTL: 1000,
+                checks: {
+                    counter: async () => {
+                        checkCount++;
+                        return { healthy: true, message: `check ${checkCount}` };
+                    }
+                }
+            });
+
+            await health.check();
+            await health.check();
+
+            expect(checkCount).toBe(1);
+        });
+
+        test('should not cache when cacheTTL is 0', async () => {
+            let checkCount = 0;
+            const health = new HealthCheck({
+                cacheTTL: 0,
+                checks: {
+                    counter: async () => {
+                        checkCount++;
+                        return { healthy: true, message: `check ${checkCount}` };
+                    }
+                }
+            });
+
+            await health.check();
+            await health.check();
+
+            expect(checkCount).toBe(2);
+        });
+    });
+
+    describe('HTTP Handlers', () => {
+        test('should create liveness HTTP handler', async () => {
+            const health = new HealthCheck();
+            const handler = health.livenessHandler();
+
+            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+            await handler({}, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'alive' }));
+        });
+
+        test('should create readiness HTTP handler returning 200 when ready', async () => {
+            const health = new HealthCheck();
+            const handler = health.readinessHandler();
+
+            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+            await handler({}, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        test('should create readiness HTTP handler returning 503 when not ready', async () => {
+            const health = new HealthCheck({
+                storage: { isConnected: () => false }
+            });
+            const handler = health.readinessHandler();
+
+            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+            await handler({}, res);
+
+            expect(res.status).toHaveBeenCalledWith(503);
+        });
+    });
+
+    describe('Remove check', () => {
+        test('should remove a custom check', async () => {
+            const health = new HealthCheck();
+            health.addCheck('temp', async () => ({ healthy: true, message: 'ok' }));
+            health.removeCheck('temp');
+
+            const result = await health.check();
+            expect(result.checks.temp).toBeUndefined();
+        });
+    });
+
+    describe('Storage health with operations', () => {
+        test('should test storage with operations when isConnected not available', async () => {
+            const mockStorage = {
+                setState: jest.fn().mockResolvedValue(undefined),
+                getState: jest.fn().mockResolvedValue('test'),
+                deleteSession: jest.fn().mockResolvedValue(undefined)
+            };
+
+            const health = new HealthCheck({ storage: mockStorage });
+            const result = await health.check();
+
+            expect(result.checks.storage.healthy).toBe(true);
+        });
+
+        test('should handle storage operation errors', async () => {
+            const mockStorage = {
+                setState: jest.fn().mockRejectedValue(new Error('Storage failed'))
+            };
+
+            const health = new HealthCheck({ storage: mockStorage });
+            const result = await health.check();
+
+            expect(result.checks.storage.healthy).toBe(false);
+            expect(result.checks.storage.message).toContain('Storage failed');
+        });
+    });
 });
 
 describe('GracefulShutdown', () => {

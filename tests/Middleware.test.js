@@ -2,6 +2,7 @@ const {
     MiddlewareManager,
     createLoggingMiddleware,
     createRateLimitMiddleware,
+    createDistributedRateLimitMiddleware,
     createSanitizationMiddleware,
     createMetricsMiddleware
 } = require('../lib/Middleware');
@@ -257,5 +258,133 @@ describe('createMetricsMiddleware', () => {
 
         const metrics = getMetrics();
         expect(metrics.averageResponseTime).toMatch(/\d+ms/);
+    });
+});
+
+describe('createDistributedRateLimitMiddleware', () => {
+    function createMockRedisClient() {
+        const store = new Map();
+        return {
+            multi: () => {
+                const commands = [];
+                const multiObj = {
+                    zRemRangeByScore: (key, min, max) => {
+                        commands.push({ cmd: 'zRemRangeByScore', key, min, max });
+                        return multiObj;
+                    },
+                    zAdd: (key, member) => {
+                        commands.push({ cmd: 'zAdd', key, member });
+                        return multiObj;
+                    },
+                    zCard: (key) => {
+                        commands.push({ cmd: 'zCard', key });
+                        return multiObj;
+                    },
+                    expire: (key, ttl) => {
+                        commands.push({ cmd: 'expire', key, ttl });
+                        return multiObj;
+                    },
+                    exec: async () => {
+                        // Simulate sorted set behavior
+                        const results = [];
+                        for (const cmd of commands) {
+                            if (cmd.cmd === 'zRemRangeByScore') {
+                                results.push(0);
+                            } else if (cmd.cmd === 'zAdd') {
+                                const key = cmd.key;
+                                if (!store.has(key)) store.set(key, []);
+                                store.get(key).push(cmd.member);
+                                results.push(1);
+                            } else if (cmd.cmd === 'zCard') {
+                                results.push(store.has(cmd.key) ? store.get(cmd.key).length : 0);
+                            } else if (cmd.cmd === 'expire') {
+                                results.push(1);
+                            }
+                        }
+                        return results;
+                    }
+                };
+                return multiObj;
+            },
+            del: async (key) => {
+                store.delete(key);
+            }
+        };
+    }
+
+    test('should require redisClient option', () => {
+        expect(() => {
+            createDistributedRateLimitMiddleware();
+        }).toThrow('requires a redisClient');
+    });
+
+    test('should allow requests under limit', async () => {
+        const mockClient = createMockRedisClient();
+        const { middleware } = createDistributedRateLimitMiddleware({
+            redisClient: mockClient,
+            maxRequests: 5
+        });
+
+        const context = { sessionId: 'dist-test' };
+        for (let i = 0; i < 5; i++) {
+            context.blocked = false;
+            await middleware(context, async () => {});
+            expect(context.blocked).toBeFalsy();
+        }
+    });
+
+    test('should block requests over limit', async () => {
+        const mockClient = createMockRedisClient();
+        const { middleware } = createDistributedRateLimitMiddleware({
+            redisClient: mockClient,
+            maxRequests: 2
+        });
+
+        const context = { sessionId: 'dist-test-2' };
+        await middleware(context, async () => {});
+        await middleware(context, async () => {});
+
+        context.blocked = false;
+        await middleware(context, async () => {});
+        expect(context.blocked).toBe(true);
+        expect(context.response).toContain('END');
+    });
+
+    test('should fail open on Redis error', async () => {
+        const failingClient = {
+            multi: () => ({
+                zRemRangeByScore: () => failingClient.multi(),
+                zAdd: () => failingClient.multi(),
+                zCard: () => failingClient.multi(),
+                expire: () => failingClient.multi(),
+                exec: async () => { throw new Error('Redis down'); }
+            })
+        };
+
+        const { middleware } = createDistributedRateLimitMiddleware({
+            redisClient: failingClient,
+            maxRequests: 1
+        });
+
+        const context = { sessionId: 'fail-test' };
+        let nextCalled = false;
+        await middleware(context, async () => { nextCalled = true; });
+
+        // Should allow request through on Redis failure
+        expect(nextCalled).toBe(true);
+        expect(context.blocked).toBeFalsy();
+    });
+
+    test('should provide reset method', async () => {
+        const mockClient = createMockRedisClient();
+        const delSpy = jest.spyOn(mockClient, 'del');
+
+        const { reset } = createDistributedRateLimitMiddleware({
+            redisClient: mockClient,
+            maxRequests: 5
+        });
+
+        await reset('session-123');
+        expect(delSpy).toHaveBeenCalledWith('ussd:ratelimit:session-123');
     });
 });

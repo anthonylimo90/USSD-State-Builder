@@ -19,6 +19,7 @@ const {
   MiddlewareManager,
   createLoggingMiddleware,
   createRateLimitMiddleware,
+  createDistributedRateLimitMiddleware,
   createSessionTimeoutMiddleware,
   createAnalyticsMiddleware,
   createSanitizationMiddleware,
@@ -77,6 +78,8 @@ const {
   getEnabledNamespaces
 } = require('./lib/Debug');
 const { StateInspector } = require('./lib/StateInspector');
+const { CircuitBreaker, createProtectedStorage } = require('./lib/CircuitBreaker');
+const { RetryStrategy, createRetryStorage } = require('./lib/RetryStrategy');
 
 module.exports = {
   // Core
@@ -113,6 +116,7 @@ module.exports = {
   MiddlewareManager,
   createLoggingMiddleware,
   createRateLimitMiddleware,
+  createDistributedRateLimitMiddleware,
   createSessionTimeoutMiddleware,
   createAnalyticsMiddleware,
   createSanitizationMiddleware,
@@ -158,5 +162,11 @@ module.exports = {
   getEnabledNamespaces,
 
   // State introspection
-  StateInspector
+  StateInspector,
+
+  // Resilience utilities
+  CircuitBreaker,
+  createProtectedStorage,
+  RetryStrategy,
+  createRetryStorage
 };

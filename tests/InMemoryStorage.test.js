@@ -46,6 +46,54 @@ describe('InMemoryStorage', () => {
     jest.useRealTimers();
   });
 
+  describe('Batch operations', () => {
+    test('should get states for multiple sessions', async () => {
+      await storage.setState('s1', 'STATE_A', 300);
+      await storage.setState('s2', 'STATE_B', 300);
+
+      const results = await storage.getStateBatch(['s1', 's2', 's3']);
+
+      expect(results.get('s1')).toBe('STATE_A');
+      expect(results.get('s2')).toBe('STATE_B');
+      expect(results.get('s3')).toBeNull();
+    });
+
+    test('should get data for multiple sessions', async () => {
+      await storage.setData('s1', { name: 'Alice' }, 300);
+      await storage.setData('s2', { name: 'Bob' }, 300);
+
+      const results = await storage.getDataBatch(['s1', 's2', 's3']);
+
+      expect(results.get('s1')).toEqual({ name: 'Alice' });
+      expect(results.get('s2')).toEqual({ name: 'Bob' });
+      expect(results.get('s3')).toBeNull();
+    });
+
+    test('should delete multiple sessions', async () => {
+      await storage.setState('s1', 'STATE_A', 300);
+      await storage.setState('s2', 'STATE_B', 300);
+      await storage.setState('s3', 'STATE_C', 300);
+
+      const count = await storage.deleteSessionBatch(['s1', 's3']);
+      expect(count).toBe(2);
+
+      expect(await storage.getState('s1')).toBeNull();
+      expect(await storage.getState('s2')).toBe('STATE_B');
+      expect(await storage.getState('s3')).toBeNull();
+    });
+
+    test('should handle empty batch', async () => {
+      const states = await storage.getStateBatch([]);
+      expect(states.size).toBe(0);
+
+      const data = await storage.getDataBatch([]);
+      expect(data.size).toBe(0);
+
+      const count = await storage.deleteSessionBatch([]);
+      expect(count).toBe(0);
+    });
+  });
+
   describe('maxHistorySize', () => {
     test('should use default maxHistorySize of 20', () => {
       const storage = new InMemoryStorage();
