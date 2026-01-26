@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-01-26
+
+### Added
+- **Circuit Breaker** - `CircuitBreaker` class and `createProtectedStorage` for storage resilience with CLOSED/OPEN/HALF_OPEN states
+- **Retry Strategy** - `RetryStrategy` class and `createRetryStorage` with exponential backoff, jitter, and configurable retry conditions
+- **Distributed Rate Limiting** - `createDistributedRateLimitMiddleware` using Redis sorted sets with sliding window algorithm
+- **Enhanced Health Checks** - Kubernetes-style `liveness()` and `readiness()` probes, startup checks with `runStartupChecks()`, result caching with `cacheTTL`, HTTP handlers
+- **Batch Storage Operations** - `getStateBatch()`, `getDataBatch()`, `deleteSessionBatch()` across all storage adapters
+- **Atomic Transactions** - `withTransaction()` support: Redis MULTI/EXEC, MongoDB sessions, PostgreSQL BEGIN/COMMIT
+- **Connection Pooling** - Documented pool configuration for Redis, MongoDB, and PostgreSQL adapters
+- **New Validators** - `password()`, `alphanumeric()`, `url()`, `ipAddress()` validators
+- **New i18n Languages** - Amharic (am), Arabic (ar), Portuguese (pt), Hausa (ha), Somali (so)
+- **Debug Log Levels** - `debug.info()`, `debug.warn()`, `debug.error()` with `DEBUG_LEVEL` env var
+- **Debug Structured Output** - `debug.json()` for structured JSON logging
+- **Debug Timing** - `debug.time()` / `debug.timeEnd()` for performance measurement
+- **Documentation** - Production, Security, Performance, Custom Storage, and Troubleshooting guides
+- **Examples** - Hot reload, custom storage, error recovery, and health check examples
+- **Edge Case Tests** - Concurrent sessions, circular states, middleware ordering, storage failure recovery
+
+### Changed
+- Test suite expanded from 258 to 644 tests across 15 test suites
+- `LanguageDetector` phone prefix map expanded with Ethiopian, Arabic, Portuguese, and Hausa country codes
+
 ## [2.4.0] - 2026-01-23
 
 ### Added
@@ -165,7 +188,8 @@ No breaking changes. New features are additive.
 
 ---
 
-[Unreleased]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/anthonylimo/ussd-state-machine/compare/v2.1.0...v2.2.0
