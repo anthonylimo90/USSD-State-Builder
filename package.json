@@ -12,6 +12,11 @@
       "require": "./index.js",
       "types": "./types/index.d.ts"
     },
+    "./sdk": {
+      "import": "./sdk.mjs",
+      "require": "./sdk.js",
+      "types": "./types/sdk.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

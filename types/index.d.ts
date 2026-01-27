@@ -1035,3 +1035,7 @@ export namespace LanguageDetector {
      */
     export function fromUSSDCode(ussdCode: string, codeMap?: Record<string, string>): string | null;
 }
+
+// ==================== SDK (Fluent Builder API) ====================
+
+export { createApp, AppBuilder, StateBuilder, RouteBuilder } from './sdk';

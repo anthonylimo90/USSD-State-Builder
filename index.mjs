@@ -90,5 +90,10 @@ export const getEnabledNamespaces = pkg.getEnabledNamespaces;
 // State introspection
 export const StateInspector = pkg.StateInspector;
 
+// SDK (fluent builder API)
+export const createApp = pkg.createApp;
+export const AppBuilder = pkg.AppBuilder;
+export const RouteBuilder = pkg.RouteBuilder;
+
 // Default export
 export default pkg;

@@ -80,6 +80,7 @@ const {
 const { StateInspector } = require('./lib/StateInspector');
 const { CircuitBreaker, createProtectedStorage } = require('./lib/CircuitBreaker');
 const { RetryStrategy, createRetryStorage } = require('./lib/RetryStrategy');
+const { createApp, AppBuilder, StateBuilder, RouteBuilder } = require('./lib/sdk');
 
 module.exports = {
   // Core
@@ -168,5 +169,11 @@ module.exports = {
   CircuitBreaker,
   createProtectedStorage,
   RetryStrategy,
-  createRetryStorage
+  createRetryStorage,
+
+  // SDK (fluent builder API)
+  createApp,
+  AppBuilder,
+  StateBuilder,
+  RouteBuilder
 };

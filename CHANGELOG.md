@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Fluent SDK** - Chainable builder API (`createApp`) for defining USSD applications with less boilerplate
+  - `AppBuilder` - Top-level app builder with `.state()`, `.start()`, `.storage()`, `.timeout()`, `.use()`, `.hooks()`, `.backNavigation()`, `.build()`
+  - `StateBuilder` - State definition builder with `.message()`, `.on()`, `.next()`, `.end()`, `.run()`, `.validate()`, `.save()`, `.onEnter()`, `.onExit()`
+  - `RouteBuilder` - Input routing with `.goto()`, `.reply()`, `.end()`
+  - Auto CON/END prefixing - no manual prefix management needed
+  - Target state resolution - `.goto()` and `.next()` transitions automatically resolve the target state's response
+  - Zero new dependencies - pure compile-time layer over `USSDStateMachine`
+- **SDK subpath export** - `require('ussd-state-builder/sdk')` and `import from 'ussd-state-builder/sdk'`
+- **SDK TypeScript definitions** - Full type definitions in `types/sdk.d.ts`
+- **SDK re-exports** - `createApp`, `AppBuilder`, `StateBuilder`, `RouteBuilder` available from main entry point
+- **SDK example** - Banking USSD demo app (`examples/sdk-basic.js`)
+
+### Changed
+- Test suite expanded from 644 to 731 tests across 20 test suites
+
 ## [2.5.0] - 2026-01-26
 
 ### Added

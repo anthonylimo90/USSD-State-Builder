@@ -114,6 +114,69 @@ app.post('/ussd', async (req, res) => {
 });
 ```
 
+## Fluent SDK
+
+The SDK provides a chainable builder API for defining USSD apps with less boilerplate. It auto-handles `CON`/`END` prefixes and compiles down to the same `USSDStateMachine` under the hood.
+
+```javascript
+const { createApp } = require('ussd-state-builder/sdk');
+const { Validators } = require('ussd-state-builder');
+
+const app = createApp()
+  .state('welcome', s => s
+    .message('Welcome\n1. Balance\n2. Send Money')
+    .on('1').goto('balance')
+    .on('2').goto('send')
+  )
+  .state('balance', s => s
+    .run(async () => 'Your balance is KES 1,500')
+    .end()
+  )
+  .state('send', s => s
+    .message('Enter phone:')
+    .validate(Validators.phone())
+    .save('phone')
+    .next('confirm')
+  )
+  .state('confirm', s => s
+    .run(async (input, sid, ctx) =>
+      `Send to ${ctx.sessionData.phone}?\n1. Yes\n2. No`)
+    .on('1').end('Sent!')
+    .on('2').end('Cancelled.')
+  )
+  .start('welcome')
+  .build();
+
+// Use exactly like USSDStateMachine
+const response = await app.processInput(sessionId, input);
+```
+
+### SDK State Methods
+
+| Method | Description |
+|--------|-------------|
+| `.message(text)` | Static display text (no CON/END prefix needed) |
+| `.on(input)` | Route by input: `.goto(state)`, `.end(text)`, or `.reply(text)` |
+| `.next(state)` | Default next state after user input |
+| `.end()` | Mark state as terminal (END prefix) |
+| `.run(handler)` | Custom handler `(input, sessionId, context) => string \| object` |
+| `.validate(fn)` | Attach validator (from `Validators.*` or custom) |
+| `.save(key)` | Save input to session data (string key or mapper function) |
+| `.onEnter(fn)` / `.onExit(fn)` | Lifecycle hooks |
+
+### SDK App Methods
+
+| Method | Description |
+|--------|-------------|
+| `.state(name, fn)` | Define a state via callback |
+| `.start(name)` | Set initial state (defaults to first defined) |
+| `.storage(adapter)` | Set storage adapter |
+| `.timeout(seconds)` | Set session timeout |
+| `.use(hook, fn)` | Register middleware |
+| `.hooks(obj)` | Set lifecycle hooks |
+| `.backNavigation(bool)` | Enable/disable back navigation |
+| `.build()` | Compile to `USSDStateMachine` instance |
+
 ## Configuration
 
 ### USSDStateMachine Options
