@@ -3,27 +3,7 @@
 [![npm version](https://badge.fury.io/js/ussd-state-builder.svg)](https://www.npmjs.com/package/ussd-state-builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A flexible and powerful state machine for building USSD applications in Node.js. Features include back navigation, lifecycle hooks, response builders, resilience patterns, and multiple storage adapters.
-
-## Features
-
-- **Simple API** - Easy to learn and use
-- **Back Navigation** - Built-in support for navigating to previous states
-- **Pluggable Storage** - In-memory, Redis, MongoDB, PostgreSQL adapters
-- **Lifecycle Hooks** - onStateEnter, onStateExit, onError callbacks
-- **Response Builder** - Utilities for common USSD patterns
-- **TypeScript Support** - Full type definitions included
-- **Validation Library** - 20+ validators (phone, email, PIN, amount, password, URL, IP, etc.)
-- **Middleware System** - Pluggable middleware for logging, rate limiting, sanitization, metrics
-- **Internationalization** - Built-in i18n with 8 languages (EN, SW, FR, AM, AR, PT, HA, SO)
-- **Resilience Patterns** - Circuit breaker, retry with backoff, distributed rate limiting
-- **Health Checks** - Kubernetes-style liveness/readiness probes with startup checks
-- **State Inspector** - Visualize and debug state machines
-- **Debug Utility** - Namespace-based debug logging with log levels and structured JSON output
-- **Performance Utilities** - LRU cache, memoize, batch processing, cached storage
-- **Testing Utilities** - Fluent API for testing USSD flows
-- **Hot Reload** - Update states at runtime without restart
-- **ESM Support** - Works with CommonJS and ES modules
+A modern, fluent SDK for building USSD applications in Node.js. Write declarative, readable code with automatic `CON`/`END` handling, built-in validation, and production-ready features like Redis storage, circuit breakers, and i18n support.
 
 ## Installation
 
@@ -31,219 +11,214 @@ A flexible and powerful state machine for building USSD applications in Node.js.
 npm install ussd-state-builder
 ```
 
-For Redis storage support:
-```bash
-npm install ussd-state-builder redis
-```
-
 ## Quick Start
 
 ```javascript
-const { USSDStateMachine, ResponseBuilder } = require('ussd-state-builder');
-
-const ussdConfig = {
-  initialState: 'WELCOME',
-  timeout: 300, // 5 minutes
-  states: {
-    WELCOME: {
-      handler: async (input) => {
-        return {
-          response: ResponseBuilder.menu('Welcome to Our Service', [
-            'Check Balance',
-            'Buy Airtime',
-            'Exit'
-          ]),
-          nextState: 'MENU'
-        };
-      }
-    },
-    MENU: {
-      handler: async (input, sessionId, context) => {
-        switch (input) {
-          case '1':
-            return {
-              response: 'END Your balance is $50.00',
-              nextState: 'END'
-            };
-          case '2':
-            return {
-              response: ResponseBuilder.input('Enter amount:'),
-              nextState: 'ENTER_AMOUNT'
-            };
-          case '3':
-            return {
-              response: ResponseBuilder.end('Goodbye!'),
-              nextState: 'END'
-            };
-          default:
-            return {
-              response: ResponseBuilder.error('Invalid option')
-            };
-        }
-      }
-    },
-    ENTER_AMOUNT: {
-      validator: async (input) => {
-        if (isNaN(input) || parseFloat(input) <= 0) {
-          throw new (require('ussd-state-builder').ValidationError)('Invalid amount');
-        }
-      },
-      handler: async (input, sessionId) => {
-        return {
-          response: `END You purchased $${input} airtime successfully!`,
-          nextState: 'END',
-          data: { amount: parseFloat(input) }
-        };
-      }
-    }
-  }
-};
-
-const ussd = new USSDStateMachine(ussdConfig);
-
-// Express.js example
-app.post('/ussd', async (req, res) => {
-  const { sessionId, text } = req.body;
-  try {
-    const response = await ussd.processInput(sessionId, text);
-    res.send(response);
-  } catch (error) {
-    console.error('USSD Error:', error);
-    res.send('END An error occurred. Please try again.');
-  }
-});
-```
-
-## Fluent SDK
-
-The SDK provides a chainable builder API for defining USSD apps with less boilerplate. It auto-handles `CON`/`END` prefixes and compiles down to the same `USSDStateMachine` under the hood.
-
-```javascript
-const { createApp } = require('ussd-state-builder/sdk');
-const { Validators } = require('ussd-state-builder');
+const { createApp, Validators } = require('ussd-state-builder/sdk');
 
 const app = createApp()
   .state('welcome', s => s
-    .message('Welcome\n1. Balance\n2. Send Money')
+    .message('Welcome to MyBank\n1. Check Balance\n2. Send Money\n3. Exit')
     .on('1').goto('balance')
-    .on('2').goto('send')
+    .on('2').goto('sendMoney')
+    .on('3').end('Goodbye!')
   )
   .state('balance', s => s
-    .run(async () => 'Your balance is KES 1,500')
+    .run(async () => 'Your balance is KES 15,000.00')
     .end()
   )
-  .state('send', s => s
-    .message('Enter phone:')
-    .validate(Validators.phone())
+  .state('sendMoney', s => s
+    .message('Enter recipient phone number:')
+    .validate(Validators.phone({ country: 'KE' }))
     .save('phone')
+    .next('enterAmount')
+  )
+  .state('enterAmount', s => s
+    .message('Enter amount (KES):')
+    .validate(Validators.amount({ min: 10, max: 70000 }))
+    .save('amount')
     .next('confirm')
   )
   .state('confirm', s => s
-    .run(async (input, sid, ctx) =>
-      `Send to ${ctx.sessionData.phone}?\n1. Yes\n2. No`)
-    .on('1').end('Sent!')
-    .on('2').end('Cancelled.')
+    .run(async (input, sid, ctx) => {
+      const { phone, amount } = ctx.sessionData;
+      return `Send KES ${amount} to ${phone}?\n1. Confirm\n2. Cancel`;
+    })
+    .on('1').end('Transaction successful!')
+    .on('2').end('Transaction cancelled.')
   )
   .start('welcome')
   .build();
 
-// Use exactly like USSDStateMachine
-const response = await app.processInput(sessionId, input);
+// Express.js integration
+app.post('/ussd', async (req, res) => {
+  const { sessionId, text } = req.body;
+  const response = await app.processInput(sessionId, text);
+  res.send(response);
+});
 ```
 
-### SDK State Methods
+**That's it.** No manual `CON`/`END` prefixes, no boilerplate state configuration objects. Just clean, declarative code.
 
-| Method | Description |
-|--------|-------------|
-| `.message(text)` | Static display text (no CON/END prefix needed) |
-| `.on(input)` | Route by input: `.goto(state)`, `.end(text)`, or `.reply(text)` |
-| `.next(state)` | Default next state after user input |
-| `.end()` | Mark state as terminal (END prefix) |
-| `.run(handler)` | Custom handler `(input, sessionId, context) => string \| object` |
-| `.validate(fn)` | Attach validator (from `Validators.*` or custom) |
-| `.save(key)` | Save input to session data (string key or mapper function) |
-| `.onEnter(fn)` / `.onExit(fn)` | Lifecycle hooks |
+## Table of Contents
 
-### SDK App Methods
+- [SDK API Reference](#sdk-api-reference)
+  - [State Methods](#state-methods)
+  - [Routing](#routing)
+  - [App Configuration](#app-configuration)
+- [Dynamic Menus](#dynamic-menus)
+- [Validation](#validation)
+- [Storage Adapters](#storage-adapters)
+- [Integration Examples](#integration-examples)
+- [Advanced Features](#advanced-features)
+  - [Middleware](#middleware)
+  - [Internationalization](#internationalization)
+  - [Resilience Patterns](#resilience-patterns)
+  - [Health Checks](#health-checks)
+- [Testing](#testing)
+- [Traditional API](#traditional-api)
 
-| Method | Description |
-|--------|-------------|
-| `.state(name, fn)` | Define a state via callback |
-| `.start(name)` | Set initial state (defaults to first defined) |
-| `.storage(adapter)` | Set storage adapter |
-| `.timeout(seconds)` | Set session timeout |
-| `.use(hook, fn)` | Register middleware |
-| `.hooks(obj)` | Set lifecycle hooks |
-| `.backNavigation(bool)` | Enable/disable back navigation |
-| `.build()` | Compile to `USSDStateMachine` instance |
+---
 
-## Configuration
+## SDK API Reference
 
-### USSDStateMachine Options
+### State Methods
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `initialState` | string | *required* | The starting state for new sessions |
-| `timeout` | number | 300 | Session timeout in seconds |
-| `states` | object | *required* | Map of state names to configurations |
-| `storage` | StorageAdapter | InMemoryStorage | Session storage adapter |
-| `enableBackNavigation` | boolean | true | Enable back navigation (input '0') |
-| `hooks` | object | {} | Lifecycle hooks |
-| `hookErrorStrategy` | string | 'log' | How to handle hook errors ('log', 'throw', 'ignore', 'callback') |
-| `maxHistorySize` | number | 20 | Maximum back-navigation history depth |
+| Method | Description | Example |
+|--------|-------------|---------|
+| `.message(text)` | Display static text | `.message('Enter phone:')` |
+| `.run(handler)` | Custom async handler | `.run(async (input, sid, ctx) => ...)` |
+| `.validate(fn)` | Validate input before processing | `.validate(Validators.phone())` |
+| `.save(key)` | Save input to session data | `.save('phoneNumber')` |
+| `.next(state)` | Default transition after input | `.next('confirmScreen')` |
+| `.end()` | Mark as terminal state (END prefix) | `.end()` |
+| `.onEnter(fn)` | Lifecycle hook on state entry | `.onEnter(async (sid) => log(sid))` |
+| `.onExit(fn)` | Lifecycle hook on state exit | `.onExit(async (sid) => cleanup(sid))` |
+| `.dynamicMenu(fetcher, opts)` | Fetch menu items at runtime | See [Dynamic Menus](#dynamic-menus) |
 
-### State Configuration
+### Routing
+
+Use `.on(input)` to define input-based routing:
 
 ```javascript
-{
-  STATENAME: {
-    // Required: Handle input and return response
-    handler: async (input, sessionId, context) => {
-      // context contains: { sessionData, language }
-      return {
-        response: 'CON or END message',
-        nextState: 'NEXT_STATE', // Optional
-        data: { /* data to store */ }, // Optional
-        previousState: true // Go back (optional)
-      };
-    },
-
-    // Optional: Validate input before handler
-    validator: async (input) => {
-      if (!isValid(input)) {
-        throw new ValidationError('Invalid input');
-      }
-    },
-
-    // Optional: Called when entering this state
-    onEnter: async (sessionId) => {},
-
-    // Optional: Called when exiting this state
-    onExit: async (sessionId) => {}
-  }
-}
+.state('menu', s => s
+  .message('Select option:\n1. Balance\n2. Transfer\n3. Exit')
+  .on('1').goto('balance')      // Navigate to another state
+  .on('2').goto('transfer')
+  .on('3').end('Goodbye!')      // End session with message
+)
 ```
 
-## Validation Library
+**Route actions:**
+- `.goto(state)` - Transition to another state
+- `.end(message?)` - End session with optional message
+- `.reply(text)` - Reply without changing state (stay in same state)
 
-20+ built-in validators with composable validation chains:
+### App Configuration
+
+```javascript
+const app = createApp()
+  .state('name', configurator)     // Define states
+  .start('initialState')           // Set starting state (defaults to first)
+  .storage(redisStorage)           // Set storage adapter
+  .timeout(300)                    // Session timeout in seconds
+  .backNavigation(true)            // Enable '0' for back navigation
+  .use('beforeProcess', fn)        // Add middleware
+  .hooks({ onError: fn })          // Lifecycle hooks
+  .logger(customLogger)            // Custom logger (null to disable)
+  .maxInputLength(160)             // Max input length
+  .build();                        // Compile to USSDStateMachine
+```
+
+---
+
+## Dynamic Menus
+
+Fetch and display data from external sources with automatic pagination:
+
+```javascript
+const { createApp, DynamicMenu } = require('ussd-state-builder/sdk');
+
+const app = createApp()
+  .state('selectAccount', s => s
+    .run(
+      DynamicMenu.from(async (sid, ctx) => {
+        // Fetch from your API
+        return await api.getAccounts(ctx.sessionData.userId);
+      })
+        .format(item => `${item.name} - ${item.currency} ${item.balance}`)
+        .value(item => item.id)
+        .header('Select account:')
+        .paginated({ pageSize: 3, moreKey: '#', backKey: '*' })
+        .onEmpty('No accounts found')
+        .onError(err => `Error: ${err.message}`)
+        .build()
+    )
+    .save('accountId')
+    .next('accountDetails')
+  )
+  .build();
+```
+
+**Or use the convenience method:**
+
+```javascript
+.state('selectAccount', s => s
+  .dynamicMenu(
+    async () => api.getAccounts('user123'),
+    {
+      format: item => item.name,
+      value: item => item.id,
+      header: 'Select account:',
+      pageSize: 4,
+      refresh: { key: '*', label: 'Refresh' }
+    }
+  )
+  .save('accountId')
+  .next('details')
+)
+```
+
+### Dynamic Menu Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `format` | Format item for display | `String(item)` |
+| `value` | Extract value from selection | `item` |
+| `header` | Text above menu items | `''` |
+| `pageSize` | Items per page | All items |
+| `moreKey` | Key for next page | `'99'` |
+| `backKey` | Key for previous page | `'98'` |
+| `maxItems` | Limit stored items (memory) | Unlimited |
+| `refresh` | `{ key, label }` for refresh | Disabled |
+| `onEmpty` | Message when no items | `'No items available'` |
+| `onError` | Error handler function | Default message |
+
+---
+
+## Validation
+
+20+ built-in validators with composable chains:
 
 ```javascript
 const { Validators, combineValidators, optional } = require('ussd-state-builder');
 
 // Single validators
-const states = {
-  ENTER_PHONE: {
-    validator: Validators.phone({ country: 'KE' }),
-    handler: async (input) => { /* ... */ }
-  },
-  ENTER_PIN: {
-    validator: Validators.pin({ length: 4 }),
-    handler: async (input) => { /* ... */ }
-  }
-};
+.state('enterPhone', s => s
+  .message('Enter phone number:')
+  .validate(Validators.phone({ country: 'KE' }))
+  .save('phone')
+  .next('enterPin')
+)
 
-// Compose multiple validators
+.state('enterPin', s => s
+  .message('Enter 4-digit PIN:')
+  .validate(Validators.pin({ length: 4 }))
+  .save('pin')
+  .next('confirm')
+)
+
+// Combine multiple validators
 const validateAmount = combineValidators([
   Validators.required(),
   Validators.numeric({ min: 10, max: 70000 }),
@@ -259,84 +234,257 @@ const validateEmail = optional(Validators.email());
 | Validator | Description |
 |-----------|-------------|
 | `required()` | Non-empty input |
-| `numeric(options)` | Number with optional min/max/integer |
-| `phone(options)` | Phone number (KE, UG, TZ, NG, GH, ZA, ET, RW) |
+| `numeric(opts)` | Number with optional min/max/integer |
+| `phone(opts)` | Phone number (KE, UG, TZ, NG, GH, ZA, ET, RW) |
 | `email()` | Email address format |
-| `pin(options)` | PIN code (length, numericOnly) |
-| `amount(options)` | Monetary amount with decimal control |
-| `menuOption(options)` | Menu selection within range |
+| `pin(opts)` | PIN code (length, numericOnly) |
+| `amount(opts)` | Monetary amount with decimal control |
+| `menuOption(opts)` | Menu selection within range |
 | `minLength(n)` / `maxLength(n)` / `exactLength(n)` | String length |
 | `pattern(regex)` | Custom regex pattern |
-| `date(options)` | Date format validation |
-| `age(options)` | Age range validation |
-| `idNumber(options)` | ID/passport number (KE, generic) |
-| `password(options)` | Password strength (uppercase, lowercase, number, special) |
+| `date(opts)` | Date format validation |
+| `age(opts)` | Age range validation |
+| `idNumber(opts)` | ID/passport number (KE, generic) |
+| `password(opts)` | Password strength requirements |
 | `alphanumeric()` | Letters and numbers only |
 | `url()` | HTTP/HTTPS URL format |
 | `ipAddress()` | IPv4 address |
 | `oneOf(values)` | Whitelist validation |
 | `custom(fn)` | Custom validation function |
 
-## Middleware System
+---
+
+## Storage Adapters
+
+### InMemoryStorage (Default)
+
+Best for development and testing:
+
+```javascript
+const { InMemoryStorage } = require('ussd-state-builder');
+
+const app = createApp()
+  .storage(new InMemoryStorage())
+  .build();
+```
+
+### RedisStorage (Production)
+
+Recommended for production with automatic expiration:
+
+```javascript
+const { RedisStorage } = require('ussd-state-builder');
+
+const app = createApp()
+  .storage(new RedisStorage({
+    url: 'redis://localhost:6379',
+    keyPrefix: 'ussd:',
+    maxHistorySize: 20
+  }))
+  .timeout(300)
+  .build();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  await app.storage.close();
+});
+```
+
+### MongoDB Storage
+
+```javascript
+const { MongoDBStorage } = require('ussd-state-builder');
+
+const storage = new MongoDBStorage({
+  uri: 'mongodb://localhost:27017',
+  database: 'ussd_app'
+});
+```
+
+### PostgreSQL Storage
+
+```javascript
+const { PostgreSQLStorage } = require('ussd-state-builder');
+
+const storage = new PostgreSQLStorage({
+  host: 'localhost',
+  database: 'ussd_app',
+  user: 'user',
+  password: 'password'
+});
+```
+
+### Custom Storage
+
+Extend `StorageInterface` for custom adapters:
+
+```javascript
+const { StorageInterface } = require('ussd-state-builder');
+
+class MyStorage extends StorageInterface {
+  async getState(sessionId) { /* return state string */ }
+  async setState(sessionId, state, timeout) { /* store state */ }
+  async getData(sessionId) { /* return data object */ }
+  async setData(sessionId, data, timeout) { /* store data */ }
+  // Optional: getStateHistory, pushStateHistory, popStateHistory
+  // Optional: getStateBatch, getDataBatch, deleteSessionBatch
+  // Optional: withTransaction, cleanup, close
+}
+```
+
+---
+
+## Integration Examples
+
+### Express.js
+
+```javascript
+const express = require('express');
+const { createApp, Validators } = require('ussd-state-builder/sdk');
+
+const ussd = createApp()
+  .state('welcome', s => s.message('Welcome!\n1. Continue').on('1').goto('next'))
+  .state('next', s => s.run(async () => 'You selected continue').end())
+  .build();
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post('/ussd', async (req, res) => {
+  const { sessionId, text, phoneNumber } = req.body;
+
+  try {
+    const response = await ussd.processInput(sessionId, text);
+    res.send(response);
+  } catch (error) {
+    console.error('USSD Error:', error);
+    res.send('END An error occurred. Please try again.');
+  }
+});
+
+app.listen(3000);
+```
+
+### Africa's Talking Integration
+
+```javascript
+app.post('/ussd', async (req, res) => {
+  const { sessionId, serviceCode, phoneNumber, text } = req.body;
+
+  // Store phone number in session on first request
+  if (!text) {
+    await ussd.setSessionData(sessionId, { phoneNumber });
+  }
+
+  const response = await ussd.processInput(sessionId, text);
+  res.set('Content-Type', 'text/plain');
+  res.send(response);
+});
+```
+
+### With Authentication Context
+
+```javascript
+const app = createApp()
+  .state('welcome', s => s
+    .run(async (input, sid, ctx) => {
+      // Access session data set during request handling
+      const phone = ctx.sessionData.phoneNumber;
+      const user = await db.findUserByPhone(phone);
+
+      if (user) {
+        return `Welcome back, ${user.name}!\n1. Balance\n2. Transfer`;
+      }
+      return 'Welcome! Please register first.\n1. Register';
+    })
+    .on('1').goto('balance')
+    .on('2').goto('transfer')
+  )
+  .build();
+```
+
+---
+
+## Advanced Features
+
+### Middleware
+
+Add cross-cutting concerns like logging, rate limiting, and sanitization:
 
 ```javascript
 const {
-  USSDStateMachine,
   createLoggingMiddleware,
   createRateLimitMiddleware,
   createSanitizationMiddleware,
   createMetricsMiddleware
 } = require('ussd-state-builder');
 
-const ussd = new USSDStateMachine(config);
-
-// Add middleware
-ussd.use(createLoggingMiddleware({ logger: console }));
-ussd.use(createRateLimitMiddleware({ maxRequests: 10, windowMs: 60000 }));
-ussd.use(createSanitizationMiddleware({ removeSpecialChars: true }));
-ussd.use(createMetricsMiddleware());
+const app = createApp()
+  .use('beforeProcess', createLoggingMiddleware({ logger: console }))
+  .use('beforeProcess', createRateLimitMiddleware({ maxRequests: 10, windowMs: 60000 }))
+  .use('beforeProcess', createSanitizationMiddleware({ removeSpecialChars: true }))
+  .use('afterProcess', createMetricsMiddleware())
+  .build();
 ```
 
-### Distributed Rate Limiting
-
-For multi-instance deployments, use Redis-backed rate limiting:
+**Distributed Rate Limiting (for multi-instance deployments):**
 
 ```javascript
 const { createDistributedRateLimitMiddleware } = require('ussd-state-builder');
-const { createClient } = require('redis');
 
-const redisClient = createClient({ url: 'redis://localhost:6379' });
-await redisClient.connect();
-
-ussd.use(createDistributedRateLimitMiddleware({
-  redisClient,
-  maxRequests: 10,
-  windowMs: 60000,
-  keyPrefix: 'ussd:ratelimit:'
-}));
+const app = createApp()
+  .use('beforeProcess', createDistributedRateLimitMiddleware({
+    redisClient,
+    maxRequests: 10,
+    windowMs: 60000,
+    keyPrefix: 'ussd:ratelimit:'
+  }))
+  .build();
 ```
 
-## Resilience Patterns
+### Internationalization
 
-### Circuit Breaker
+Built-in support for 8 languages:
 
-Protect against cascading failures when storage is unavailable:
+```javascript
+const { createUSSDI18n, LanguageDetector } = require('ussd-state-builder');
+
+const i18n = createUSSDI18n({ defaultLanguage: 'en' });
+
+const app = createApp()
+  .state('welcome', s => s
+    .run(async (input, sid, ctx) => {
+      // Auto-detect language from phone number
+      const lang = LanguageDetector.fromPhoneNumber(ctx.sessionData.phoneNumber);
+      return i18n.t('common.welcome', { lang });
+    })
+    .next('menu')
+  )
+  .build();
+```
+
+**Supported languages:** English (en), Swahili (sw), French (fr), Amharic (am), Arabic (ar), Portuguese (pt), Hausa (ha), Somali (so)
+
+### Resilience Patterns
+
+**Circuit Breaker** - Protect against cascading failures:
 
 ```javascript
 const { createProtectedStorage, RedisStorage } = require('ussd-state-builder');
 
 const storage = createProtectedStorage(new RedisStorage({ url: 'redis://localhost' }), {
-  failureThreshold: 5,    // Open circuit after 5 failures
-  resetTimeout: 30000,    // Try again after 30s
+  failureThreshold: 5,
+  resetTimeout: 30000,
   onStateChange: (from, to) => console.log(`Circuit: ${from} -> ${to}`)
 });
 
-const ussd = new USSDStateMachine({ ...config, storage });
+const app = createApp()
+  .storage(storage)
+  .build();
 ```
 
-### Retry Strategy
-
-Automatically retry transient failures with exponential backoff:
+**Retry with Backoff:**
 
 ```javascript
 const { createRetryStorage, RedisStorage } = require('ussd-state-builder');
@@ -349,30 +497,28 @@ const storage = createRetryStorage(new RedisStorage({ url: 'redis://localhost' }
 });
 ```
 
-### Combining Resilience Layers
+**Combine resilience layers:**
 
 ```javascript
 const { createRetryStorage, createProtectedStorage, createCachedStorage } = require('ussd-state-builder');
 
-// Layer 1: Retry transient errors
-let storage = createRetryStorage(new RedisStorage(redisConfig), { maxRetries: 3 });
-// Layer 2: Circuit breaker for persistent failures
-storage = createProtectedStorage(storage, { failureThreshold: 5 });
-// Layer 3: Cache for performance
-storage = createCachedStorage(storage, { maxSize: 1000 });
+let storage = new RedisStorage(redisConfig);
+storage = createRetryStorage(storage, { maxRetries: 3 });       // Retry transient errors
+storage = createProtectedStorage(storage, { failureThreshold: 5 }); // Circuit breaker
+storage = createCachedStorage(storage, { maxSize: 1000 });      // Cache for performance
 ```
 
-## Health Checks
+### Health Checks
 
-Kubernetes-style health probes for production deployments:
+Kubernetes-style health probes:
 
 ```javascript
 const { HealthCheck } = require('ussd-state-builder');
 
 const health = new HealthCheck({
   storage,
-  stateMachine: ussd,
-  cacheTTL: 5000, // Cache results for 5s
+  stateMachine: app,
+  cacheTTL: 5000,
   startupChecks: {
     database: async () => { await db.ping(); }
   }
@@ -382,471 +528,149 @@ const health = new HealthCheck({
 await health.runStartupChecks();
 
 // Kubernetes probes
-app.get('/healthz', async (req, res) => {
+expressApp.get('/healthz', async (req, res) => {
   const result = await health.liveness();
   res.status(200).json(result);
 });
 
-app.get('/readyz', async (req, res) => {
+expressApp.get('/readyz', async (req, res) => {
   const result = await health.readiness();
   res.status(result.status === 'ready' ? 200 : 503).json(result);
 });
-
-// Detailed health check
-app.get('/health', health.httpHandler());
 ```
 
-## Internationalization (i18n)
+---
 
-Built-in support for 8 languages with formatter and pluralization:
+## Testing
 
-```javascript
-const { createUSSDI18n, LanguageDetector } = require('ussd-state-builder');
-
-const i18n = createUSSDI18n({ defaultLanguage: 'en' });
-
-// Translate
-i18n.t('common.welcome', { lang: 'sw' }); // "Karibu"
-i18n.t('common.welcome', { lang: 'am' }); // "እንኳን ደህና መጡ"
-i18n.t('common.welcome', { lang: 'ar' }); // "مرحباً"
-
-// Auto-detect language from phone number
-const lang = LanguageDetector.fromPhoneNumber('+254712345678'); // 'sw'
-
-// Use in state handler
-handler: async (input, sessionId, context) => {
-  const lang = context.language || 'en';
-  return {
-    response: ResponseBuilder.menu(i18n.t('common.welcome', { lang }), [
-      i18n.t('menu.balance', { lang }),
-      i18n.t('menu.airtime', { lang })
-    ]),
-    nextState: 'MENU'
-  };
-}
-```
-
-### Supported Languages
-
-| Code | Language | Region |
-|------|----------|--------|
-| `en` | English | East/West/Southern Africa |
-| `sw` | Swahili | Kenya, Tanzania, Uganda |
-| `fr` | French | DRC, Cameroon, Ivory Coast |
-| `am` | Amharic | Ethiopia |
-| `ar` | Arabic | Egypt, Sudan, Saudi Arabia, UAE |
-| `pt` | Portuguese | Mozambique, Angola |
-| `ha` | Hausa | Nigeria |
-| `so` | Somali | Somalia |
-
-## Back Navigation
-
-Back navigation is enabled by default. Users can press `0` to go back to the previous state.
-
-```javascript
-// Disable back navigation
-const ussd = new USSDStateMachine({
-  ...config,
-  enableBackNavigation: false
-});
-
-// Or handle it explicitly in your handler
-handler: async (input) => {
-  if (input === '0') {
-    return { previousState: true, response: '' };
-  }
-  // ...
-}
-```
-
-## Response Builder
-
-The `ResponseBuilder` utility provides convenient methods for common USSD patterns:
-
-```javascript
-const { ResponseBuilder } = require('ussd-state-builder');
-
-// Create a menu
-ResponseBuilder.menu('Select Option', ['Option 1', 'Option 2', 'Option 3']);
-// Output: "CON Select Option\n1. Option 1\n2. Option 2\n3. Option 3"
-
-// Confirmation prompt
-ResponseBuilder.confirm('Proceed with payment?');
-// Output: "CON Proceed with payment?\n1. Yes\n2. No"
-
-// Input prompt
-ResponseBuilder.input('Enter your phone number:');
-// Output: "CON Enter your phone number:"
-
-// Error with retry
-ResponseBuilder.error('Invalid input');
-// Output: "CON Invalid input\nPlease try again."
-
-// End message
-ResponseBuilder.end('Thank you for using our service!');
-// Output: "END Thank you for using our service!"
-
-// Paginated list
-ResponseBuilder.paginate(['A', 'B', 'C', 'D', 'E', 'F'], 1, 3, { title: 'Items' });
-// Output: "CON Items\n1. A\n2. B\n3. C\n99. More"
-
-// Add back option
-ResponseBuilder.withBack('CON Enter amount:');
-// Output: "CON Enter amount:\n0. Back"
-
-// Format currency
-ResponseBuilder.formatAmount(1234.5, 'KES ');
-// Output: "KES 1,234.50"
-
-// Receipt/Summary
-ResponseBuilder.receipt('Transaction Complete', {
-  'Amount': '$100.00',
-  'Reference': 'TXN123',
-  'Date': '2024-01-15'
-});
-
-// Progress indicator
-ResponseBuilder.progress(2, 4, 'Enter email:');
-// Output: "CON [Step 2/4]\nEnter email:"
-```
-
-## Storage Adapters
-
-### InMemoryStorage (Default)
-
-Best for development and testing. Data is lost when the process restarts.
-
-```javascript
-const { USSDStateMachine, InMemoryStorage } = require('ussd-state-builder');
-
-const ussd = new USSDStateMachine({
-  ...config,
-  storage: new InMemoryStorage()
-});
-
-// Cleanup expired sessions periodically
-setInterval(() => ussd.storage.cleanup(), 15 * 60 * 1000);
-```
-
-### RedisStorage (Production)
-
-Recommended for production. Supports automatic expiration and distributed deployments.
-
-```javascript
-const { USSDStateMachine, RedisStorage } = require('ussd-state-builder');
-
-const ussd = new USSDStateMachine({
-  ...config,
-  storage: new RedisStorage({
-    host: 'localhost',
-    port: 6379,
-    password: 'your-password',
-    keyPrefix: 'ussd:',
-    maxHistorySize: 20
-  })
-});
-
-// Or use a Redis URL
-const storage = new RedisStorage({
-  url: 'redis://user:password@host:6379'
-});
-
-// Close connection when done
-process.on('SIGTERM', async () => {
-  await ussd.storage.close();
-});
-```
-
-### Custom Storage
-
-Implement the `StorageInterface` base class:
-
-```javascript
-const { StorageInterface } = require('ussd-state-builder');
-
-class MyCustomStorage extends StorageInterface {
-  async getState(sessionId) { /* return state string */ }
-  async setState(sessionId, state, timeout) { /* store state */ }
-  async getData(sessionId) { /* return data object */ }
-  async setData(sessionId, data, timeout) { /* store data */ }
-
-  // Optional: for back navigation
-  async getStateHistory(sessionId) { /* return array */ }
-  async pushStateHistory(sessionId, state) { /* add to history */ }
-  async popStateHistory(sessionId) { /* remove and return last */ }
-
-  // Optional: batch operations
-  async getStateBatch(sessionIds) { /* return Map */ }
-  async getDataBatch(sessionIds) { /* return Map */ }
-  async deleteSessionBatch(sessionIds) { /* return count */ }
-
-  // Optional: transactions
-  async withTransaction(fn) { /* execute fn atomically */ }
-
-  // Optional: cleanup
-  async cleanup() { /* remove expired sessions */ }
-  async close() { /* close connections */ }
-}
-```
-
-See [Custom Storage Guide](./docs/CUSTOM-STORAGE.md) for a complete tutorial.
-
-## Lifecycle Hooks
-
-```javascript
-const ussd = new USSDStateMachine({
-  ...config,
-  hooks: {
-    onStateEnter: async (state, sessionId) => {
-      console.log(`Session ${sessionId} entered state ${state}`);
-      // Track analytics, log events, etc.
-    },
-
-    onStateExit: async (state, sessionId) => {
-      console.log(`Session ${sessionId} exited state ${state}`);
-    },
-
-    onError: async (error, sessionId, state) => {
-      console.error(`Error in session ${sessionId}, state ${state}:`, error);
-      // Send to error tracking service
-    },
-
-    onSessionExpire: async (sessionId) => {
-      console.log(`Session ${sessionId} expired`);
-    }
-  }
-});
-```
-
-## Testing Utilities
-
-Fluent API for testing USSD flows:
+Use the built-in testing utilities:
 
 ```javascript
 const { USSDTester } = require('ussd-state-builder');
 
-const tester = new USSDTester(ussd);
+describe('Banking USSD', () => {
+  const tester = new USSDTester(app);
 
-// Test a complete flow
-await tester
-  .start()
-  .expectResponse(/Welcome/)
-  .input('1')
-  .expectState('MENU')
-  .expectResponse(/Check Balance/)
-  .input('1')
-  .expectResponse(/Your balance/)
-  .run();
+  it('should complete send money flow', async () => {
+    await tester
+      .start()
+      .expectResponse(/Welcome/)
+      .input('2')  // Select "Send Money"
+      .expectResponse(/Enter.*phone/)
+      .input('0712345678')
+      .expectResponse(/Enter amount/)
+      .input('500')
+      .expectResponse(/Confirm/)
+      .input('1')  // Confirm
+      .expectResponse(/successful/)
+      .run();
+  });
+});
 ```
 
-## Debug Utility
-
-Enable debug logging with namespace support and log levels:
+**Run tests:**
 
 ```bash
-# Enable all USSD debug logs
-DEBUG=ussd:* node app.js
-
-# Enable specific namespaces
-DEBUG=ussd:state,ussd:middleware node app.js
-
-# Set minimum log level
-DEBUG=ussd:* DEBUG_LEVEL=warn node app.js
+npm test                 # Run all tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
 ```
 
-```javascript
-const { createDebug } = require('ussd-state-builder');
+---
 
-const debug = createDebug('ussd:myapp');
+## Traditional API
 
-// Log levels
-debug('Processing request', { sessionId: '123' });
-debug.info('Session started', { sessionId: '123' });
-debug.warn('Session expiring soon');
-debug.error('Failed to connect', error);
-
-// Structured JSON output
-debug.json('user action', { userId: '123', action: 'login' });
-
-// Performance timing
-debug.time('db-query');
-await db.query('SELECT ...');
-const elapsed = debug.timeEnd('db-query'); // logs: "db-query: 42.5ms"
-```
-
-## State Inspector
-
-Inspect and visualize your state machine:
+The SDK compiles to the same `USSDStateMachine` class, which you can use directly if preferred:
 
 ```javascript
-const { StateInspector } = require('ussd-state-builder');
+const { USSDStateMachine, ResponseBuilder } = require('ussd-state-builder');
 
-const inspector = new StateInspector(ussd);
-
-// Get state machine summary
-console.log(inspector.getSummary());
-// { totalStates: 5, initialState: 'WELCOME', ... }
-
-// Get detailed state info
-console.log(inspector.getStateInfo('MENU'));
-// { hasHandler: true, hasValidator: false, ... }
-
-// Generate ASCII diagram
-console.log(inspector.toAsciiDiagram());
-// WELCOME -> MENU -> CHECKOUT -> END
-
-// Export to GraphViz DOT format
-console.log(inspector.toDotGraph());
-
-// Validate configuration
-const issues = inspector.validate();
-```
-
-## Performance Utilities
-
-```javascript
-const { LRUCache, createCachedStorage, PerformanceMonitor, BatchProcessor } = require('ussd-state-builder');
-
-// LRU cache with TTL
-const cache = new LRUCache({ maxSize: 1000, ttl: 60000 });
-cache.set('key', 'value');
-cache.get('key'); // 'value'
-cache.getStats(); // { hits, misses, hitRate, evictions, size, maxSize }
-
-// Cache storage adapter for performance
-const cachedStorage = createCachedStorage(storage, { maxSize: 1000 });
-
-// Performance monitoring
-const monitor = new PerformanceMonitor();
-monitor.startTimer('processInput');
-// ... do work ...
-monitor.endTimer('processInput');
-console.log(monitor.getMetrics('processInput'));
-// { count, total, average, min, max }
-
-// Batch processing
-const batch = new BatchProcessor({
-  maxSize: 10,
-  maxWait: 100,
-  processor: async (items) => { /* process batch */ }
+const ussd = new USSDStateMachine({
+  initialState: 'WELCOME',
+  timeout: 300,
+  states: {
+    WELCOME: {
+      handler: async (input) => ({
+        response: ResponseBuilder.menu('Welcome', ['Balance', 'Transfer']),
+        nextState: 'MENU'
+      })
+    },
+    MENU: {
+      handler: async (input, sessionId, context) => {
+        if (input === '1') {
+          return { response: 'END Your balance is KES 15,000', nextState: 'END' };
+        }
+        return { response: ResponseBuilder.error('Invalid option') };
+      }
+    }
+  }
 });
-await batch.add(item);
 ```
 
-## API Reference
-
-### USSDStateMachine
-
-#### `constructor(config)`
-Create a new state machine instance.
-
-#### `processInput(sessionId, input, options?)`
-Process user input and return response.
-- `sessionId`: Unique session identifier
-- `input`: User input string
-- `options.language`: Optional language preference
-- Returns: `Promise<string>` - USSD response
-
-#### `getSessionData(sessionId)`
-Get stored session data.
-- Returns: `Promise<object|null>`
-
-#### `setSessionData(sessionId, data)`
-Store session data.
-
-#### `getCurrentState(sessionId)`
-Get current state for a session.
-- Returns: `Promise<string|null>`
-
-#### `goBack(sessionId)`
-Navigate to previous state.
-- Returns: `Promise<string|null>` - Previous state name
-
-#### `endSession(sessionId)`
-End and cleanup a session.
-
-#### `use(middleware)`
-Add middleware to the processing pipeline.
-
-### ValidationError
-
-Custom error class for input validation.
+### ResponseBuilder Utilities
 
 ```javascript
-const { ValidationError } = require('ussd-state-builder');
+const { ResponseBuilder } = require('ussd-state-builder');
 
-throw new ValidationError('Phone number must be 10 digits');
-// User sees: "CON Phone number must be 10 digits\nPlease try again."
+ResponseBuilder.menu('Select Option', ['Balance', 'Transfer']);
+// "CON Select Option\n1. Balance\n2. Transfer"
+
+ResponseBuilder.confirm('Proceed with payment?');
+// "CON Proceed with payment?\n1. Yes\n2. No"
+
+ResponseBuilder.input('Enter phone number:');
+// "CON Enter phone number:"
+
+ResponseBuilder.error('Invalid input');
+// "CON Invalid input\nPlease try again."
+
+ResponseBuilder.end('Thank you!');
+// "END Thank you!"
+
+ResponseBuilder.paginate(items, page, pageSize, { title: 'Items' });
+ResponseBuilder.withBack('CON Enter amount:');
+ResponseBuilder.formatAmount(1234.5, 'KES ');  // "KES 1,234.50"
 ```
+
+---
 
 ## TypeScript Support
 
-Full TypeScript definitions are included:
+Full TypeScript definitions included:
 
 ```typescript
-import {
-  USSDStateMachine,
-  USSDConfig,
-  StateConfig,
-  ResponseBuilder,
-  StorageAdapter
-} from 'ussd-state-builder';
+import { createApp, Validators, DynamicMenu } from 'ussd-state-builder/sdk';
+import type { StateContext, StateHandlerResult } from 'ussd-state-builder';
 
-const config: USSDConfig = {
-  initialState: 'WELCOME',
-  states: {
-    WELCOME: {
-      handler: async (input, sessionId, context) => ({
-        response: 'CON Welcome!',
-        nextState: 'MENU'
-      })
-    }
-  }
-};
-
-const ussd = new USSDStateMachine(config);
+const app = createApp()
+  .state('welcome', s => s
+    .run(async (input: string, sid: string, ctx: StateContext): Promise<string> => {
+      return 'Welcome!';
+    })
+    .next('menu')
+  )
+  .build();
 ```
 
-## ESM Support
-
-The package supports both CommonJS and ES modules:
-
-```javascript
-// CommonJS
-const { USSDStateMachine } = require('ussd-state-builder');
-
-// ES Modules
-import { USSDStateMachine } from 'ussd-state-builder';
-```
-
-## Examples
-
-See the [examples](./examples) directory for complete working examples:
-
-- [Basic Menu](./examples/basic-menu.js) - Simple USSD menu flow
-- [Express Integration](./examples/express-integration.js) - Full Express.js setup
-- [Multi-language Support](./examples/multi-language.js) - i18n implementation
-- [With Validation](./examples/with-validation.js) - Input validation patterns
-- [Hot Reload](./examples/hot-reload.js) - Dynamic state updates at runtime
-- [Custom Storage](./examples/custom-storage.js) - File-based storage adapter
-- [Error Recovery](./examples/error-recovery.js) - Circuit breaker and retry patterns
-- [Health Checks](./examples/health-checks.js) - Kubernetes-style probes
+---
 
 ## Documentation
 
-- [Production Deployment Guide](./docs/PRODUCTION.md) - Storage, scaling, monitoring
-- [Security Best Practices](./docs/SECURITY.md) - Input sanitization, rate limiting
-- [Performance Tuning](./docs/PERFORMANCE.md) - Caching, circuit breakers, batch processing
-- [Custom Storage Adapters](./docs/CUSTOM-STORAGE.md) - Building your own adapter
-- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Debug logging, common errors
+- [Production Deployment Guide](./docs/PRODUCTION.md)
+- [Security Best Practices](./docs/SECURITY.md)
+- [Performance Tuning](./docs/PERFORMANCE.md)
+- [Custom Storage Adapters](./docs/CUSTOM-STORAGE.md)
+- [Troubleshooting](./docs/TROUBLESHOOTING.md)
 
-## Testing
+## Examples
 
-```bash
-npm test                 # Run all tests (644 tests across 15 suites)
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-```
+See the [examples](./examples) directory:
+
+- [SDK Basic](./examples/sdk-basic.js) - Banking app with SDK
+- [SDK Dynamic Menu](./examples/sdk-dynamic-menu.js) - Paginated dynamic menus
+- [Express Integration](./examples/express-integration.js) - Full Express.js setup
+- [Multi-language](./examples/multi-language.js) - i18n implementation
+- [With Validation](./examples/with-validation.js) - Input validation patterns
 
 ## Contributing
 
