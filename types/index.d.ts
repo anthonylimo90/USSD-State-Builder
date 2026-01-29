@@ -1038,4 +1038,14 @@ export namespace LanguageDetector {
 
 // ==================== SDK (Fluent Builder API) ====================
 
-export { createApp, AppBuilder, StateBuilder, RouteBuilder } from './sdk';
+export {
+    createApp,
+    AppBuilder,
+    StateBuilder,
+    RouteBuilder,
+    DynamicMenu,
+    DynamicMenuBuilder,
+    DynamicMenuOptions,
+    DynamicMenuFetcher,
+    PaginationOptions
+} from './sdk';

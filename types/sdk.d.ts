@@ -113,6 +113,155 @@ export class StateBuilder {
    * Lifecycle hook called when exiting this state
    */
   onExit(fn: (sessionId: string) => Promise<void> | void): StateBuilder;
+
+  /**
+   * Configure a dynamic menu that fetches items at runtime
+   * @param fetcher - Async function returning array of items
+   * @param options - Configuration options
+   */
+  dynamicMenu<T = any>(
+    fetcher: DynamicMenuFetcher<T>,
+    options?: DynamicMenuOptions<T>
+  ): StateBuilder;
+}
+
+/**
+ * Pagination options for dynamic menus
+ */
+export interface PaginationOptions {
+  /** Items per page (default: 5) */
+  pageSize?: number;
+  /** Key to show more items (default: '99') */
+  moreKey?: string;
+  /** Key to go to previous page (default: '98') */
+  backKey?: string;
+  /** Label for more option (default: 'More') */
+  moreLabel?: string;
+  /** Label for back option (default: 'Back') */
+  backLabel?: string;
+}
+
+/**
+ * Refresh options for dynamic menus
+ */
+export interface RefreshOptions {
+  /** Key to trigger refresh (default: '0') */
+  key?: string;
+  /** Label for refresh option (default: 'Refresh') */
+  label?: string;
+}
+
+/**
+ * Options for the convenience dynamicMenu() method
+ */
+export interface DynamicMenuOptions<T = any> {
+  /** Function to format item for display */
+  format?: (item: T, index: number) => string;
+  /** Function to extract value from selected item */
+  value?: (item: T) => any;
+  /** Header text displayed above menu items */
+  header?: string;
+  /** Items per page (enables pagination) */
+  pageSize?: number;
+  /** Key to show more items (default: '99') */
+  moreKey?: string;
+  /** Key to go to previous page (default: '98') */
+  backKey?: string;
+  /** Label for more option (default: 'More') */
+  moreLabel?: string;
+  /** Label for back option (default: 'Back') */
+  backLabel?: string;
+  /** Empty data configuration */
+  empty?: {
+    message: string;
+    action?: 'end' | 'continue';
+  };
+  /** Error handler for fetch failures */
+  onError?: (error: Error, sessionId: string, context: StateContext) => string | StateHandlerResult;
+  /** Maximum items to store in session (prevents memory issues with large datasets) */
+  maxItems?: number;
+  /** Refresh configuration to allow re-fetching data */
+  refresh?: RefreshOptions;
+}
+
+/**
+ * Data fetcher function type
+ */
+export type DynamicMenuFetcher<T = any> = (
+  sessionId: string,
+  context: StateContext
+) => Promise<T[]> | T[];
+
+/**
+ * Builder for dynamic/reactive USSD menus
+ */
+export class DynamicMenuBuilder<T = any> {
+  /**
+   * Set the data fetcher function
+   */
+  fetch(fn: DynamicMenuFetcher<T>): DynamicMenuBuilder<T>;
+
+  /**
+   * Set the item formatter function
+   */
+  format(fn: (item: T, index: number) => string): DynamicMenuBuilder<T>;
+
+  /**
+   * Set the value extractor function
+   */
+  value(fn: (item: T) => any): DynamicMenuBuilder<T>;
+
+  /**
+   * Set the menu header text
+   */
+  header(text: string): DynamicMenuBuilder<T>;
+
+  /**
+   * Enable pagination with options
+   */
+  paginated(options?: PaginationOptions): DynamicMenuBuilder<T>;
+
+  /**
+   * Configure empty data handling
+   */
+  onEmpty(message: string, action?: 'end' | 'continue'): DynamicMenuBuilder<T>;
+
+  /**
+   * Set error handler for fetch failures
+   */
+  onError(handler: (error: Error, sessionId: string, context: StateContext) => string | StateHandlerResult): DynamicMenuBuilder<T>;
+
+  /**
+   * Limit maximum items stored in session to prevent memory issues
+   * @param limit - Maximum items to store (recommended: 50-100 for USSD)
+   */
+  maxItems(limit: number): DynamicMenuBuilder<T>;
+
+  /**
+   * Enable data refresh capability
+   * @param options - Refresh configuration
+   */
+  refreshable(options?: RefreshOptions): DynamicMenuBuilder<T>;
+
+  /**
+   * Build and return the handler function
+   */
+  build(): SDKHandler;
+}
+
+/**
+ * Factory functions for DynamicMenuBuilder
+ */
+export namespace DynamicMenu {
+  /**
+   * Create a new DynamicMenuBuilder
+   */
+  function create<T = any>(): DynamicMenuBuilder<T>;
+
+  /**
+   * Create a DynamicMenuBuilder with fetcher already set
+   */
+  function from<T = any>(fetcher: DynamicMenuFetcher<T>): DynamicMenuBuilder<T>;
 }
 
 /**
