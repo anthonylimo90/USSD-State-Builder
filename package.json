@@ -1,6 +1,6 @@
 {
   "name": "ussd-state-builder",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "A complete state machine for building USSD applications with back navigation, lifecycle hooks, middleware, validation, i18n, testing utilities, health checks, and multiple storage adapters",
   "main": "index.js",
   "module": "index.mjs",
