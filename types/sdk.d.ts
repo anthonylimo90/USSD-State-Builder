@@ -60,6 +60,22 @@ export type SaveMapper = (
 ) => Record<string, any>;
 
 /**
+ * Menu item configuration
+ */
+export interface MenuItem {
+  /** Input key for this option (e.g., '1', '2') */
+  key: string;
+  /** Display label for this option */
+  label: string;
+  /** State to transition to */
+  goto?: string;
+  /** End session with this message */
+  end?: string;
+  /** Reply without transitioning */
+  reply?: string;
+}
+
+/**
  * State builder for defining individual USSD states
  */
 export class StateBuilder {
@@ -70,8 +86,16 @@ export class StateBuilder {
   message(text: string): StateBuilder;
 
   /**
+   * Create a numbered menu from title and items
+   * Auto-generates message and routes for each item
+   * @param title - Menu title/header
+   * @param items - Menu items with key, label, and action
+   */
+  menu(title: string, items: MenuItem[]): StateBuilder;
+
+  /**
    * Define input-based routing
-   * @param input - Input value to match
+   * @param input - Input value to match ('*' for wildcard/catch-all)
    */
   on(input: string): RouteBuilder;
 
@@ -270,6 +294,160 @@ export namespace DynamicMenu {
 export type StateConfigurator = (stateBuilder: StateBuilder) => void;
 
 /**
+ * Field builder for form fields
+ */
+export class FieldBuilder {
+  /**
+   * Set the prompt message for this field
+   */
+  prompt(text: string): FieldBuilder;
+
+  /**
+   * Attach a validator function
+   */
+  validate(fn: ValidatorFunction): FieldBuilder;
+
+  /**
+   * Transform the input before saving
+   */
+  transform(fn: (input: string) => any): FieldBuilder;
+}
+
+/**
+ * Confirm step builder for form confirmation
+ */
+export class ConfirmStepBuilder {
+  /**
+   * Set input that triggers confirmation
+   */
+  onConfirm(input: string): ConfirmStepBuilder;
+
+  /**
+   * Set input that triggers cancellation
+   */
+  onCancel(input: string): ConfirmStepBuilder;
+
+  /**
+   * End session with message
+   */
+  end(message: string): ConfirmStepBuilder;
+
+  /**
+   * Go to another state
+   */
+  goto(stateName: string): ConfirmStepBuilder;
+}
+
+/**
+ * Field configurator callback
+ */
+export type FieldConfigurator = (fieldBuilder: FieldBuilder) => void;
+
+/**
+ * Form builder for multi-step data collection
+ */
+export class FormBuilder {
+  /**
+   * Add a field to the form
+   */
+  field(name: string, configurator: FieldConfigurator): FormBuilder;
+
+  /**
+   * Add a confirmation step
+   */
+  confirm(renderer: (context: StateContext) => string): ConfirmStepBuilder;
+
+  /**
+   * Set the state to transition to after form completion
+   */
+  onComplete(stateName: string): FormBuilder;
+}
+
+/**
+ * Form configurator callback
+ */
+export type FormConfigurator = (formBuilder: FormBuilder) => void;
+
+/**
+ * Logging middleware options
+ */
+export interface LoggingOptions {
+  logger?: (message: string) => void;
+  logInput?: boolean;
+  logResponse?: boolean;
+  logTiming?: boolean;
+}
+
+/**
+ * Rate limit middleware options
+ */
+export interface RateLimitOptions {
+  maxRequests?: number;
+  windowMs?: number;
+  message?: string;
+}
+
+/**
+ * Sanitization middleware options
+ */
+export interface SanitizeOptions {
+  maxLength?: number;
+  trim?: boolean;
+  removeSpecialChars?: boolean;
+}
+
+/**
+ * Metrics middleware options
+ */
+export interface MetricsOptions {
+  bufferSize?: number;
+}
+
+/**
+ * Session timeout middleware options
+ */
+export interface SessionTimeoutOptions {
+  warningThreshold?: number;
+  warningMessage?: string;
+}
+
+/**
+ * Extended USSDStateMachine with SDK additions
+ */
+export interface SDKStateMachine extends USSDStateMachine {
+  /**
+   * Create a tester for this state machine
+   */
+  test(options?: { sessionId?: string }): import('./index').USSDTester;
+
+  /**
+   * Create an inspector for this state machine
+   */
+  inspect(): import('./index').StateInspector;
+
+  /**
+   * Cleanup middleware resources (rate limiter intervals, etc.)
+   */
+  cleanup(): void;
+
+  /**
+   * Get metrics (if metrics middleware is enabled)
+   */
+  getMetrics?(): {
+    totalRequests: number;
+    totalErrors: number;
+    errorRate: string;
+    requestsByState: Record<string, number>;
+    averageResponseTime: string;
+  };
+
+  /**
+   * Reset metrics (if metrics middleware is enabled)
+   */
+  resetMetrics?(): void;
+}
+
+/**
  * Top-level application builder
  */
 export class AppBuilder {
@@ -279,6 +457,13 @@ export class AppBuilder {
    * @param configurator - State configurator callback
    */
   state(name: string, configurator: StateConfigurator): AppBuilder;
+
+  /**
+   * Define a multi-step form/wizard
+   * @param name - Form name (used as prefix for generated states)
+   * @param configurator - Form configurator callback
+   */
+  form(name: string, configurator: FormConfigurator): AppBuilder;
 
   /**
    * Set the initial state (defaults to first state defined)
@@ -330,9 +515,34 @@ export class AppBuilder {
   maxInputLength(length: number): AppBuilder;
 
   /**
+   * Add logging middleware
+   */
+  logging(options?: LoggingOptions): AppBuilder;
+
+  /**
+   * Add rate limiting middleware
+   */
+  rateLimit(options?: RateLimitOptions): AppBuilder;
+
+  /**
+   * Add input sanitization middleware
+   */
+  sanitize(options?: SanitizeOptions): AppBuilder;
+
+  /**
+   * Add metrics collection middleware
+   */
+  metrics(options?: MetricsOptions): AppBuilder;
+
+  /**
+   * Add session timeout warning middleware
+   */
+  sessionTimeout(options?: SessionTimeoutOptions): AppBuilder;
+
+  /**
    * Compile and return a USSDStateMachine instance
    */
-  build(): USSDStateMachine;
+  build(): SDKStateMachine;
 }
 
 /**
@@ -340,3 +550,6 @@ export class AppBuilder {
  * @returns New AppBuilder instance
  */
 export function createApp(): AppBuilder;
+
+// Re-export form builder classes
+export { FormBuilder, FieldBuilder, ConfirmStepBuilder };

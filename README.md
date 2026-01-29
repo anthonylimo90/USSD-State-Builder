@@ -87,6 +87,7 @@ app.post('/ussd', async (req, res) => {
 | Method | Description | Example |
 |--------|-------------|---------|
 | `.message(text)` | Display static text | `.message('Enter phone:')` |
+| `.menu(title, items)` | Create numbered menu | See [Menu Builder](#menu-builder) |
 | `.run(handler)` | Custom async handler | `.run(async (input, sid, ctx) => ...)` |
 | `.validate(fn)` | Validate input before processing | `.validate(Validators.phone())` |
 | `.save(key)` | Save input to session data | `.save('phoneNumber')` |
@@ -95,6 +96,27 @@ app.post('/ussd', async (req, res) => {
 | `.onEnter(fn)` | Lifecycle hook on state entry | `.onEnter(async (sid) => log(sid))` |
 | `.onExit(fn)` | Lifecycle hook on state exit | `.onExit(async (sid) => cleanup(sid))` |
 | `.dynamicMenu(fetcher, opts)` | Fetch menu items at runtime | See [Dynamic Menus](#dynamic-menus) |
+
+### Menu Builder
+
+Create numbered menus with automatic routing:
+
+```javascript
+.state('main', s => s
+  .menu('Welcome to MyBank', [
+    { key: '1', label: 'Check Balance', goto: 'balance' },
+    { key: '2', label: 'Send Money', goto: 'sendMoney' },
+    { key: '3', label: 'Buy Airtime', goto: 'airtime' },
+    { key: '4', label: 'Exit', end: 'Goodbye!' }
+  ])
+)
+// Output: "CON Welcome to MyBank\n1. Check Balance\n2. Send Money\n3. Buy Airtime\n4. Exit"
+```
+
+**Menu item actions:**
+- `goto: 'state'` - Navigate to state
+- `end: 'message'` - End session with message
+- `reply: 'text'` - Reply without transitioning
 
 ### Routing
 
@@ -106,6 +128,7 @@ Use `.on(input)` to define input-based routing:
   .on('1').goto('balance')      // Navigate to another state
   .on('2').goto('transfer')
   .on('3').end('Goodbye!')      // End session with message
+  .on('*').reply('Invalid option')  // Catch-all for unmatched input
 )
 ```
 
@@ -114,11 +137,14 @@ Use `.on(input)` to define input-based routing:
 - `.end(message?)` - End session with optional message
 - `.reply(text)` - Reply without changing state (stay in same state)
 
+**Wildcard route:** Use `.on('*')` as a catch-all for any unmatched input.
+
 ### App Configuration
 
 ```javascript
 const app = createApp()
   .state('name', configurator)     // Define states
+  .form('name', configurator)      // Define multi-step forms
   .start('initialState')           // Set starting state (defaults to first)
   .storage(redisStorage)           // Set storage adapter
   .timeout(300)                    // Session timeout in seconds
@@ -127,8 +153,48 @@ const app = createApp()
   .hooks({ onError: fn })          // Lifecycle hooks
   .logger(customLogger)            // Custom logger (null to disable)
   .maxInputLength(160)             // Max input length
+  // Built-in middleware helpers:
+  .logging({ logger: console.log })
+  .rateLimit({ maxRequests: 10, windowMs: 60000 })
+  .sanitize({ maxLength: 160, trim: true })
+  .metrics()
   .build();                        // Compile to USSDStateMachine
 ```
+
+### Form Builder
+
+Create multi-step data collection flows with minimal boilerplate:
+
+```javascript
+const app = createApp()
+  .form('sendMoney', f => f
+    .field('phone', field => field
+      .prompt('Enter recipient phone:')
+      .validate(Validators.phone({ country: 'KE' }))
+    )
+    .field('amount', field => field
+      .prompt('Enter amount (KES):')
+      .validate(Validators.amount({ min: 10, max: 70000 }))
+    )
+    .confirm(ctx =>
+      `Send KES ${ctx.sessionData.amount} to ${ctx.sessionData.phone}?\n1. Yes\n2. No`
+    )
+    .onConfirm('1').end('Transaction sent!')
+    .onCancel('2').end('Cancelled.')
+  )
+  .start('sendMoney_phone')  // Form states are named: {formName}_{fieldName}
+  .build();
+```
+
+**Field methods:**
+- `.prompt(text)` - Display prompt for field
+- `.validate(fn)` - Validate input
+- `.transform(fn)` - Transform value before saving
+
+**Form methods:**
+- `.field(name, configurator)` - Add a field
+- `.confirm(renderer)` - Add confirmation step
+- `.onComplete(state)` - State to go to after form (without confirm)
 
 ---
 
@@ -543,29 +609,47 @@ expressApp.get('/readyz', async (req, res) => {
 
 ## Testing
 
-Use the built-in testing utilities:
+Built machines have a `.test()` method that returns a fluent tester:
 
 ```javascript
+const app = createApp()
+  .state('welcome', s => s.message('Welcome!\n1. Continue').on('1').goto('next'))
+  .state('next', s => s.message('Done').end())
+  .build();
+
+// Test flows directly on the built app
+await app.test()
+  .start()
+  .expectResponse(/Welcome/)
+  .input('1')
+  .expectResponse(/Done/)
+  .run();
+
+// Or use USSDTester directly
 const { USSDTester } = require('ussd-state-builder');
+const tester = new USSDTester(app);
+```
 
-describe('Banking USSD', () => {
-  const tester = new USSDTester(app);
+### State Inspection
 
-  it('should complete send money flow', async () => {
-    await tester
-      .start()
-      .expectResponse(/Welcome/)
-      .input('2')  // Select "Send Money"
-      .expectResponse(/Enter.*phone/)
-      .input('0712345678')
-      .expectResponse(/Enter amount/)
-      .input('500')
-      .expectResponse(/Confirm/)
-      .input('1')  // Confirm
-      .expectResponse(/successful/)
-      .run();
-  });
-});
+Built machines also have an `.inspect()` method for debugging:
+
+```javascript
+const inspector = app.inspect();
+
+// Get state machine summary
+console.log(inspector.getSummary());
+// { totalStates: 2, initialState: 'welcome', ... }
+
+// Validate configuration
+const result = inspector.validate();
+console.log(result.valid, result.errors, result.warnings);
+
+// Generate ASCII diagram
+console.log(inspector.toAsciiDiagram());
+
+// Get specific state info
+console.log(inspector.getStateInfo('welcome'));
 ```
 
 **Run tests:**

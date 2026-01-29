@@ -9,19 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Fluent SDK** - Chainable builder API (`createApp`) for defining USSD applications with less boilerplate
-  - `AppBuilder` - Top-level app builder with `.state()`, `.start()`, `.storage()`, `.timeout()`, `.use()`, `.hooks()`, `.backNavigation()`, `.build()`
-  - `StateBuilder` - State definition builder with `.message()`, `.on()`, `.next()`, `.end()`, `.run()`, `.validate()`, `.save()`, `.onEnter()`, `.onExit()`
+  - `AppBuilder` - Top-level app builder with `.state()`, `.form()`, `.start()`, `.storage()`, `.timeout()`, `.use()`, `.hooks()`, `.backNavigation()`, `.build()`
+  - `StateBuilder` - State definition builder with `.message()`, `.menu()`, `.on()`, `.next()`, `.end()`, `.run()`, `.validate()`, `.save()`, `.onEnter()`, `.onExit()`, `.dynamicMenu()`
   - `RouteBuilder` - Input routing with `.goto()`, `.reply()`, `.end()`
   - Auto CON/END prefixing - no manual prefix management needed
   - Target state resolution - `.goto()` and `.next()` transitions automatically resolve the target state's response
   - Zero new dependencies - pure compile-time layer over `USSDStateMachine`
+- **Menu Builder** - `.menu(title, items)` for creating numbered menus with automatic routing
+  - Auto-generates message text and routes from item definitions
+  - Supports `goto`, `end`, and `reply` actions per item
+  - Auto-adds input validation for defined keys
+- **Wildcard Routes** - `.on('*')` catch-all route for unmatched inputs
+  - Exact routes are matched first, then wildcard falls back
+  - Useful for custom error handling or free-form input collection
+- **Form Builder** - `.form(name, configurator)` for multi-step data collection flows
+  - `FieldBuilder` with `.prompt()`, `.validate()`, `.transform()`
+  - Optional confirmation step with `.confirm()`, `.onConfirm()`, `.onCancel()`
+  - Auto-generates state chain: `{formName}_{fieldName}` naming convention
+- **Middleware Helpers** - Fluent methods for common middleware patterns
+  - `.logging(options)` - Request/response logging
+  - `.rateLimit(options)` - Rate limiting with configurable window
+  - `.sanitize(options)` - Input sanitization (trim, max length, special chars)
+  - `.metrics(options)` - Request metrics collection
+  - `.sessionTimeout(options)` - Session expiration warnings
+  - `app.cleanup()` - Clean up middleware resources
+  - `app.getMetrics()` / `app.resetMetrics()` - Metrics access (when enabled)
+- **Testing Integration** - Built-in test helpers on compiled machines
+  - `app.test(options)` - Returns `USSDTester` instance for fluent testing
+  - `app.inspect()` - Returns `StateInspector` instance for debugging
 - **SDK subpath export** - `require('ussd-state-builder/sdk')` and `import from 'ussd-state-builder/sdk'`
 - **SDK TypeScript definitions** - Full type definitions in `types/sdk.d.ts`
-- **SDK re-exports** - `createApp`, `AppBuilder`, `StateBuilder`, `RouteBuilder` available from main entry point
-- **SDK example** - Banking USSD demo app (`examples/sdk-basic.js`)
+- **SDK re-exports** - `createApp`, `AppBuilder`, `StateBuilder`, `RouteBuilder`, `FormBuilder`, `FieldBuilder` available from SDK
+- **SDK examples** - Banking USSD demo app (`examples/sdk-basic.js`), Dynamic menu demo (`examples/sdk-dynamic-menu.js`)
 
 ### Changed
-- Test suite expanded from 644 to 731 tests across 20 test suites
+- Test suite expanded from 644 to 824 tests across 25 test suites
 
 ## [2.5.0] - 2026-01-26
 
