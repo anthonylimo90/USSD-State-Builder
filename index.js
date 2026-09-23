@@ -80,6 +80,14 @@ const {
 const { StateInspector } = require('./lib/StateInspector');
 const { CircuitBreaker, createProtectedStorage } = require('./lib/CircuitBreaker');
 const { RetryStrategy, createRetryStorage } = require('./lib/RetryStrategy');
+const { DistributedLock, createDistributedLockManager } = require('./lib/DistributedLock');
+const { SessionEncryption, createEncryptedStorage } = require('./lib/SessionEncryption');
+const { PrometheusExporter, OpenTelemetryCollector, createExportableMetrics } = require('./lib/MetricsExporter');
+const { SlidingWindowRateLimit, createSlidingWindowRateLimit } = require('./lib/SlidingWindowRateLimit');
+const { FlowDiagram } = require('./lib/FlowDiagram');
+const { USSDSimulator } = require('./lib/USSDSimulator');
+const { WebhookManager } = require('./lib/WebhookManager');
+const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
 
 module.exports = {
@@ -170,6 +178,36 @@ module.exports = {
   createProtectedStorage,
   RetryStrategy,
   createRetryStorage,
+
+  // Distributed locking
+  DistributedLock,
+  createDistributedLockManager,
+
+  // Session encryption
+  SessionEncryption,
+  createEncryptedStorage,
+
+  // Metrics exporters
+  PrometheusExporter,
+  OpenTelemetryCollector,
+  createExportableMetrics,
+
+  // Sliding window rate limiting
+  SlidingWindowRateLimit,
+  createSlidingWindowRateLimit,
+
+  // Flow diagram generator
+  FlowDiagram,
+
+  // USSD Simulator
+  USSDSimulator,
+
+  // Webhook support
+  WebhookManager,
+
+  // Plugin system
+  PluginManager,
+  createPlugin,
 
   // SDK (fluent builder API)
   createApp,

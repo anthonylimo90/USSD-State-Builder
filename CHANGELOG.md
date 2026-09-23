@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-09-23
+
+### Added
+- **Distributed Locking** - Redis-based distributed session locks for multi-instance deployments
+  - `DistributedLock` class using Redis SET NX with an expiry and ownership checks
+  - Atomic lock acquire/release using Lua scripts
+  - Lock extension for long-running operations
+  - `createDistributedLockManager` factory for transparent storage wrapping
+- **Session Encryption** - AES-256-GCM encryption for session data at rest
+  - `SessionEncryption` class with field-level or full-object encryption
+  - PBKDF2 key derivation from string passwords
+  - `createEncryptedStorage` transparent storage adapter wrapper
+  - Backwards-compatible with unencrypted data
+- **Metrics Exporters** - Standard monitoring format integration
+  - `PrometheusExporter` with text exposition format (counters, gauges, histograms)
+  - `OpenTelemetryCollector` with OTEL-compatible JSON export and span recording
+  - `createExportableMetrics` factory combining base metrics with exporters
+- **Sliding Window Rate Limiting** - Improved rate limiting algorithm
+  - `SlidingWindowRateLimit` with configurable sub-window precision
+  - More accurate than fixed-window counters
+  - `createSlidingWindowRateLimit` middleware factory
+- **Flow Diagram Generator** - Visual state machine diagrams
+  - `FlowDiagram` class with Mermaid, DOT (Graphviz), and ASCII output
+  - Automatic transition detection from handler code analysis
+  - JSON export for programmatic access
+  - Theme support (default, dark, minimal)
+- **USSD Simulator** - Interactive testing tool
+  - `USSDSimulator` with programmatic and CLI interactive modes
+  - Scenario batch execution for automated testing
+  - Session history tracking and summary statistics
+  - Built-in commands (/quit, /reset, /history, /state, /debug)
+- **Webhook Manager** - Async flow pause/resume support
+  - `WebhookManager` for registering external event callbacks
+  - Secret-based webhook verification
+  - Timeout handling with configurable durations
+  - Session resume state tracking
+- **Plugin System** - Reusable flow marketplace pattern
+  - `PluginManager` with namespace isolation and dependency resolution
+  - `createPlugin` helper for standardized plugin definitions
+  - State name remapping for plugin-internal transitions
+  - Hook and middleware aggregation across plugins
+- **Framework Adapters** - Integration examples for Fastify, Koa, and Hapi
+- **Integration Tests** - Redis storage integration test suite
+- **Benchmark Suite** - Performance measurement across 7 scenarios
+- **Mutation Testing** - Stryker configuration for test quality verification
+
+### Improved
+- **Compiler** - Form state name collision detection during build
+- **Compiler** - Strict validation warnings for states that save without validating
+- **StateInspector** - Enhanced `validate()` with dead-end state detection and missing validator warnings
+- **StateInspector** - New `toMermaid()` method delegating to FlowDiagram
+- **Validation fixes** - Encrypted data writes preserve prior fields, webhook callbacks require their secret, and session processing is serialized across requests
+
+### Statistics
+- **New Library Files:** 8 (DistributedLock, SessionEncryption, MetricsExporter, SlidingWindowRateLimit, FlowDiagram, USSDSimulator, WebhookManager, PluginManager)
+- **New Test Files:** 5 (SessionEncryption, SlidingWindowRateLimit, FlowDiagram, WebhookManager, PluginManager)
+- **New Examples:** 3 (Fastify, Koa, Hapi)
+- **Package Version:** 2.7.0
+
+---
+
 ## [2.6.0] - 2026-01-29
 
 ### Added

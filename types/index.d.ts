@@ -90,6 +90,8 @@ export interface StorageAdapter {
     getData(sessionId: string): Promise<Record<string, any> | null>;
     /** Set custom data for a session */
     setData(sessionId: string, data: Record<string, any>, timeout: number): Promise<void>;
+    /** Serialize a complete session operation when supported by the adapter. */
+    withSessionLock?<T>(sessionId: string, fn: () => Promise<T>): Promise<T>;
     /** Get the full session object */
     getSession?(sessionId: string): Promise<SessionData | null>;
     /** Set the full session object */
@@ -838,6 +840,8 @@ export class StateInspector {
      */
     toAsciiDiagram(): string;
 
+    toMermaid(): string;
+
     /**
      * Validate the state machine configuration
      * @returns Validation result with errors and warnings
@@ -1049,3 +1053,5 @@ export {
     DynamicMenuFetcher,
     PaginationOptions
 } from './sdk';
+
+export * from './advanced';

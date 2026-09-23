@@ -17,6 +17,18 @@ describe('AppBuilder', () => {
     expect(builder._states.has('welcome')).toBe(true);
   });
 
+  test('state() rejects a duplicate name', () => {
+    const builder = new AppBuilder().state('home', s => s.message('Original'));
+    expect(() => builder.state('home', s => s.message('Replacement'))).toThrow('State name collision');
+  });
+
+  test('form() rejects a generated name that collides with a state', () => {
+    const builder = new AppBuilder().state('signup_first', s => s.message('Original'));
+    expect(() => builder.form('signup', f => f.field('first', b => b.prompt('Name'))))
+      .toThrow('State name collision');
+    expect(builder._states.get('signup_first')._message).toBe('Original');
+  });
+
   test('start() should set initial state', () => {
     const builder = new AppBuilder();
     builder.state('a', s => s.message('A').end());
@@ -75,6 +87,13 @@ describe('AppBuilder', () => {
     const builder = new AppBuilder();
     builder.maxInputLength(200);
     expect(builder._maxInputLength).toBe(200);
+  });
+
+  test('strictValidation() rejects saved input without a validator', () => {
+    expect(() => new AppBuilder()
+      .state('collect', s => s.message('Enter value').save('value'))
+      .strictValidation()
+      .build()).toThrow('has no validator');
   });
 
   test('build() should return a USSDStateMachine instance', () => {

@@ -107,6 +107,37 @@ describe('USSDStateMachine', () => {
     expect(response).toBe('CON Name too short\nPlease try again.');
   });
 
+  test('should serialize requests to an existing session', async () => {
+    const storage = new InMemoryStorage();
+    await storage.setState('shared', 'COUNTER', 300);
+    await storage.setData('shared', { count: 0 }, 300);
+    const machine = new USSDStateMachine({
+      initialState: 'COUNTER',
+      storage,
+      states: {
+        COUNTER: {
+          handler: async (input, sessionId, context) => {
+            const count = context.sessionData.count + 1;
+            await new Promise(resolve => setTimeout(resolve, 10));
+            return { response: `CON ${count}`, data: { count } };
+          }
+        }
+      }
+    });
+
+    expect(await Promise.all([
+      machine.processInput('shared', '1'),
+      machine.processInput('shared', '2')
+    ])).toEqual(['CON 1', 'CON 2']);
+    expect(await machine.getSessionData('shared')).toEqual({ count: 2 });
+  });
+
+  test('does not persist an undefined terminal next state', async () => {
+    await ussdStateMachine.processInput('terminal', '');
+    await ussdStateMachine.processInput('terminal', '2');
+    expect(await ussdStateMachine.getCurrentState('terminal')).toBe('MENU');
+  });
+
   test('should handle invalid menu selection', async () => {
     await ussdStateMachine.processInput('session1', '');
     const response = await ussdStateMachine.processInput('session1', '3');

@@ -514,6 +514,9 @@ export class AppBuilder {
    */
   maxInputLength(length: number): AppBuilder;
 
+  /** Require validators on states that save user input. */
+  strictValidation(enabled?: boolean): AppBuilder;
+
   /**
    * Add logging middleware
    */

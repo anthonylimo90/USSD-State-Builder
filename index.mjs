@@ -43,6 +43,7 @@ export const ResponseBuilder = pkg.ResponseBuilder;
 export const MiddlewareManager = pkg.MiddlewareManager;
 export const createLoggingMiddleware = pkg.createLoggingMiddleware;
 export const createRateLimitMiddleware = pkg.createRateLimitMiddleware;
+export const createDistributedRateLimitMiddleware = pkg.createDistributedRateLimitMiddleware;
 export const createSessionTimeoutMiddleware = pkg.createSessionTimeoutMiddleware;
 export const createAnalyticsMiddleware = pkg.createAnalyticsMiddleware;
 export const createSanitizationMiddleware = pkg.createSanitizationMiddleware;
@@ -90,10 +91,49 @@ export const getEnabledNamespaces = pkg.getEnabledNamespaces;
 // State introspection
 export const StateInspector = pkg.StateInspector;
 
+// Resilience utilities
+export const CircuitBreaker = pkg.CircuitBreaker;
+export const createProtectedStorage = pkg.createProtectedStorage;
+export const RetryStrategy = pkg.RetryStrategy;
+export const createRetryStorage = pkg.createRetryStorage;
+
+// Distributed locking
+export const DistributedLock = pkg.DistributedLock;
+export const createDistributedLockManager = pkg.createDistributedLockManager;
+
+// Session encryption
+export const SessionEncryption = pkg.SessionEncryption;
+export const createEncryptedStorage = pkg.createEncryptedStorage;
+
+// Metrics exporters
+export const PrometheusExporter = pkg.PrometheusExporter;
+export const OpenTelemetryCollector = pkg.OpenTelemetryCollector;
+export const createExportableMetrics = pkg.createExportableMetrics;
+
+// Sliding window rate limiting
+export const SlidingWindowRateLimit = pkg.SlidingWindowRateLimit;
+export const createSlidingWindowRateLimit = pkg.createSlidingWindowRateLimit;
+
+// Flow diagram generator
+export const FlowDiagram = pkg.FlowDiagram;
+
+// USSD Simulator
+export const USSDSimulator = pkg.USSDSimulator;
+
+// Webhook support
+export const WebhookManager = pkg.WebhookManager;
+
+// Plugin system
+export const PluginManager = pkg.PluginManager;
+export const createPlugin = pkg.createPlugin;
+
 // SDK (fluent builder API)
 export const createApp = pkg.createApp;
 export const AppBuilder = pkg.AppBuilder;
+export const StateBuilder = pkg.StateBuilder;
 export const RouteBuilder = pkg.RouteBuilder;
+export const DynamicMenu = pkg.DynamicMenu;
+export const DynamicMenuBuilder = pkg.DynamicMenuBuilder;
 
 // Default export
 export default pkg;
