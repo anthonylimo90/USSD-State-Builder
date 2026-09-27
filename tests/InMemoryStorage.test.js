@@ -46,6 +46,31 @@ describe('InMemoryStorage', () => {
     jest.useRealTimers();
   });
 
+  test('expires sessions on reads and does not revive stale data or history', async () => {
+    jest.useFakeTimers();
+    try {
+      await storage.setState('expired', 'OLD', 1);
+      await storage.setData('expired', { old: true }, 1);
+      await storage.pushStateHistory('expired', 'PREVIOUS');
+      jest.advanceTimersByTime(1000);
+
+      expect(await storage.getState('expired')).toBeNull();
+      expect(await storage.getData('expired')).toBeNull();
+      expect(await storage.getSession('expired')).toBeNull();
+      expect(await storage.getStateHistory('expired')).toEqual([]);
+      expect(await storage.popStateHistory('expired')).toBeUndefined();
+      expect((await storage.getStateBatch(['expired'])).get('expired')).toBeNull();
+      expect((await storage.getDataBatch(['expired'])).get('expired')).toBeNull();
+      expect(storage.size()).toBe(0);
+
+      await storage.setData('expired', { fresh: true }, 10);
+      expect(await storage.getData('expired')).toEqual({ fresh: true });
+      expect(await storage.getStateHistory('expired')).toEqual([]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   describe('Batch operations', () => {
     test('should get states for multiple sessions', async () => {
       await storage.setState('s1', 'STATE_A', 300);

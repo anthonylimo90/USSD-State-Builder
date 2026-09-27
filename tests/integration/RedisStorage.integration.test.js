@@ -8,6 +8,7 @@
  */
 
 const RedisStorage = require('../../lib/RedisStorage');
+const { WebhookManager } = require('../../lib/WebhookManager');
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
@@ -130,6 +131,23 @@ describeIntegration('RedisStorage Integration', () => {
         for (let i = 0; i < 10; i++) {
             const state = await storage.getState(`concurrent-${i}`);
             expect(state).toBe(`STATE_${i}`);
+        }
+    });
+
+    test('claims a webhook once across manager instances', async () => {
+        const first = new WebhookManager({ storage, keyPrefix: 'webhook:' });
+        const second = new WebhookManager({ storage, keyPrefix: 'webhook:' });
+        try {
+            const registration = await first.register('shared-session');
+            const results = await Promise.all([
+                first.receive(registration.webhookId, { source: 'first' }, registration.secret),
+                second.receive(registration.webhookId, { source: 'second' }, registration.secret)
+            ]);
+            expect(results.filter(result => result.success)).toHaveLength(1);
+            expect((await storage.getData(`webhook:${registration.webhookId}`)).status).toBe('received');
+        } finally {
+            first.destroy();
+            second.destroy();
         }
     });
 

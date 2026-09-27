@@ -138,6 +138,27 @@ describe('USSDStateMachine', () => {
     expect(await ussdStateMachine.getCurrentState('terminal')).toBe('MENU');
   });
 
+  test('rejects an invalid response before changing state, history, data, or lifecycle', async () => {
+    const storage = new InMemoryStorage();
+    await storage.setState('invalid', 'START', 300);
+    await storage.setData('invalid', { original: true }, 300);
+    const onExit = jest.fn();
+    const machine = new USSDStateMachine({
+      initialState: 'START', storage,
+      states: {
+        START: { handler: () => ({ response: 'invalid', nextState: 'NEXT', data: { changed: true } }) },
+        NEXT: { handler: () => ({ response: 'END done' }) }
+      },
+      hooks: { onStateExit: onExit }
+    });
+
+    await expect(machine.processInput('invalid', '1')).rejects.toThrow();
+    expect(await storage.getState('invalid')).toBe('START');
+    expect(await storage.getData('invalid')).toEqual({ original: true });
+    expect(await storage.getStateHistory('invalid')).toEqual([]);
+    expect(onExit).not.toHaveBeenCalled();
+  });
+
   test('should handle invalid menu selection', async () => {
     await ussdStateMachine.processInput('session1', '');
     const response = await ussdStateMachine.processInput('session1', '3');

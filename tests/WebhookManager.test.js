@@ -1,4 +1,5 @@
 const { WebhookManager } = require('../lib/WebhookManager');
+const InMemoryStorage = require('../lib/InMemoryStorage');
 
 describe('WebhookManager', () => {
     let manager;
@@ -53,6 +54,56 @@ describe('WebhookManager', () => {
         const second = await manager.receive(reg.webhookId, { second: true }, reg.secret);
         expect(second.success).toBe(false);
         expect(second.error).toContain('already');
+    });
+
+    test('claims a stored webhook once when callbacks race', async () => {
+        const records = new Map();
+        const storage = {
+            getData: async key => {
+                await new Promise(resolve => setTimeout(resolve, 5));
+                const value = records.get(key);
+                return value && { ...value };
+            },
+            setData: async (key, data) => {
+                await new Promise(resolve => setTimeout(resolve, 5));
+                records.set(key, { ...data });
+            }
+        };
+        const onReceive = jest.fn();
+        const mgr = new WebhookManager({ storage, onReceive });
+        try {
+            const reg = await mgr.register('shared');
+            const results = await Promise.all([
+                mgr.receive(reg.webhookId, { first: true }, reg.secret),
+                mgr.receive(reg.webhookId, { second: true }, reg.secret)
+            ]);
+            expect(results.filter(result => result.success)).toHaveLength(1);
+            expect(onReceive).toHaveBeenCalledTimes(1);
+            expect(await mgr.cancel(reg.webhookId)).toBe(false);
+            await mgr._handleTimeout(reg.webhookId);
+            expect((await mgr.getStatus(reg.webhookId)).status).toBe('received');
+        } finally {
+            mgr.destroy();
+        }
+    });
+
+    test('only one manager can receive or cancel a shared webhook', async () => {
+        const storage = new InMemoryStorage();
+        const first = new WebhookManager({ storage });
+        const second = new WebhookManager({ storage });
+        try {
+            const reg = await first.register('shared');
+            const [received, cancelled] = await Promise.all([
+                first.receive(reg.webhookId, {}, reg.secret),
+                second.cancel(reg.webhookId)
+            ]);
+            expect(Number(received.success) + Number(cancelled)).toBe(1);
+            const status = (await first.getStatus(reg.webhookId)).status;
+            expect(status).toBe(received.success ? 'received' : 'cancelled');
+        } finally {
+            first.destroy();
+            second.destroy();
+        }
     });
 
     test('should cancel a webhook', async () => {

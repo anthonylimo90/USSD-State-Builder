@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.7.0] - 2026-09-23
+## [2.7.0] - 2026-09-27
 
 ### Added
 - **Distributed Locking** - Redis-based distributed session locks for multi-instance deployments
@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **StateInspector** - Enhanced `validate()` with dead-end state detection and missing validator warnings
 - **StateInspector** - New `toMermaid()` method delegating to FlowDiagram
 - **Validation fixes** - Encrypted data writes preserve prior fields, webhook callbacks require their secret, and session processing is serialized across requests
+- **Release fixes** - Validate responses before persisting transitions, expire in-memory sessions on access, decrypt batch reads, and claim webhook callbacks atomically across built-in storage adapters
+- **Packaging** - Repair optional dependency lock entries and correct the quick-start imports and HTTP example
 
 ### Statistics
 - **New Library Files:** 8 (DistributedLock, SessionEncryption, MetricsExporter, SlidingWindowRateLimit, FlowDiagram, USSDSimulator, WebhookManager, PluginManager)

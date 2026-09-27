@@ -57,12 +57,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anthonylimo/ussd-state-machine.git"
+    "url": "git+https://github.com/anthonylimo90/USSD-State-Builder.git"
   },
   "bugs": {
-    "url": "https://github.com/anthonylimo/ussd-state-machine/issues"
+    "url": "https://github.com/anthonylimo90/USSD-State-Builder/issues"
   },
-  "homepage": "https://github.com/anthonylimo/ussd-state-machine#readme",
+  "homepage": "https://github.com/anthonylimo90/USSD-State-Builder#readme",
   "engines": {
     "node": ">=14.0.0"
   },

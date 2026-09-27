@@ -146,4 +146,20 @@ describe('createEncryptedStorage', () => {
         const state = await encryptedStorage.getState('s4');
         expect(state).toBe('WELCOME');
     });
+
+    test('decrypts batch data and encrypted batch states', async () => {
+        const encrypted = createEncryptedStorage(storage, {
+            encryptionKey: 'test-secret-key-for-unit-tests-32!',
+            encryptState: true
+        });
+        await encrypted.setState('first', 'WELCOME', 300);
+        await encrypted.setData('first', { pin: '1234' }, 300);
+
+        expect((await storage.getStateBatch(['first'])).get('first')).not.toBe('WELCOME');
+        expect((await storage.getDataBatch(['first'])).get('first')).toHaveProperty('_encrypted');
+        expect(await encrypted.getStateBatch(['first', 'missing']))
+            .toEqual(new Map([['first', 'WELCOME'], ['missing', null]]));
+        expect(await encrypted.getDataBatch(['first', 'missing']))
+            .toEqual(new Map([['first', { pin: '1234' }], ['missing', null]]));
+    });
 });

@@ -13,8 +13,10 @@ npm install ussd-state-builder
 
 ## Quick Start
 
+The HTTP example uses Express; install it with `npm install express` if you run the complete snippet.
+
 ```javascript
-const { createApp, Validators } = require('ussd-state-builder/sdk');
+const { createApp, Validators } = require('ussd-state-builder');
 
 const app = createApp()
   .state('welcome', s => s
@@ -50,12 +52,16 @@ const app = createApp()
   .start('welcome')
   .build();
 
-// Express.js integration
-app.post('/ussd', async (req, res) => {
+// Express.js integration (install express separately)
+const express = require('express');
+const server = express();
+server.use(express.json());
+server.post('/ussd', async (req, res) => {
   const { sessionId, text } = req.body;
   const response = await app.processInput(sessionId, text);
   res.send(response);
 });
+server.listen(3000);
 ```
 
 **That's it.** No manual `CON`/`END` prefixes, no boilerplate state configuration objects. Just clean, declarative code.
@@ -395,6 +401,9 @@ class MyStorage extends StorageInterface {
   // Optional: getStateHistory, pushStateHistory, popStateHistory
   // Optional: getStateBatch, getDataBatch, deleteSessionBatch
   // Optional: withTransaction, cleanup, close
+  // For atomic webhook claims across workers, implement
+  // setDataIfStatus(sessionId, expectedStatus, data, timeout) -> boolean
+  // or withSessionLock(sessionId, fn).
 }
 ```
 
@@ -406,7 +415,7 @@ class MyStorage extends StorageInterface {
 
 ```javascript
 const express = require('express');
-const { createApp, Validators } = require('ussd-state-builder/sdk');
+const { createApp, Validators } = require('ussd-state-builder');
 
 const ussd = createApp()
   .state('welcome', s => s.message('Welcome!\n1. Continue').on('1').goto('next'))
