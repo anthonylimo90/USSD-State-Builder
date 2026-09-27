@@ -4,11 +4,11 @@ Prepared on 27 September 2026 from Phase 1 work after v2.7.0. This file records 
 
 ## Functional gates
 
-- Unit suite: 912 passed, 20 skipped with open-handle detection.
+- Unit suite: 914 passed, 20 skipped with open-handle detection after P1-08.
 - Redis/HTTP integration: 15 passed, including Mavuno order, restart, lookup, cancellation, validation, back navigation, and a final-stock race.
 - Packed consumer: CommonJS and ESM root/SDK imports, declaration parity, NodeNext and bundler TypeScript compilation passed.
 - Packed Mavuno: installed the `3.0.0-rc.1` tarball into a temporary consumer with its Redis dependency; placed an order over HTTP, replayed the terminal response, looked up and cancelled the order in a new session, and observed stock restoration. The test used an isolated Redis prefix and removed its keys.
-- Lint and strict declaration checks passed. [Hosted CI for candidate commit `4d1d59c`](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36338651164) passed Node 22/24/26 tests, package/types/lint, Redis/HTTP, the packed Mavuno gate, and four-adapter conformance. The npm publish job was skipped.
+- Lint and strict declaration checks passed. [Hosted CI for optimized candidate commit `220fb87`](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36340339892) passed Node 22/24/26 tests, package/types/lint, Redis/HTTP, the packed Mavuno gate, and four-adapter conformance. The npm publish job was skipped.
 
 ## Performance comparison
 
@@ -39,4 +39,4 @@ The remaining in-memory throughput and RSS difference is partly the cost of reta
 
 ## Publication boundary
 
-The first candidate passed hosted CI; the optimized candidate must pass the final hosted gates before release review. Before tagging or publishing, agree an application-specific performance budget and test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
+The optimized candidate passed hosted CI. Before tagging or publishing, agree an application-specific performance budget and test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
