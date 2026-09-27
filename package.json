@@ -24,6 +24,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --forceExit",
     "test:integration": "RUN_INTEGRATION=1 jest tests/integration --forceExit",
+    "demo:live-market": "node examples/live-market/server.js",
     "benchmark": "node benchmarks/benchmark.js"
   },
   "keywords": [

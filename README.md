@@ -5,6 +5,17 @@
 
 A modern, fluent SDK for building USSD applications in Node.js. Write declarative, readable code with automatic `CON`/`END` handling, built-in validation, and production-ready features like Redis storage, circuit breakers, and i18n support.
 
+## Featured demo: Mavuno Co-op
+
+[Mavuno Co-op](examples/live-market/README.md) is a runnable, multi-step USSD ordering app. Use its browser keypad to browse a catalog, build a cart, choose pickup, place an order, then find and cancel it from a new session. The HTTP server uses this library's state machine and Redis storage. Redis also holds demo inventory and orders, with atomic checkout when two sessions compete for the same stock.
+
+```bash
+docker run --rm -d --name ussd-live-redis -p 127.0.0.1:16379:6379 redis:7-alpine
+REDIS_URL=redis://localhost:16379 npm run demo:live-market
+```
+
+Open [http://localhost:3100](http://localhost:3100). This is a local simulation with no payment or fulfillment. The [demo guide](examples/live-market/README.md) includes the HTTP request format and Redis integration test.
+
 ## Installation
 
 ```bash

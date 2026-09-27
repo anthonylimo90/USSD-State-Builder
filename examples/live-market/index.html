@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mavuno Co-op · USSD live test</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #17261e; background: #edf2e8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    main { width: min(900px, 100%); display: grid; grid-template-columns: minmax(300px, 1fr) minmax(240px, .8fr); gap: 28px; }
+    h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    p { line-height: 1.5; }
+    .muted { color: #596b5e; }
+    .phone { background: #14241b; color: #ecf5e8; border-radius: 28px; padding: 22px; box-shadow: 0 20px 60px #253d2633; }
+    .screen { min-height: 250px; background: #cfe2bd; color: #162417; border-radius: 10px; padding: 18px; white-space: pre-wrap; font: 18px/1.45 ui-monospace, monospace; }
+    label { display: block; font-weight: 650; margin: 14px 0 6px; }
+    input { width: 100%; padding: 12px; font: inherit; border: 1px solid #8ca68c; border-radius: 8px; }
+    .phone input { background: #f7fbf4; }
+    button { cursor: pointer; border: 0; border-radius: 8px; padding: 12px 16px; font: inherit; font-weight: 650; }
+    button.primary { background: #b9df70; color: #17261e; }
+    button.secondary { background: #324c38; color: white; }
+    .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .keypad button { background: #324c38; color: white; }
+    .panel { background: white; border-radius: 20px; padding: 24px; }
+    .stock { padding: 8px 0; border-bottom: 1px solid #e3ebdf; }
+    .stock:last-child { border: 0; }
+    code { overflow-wrap: anywhere; }
+    @media (max-width: 720px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>Mavuno Co-op</h1>
+      <p class="muted">A live test of the USSD engine. Build a demo order, check it from a new session, then cancel it. Stock and sessions are stored in Redis.</p>
+      <div class="phone">
+        <div class="screen" id="screen" aria-live="polite">Dial to start.</div>
+        <label for="phone">Demo phone number</label>
+        <input id="phone" value="0712345678" inputmode="tel" autocomplete="tel">
+        <label for="input">Reply</label>
+        <input id="input" inputmode="numeric" autocomplete="off" placeholder="Enter a menu choice">
+        <div class="actions">
+          <button class="primary" id="send">Dial</button>
+          <button class="secondary" id="new">New session</button>
+        </div>
+        <div class="keypad" aria-label="USSD keypad">
+          <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+          <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+          <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+          <button data-key="0">0 Back</button><button data-key="">Clear</button><button data-key="*">*</button>
+        </div>
+      </div>
+    </section>
+    <aside class="panel">
+      <h2>Live inventory</h2>
+      <div id="catalog">Loading…</div>
+      <p class="muted">This is a simulation. No payment, delivery, or real inventory is involved.</p>
+      <p class="muted">New sessions use the same phone number to look up orders. Session ID: <code id="session"></code></p>
+    </aside>
+  </main>
+  <script>
+    let sessionId = crypto.randomUUID();
+    let started = false;
+    let ended = false;
+    const screen = document.getElementById('screen');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+    const session = document.getElementById('session');
+    session.textContent = sessionId;
+
+    async function refreshCatalog() {
+      const catalog = await (await fetch('/catalog')).json();
+      document.getElementById('catalog').replaceChildren(...Object.values(catalog).flat().map(item => {
+        const row = document.createElement('div');
+        row.className = 'stock';
+        row.textContent = `${item.name} · KES ${item.price} · ${item.available} left`;
+        return row;
+      }));
+    }
+
+    async function submit() {
+      if (ended) return;
+      const value = started ? input.value.trim() : '';
+      send.disabled = true;
+      try {
+        const response = await fetch('/ussd', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, phoneNumber: document.getElementById('phone').value, input: value })
+        });
+        const text = await response.text();
+        screen.textContent = response.ok ? text : JSON.parse(text).error;
+        if (response.ok) {
+          started = true;
+          ended = text.startsWith('END ');
+          send.textContent = ended ? 'Session ended' : 'Send';
+          await refreshCatalog();
+        }
+      } catch (error) {
+        screen.textContent = `Connection error: ${error.message}`;
+      } finally {
+        input.value = '';
+        send.disabled = ended;
+        input.focus();
+      }
+    }
+
+    send.addEventListener('click', submit);
+    input.addEventListener('keydown', event => { if (event.key === 'Enter') submit(); });
+    document.getElementById('new').addEventListener('click', () => {
+      sessionId = crypto.randomUUID();
+      session.textContent = sessionId;
+      started = false;
+      ended = false;
+      screen.textContent = 'Dial to start.';
+      send.textContent = 'Dial';
+      send.disabled = false;
+      input.value = '';
+      input.focus();
+    });
+    document.querySelectorAll('[data-key]').forEach(key => key.addEventListener('click', () => {
+      input.value = key.dataset.key;
+      input.focus();
+    }));
+    refreshCatalog().catch(() => { document.getElementById('catalog').textContent = 'Inventory unavailable.'; });
+  </script>
+</body>
+</html>

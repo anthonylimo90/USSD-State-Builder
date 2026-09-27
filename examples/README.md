@@ -61,6 +61,14 @@ Shows the rich validation library:
 node examples/with-validation.js
 ```
 
+### 5. Live market (`live-market/`)
+
+A multi-step co-op ordering demo with an HTTP keypad, Redis-backed sessions and inventory, order lookup and cancellation, and atomic checkout. See the [run guide](live-market/README.md).
+
+```bash
+REDIS_URL=redis://localhost:16379 npm run demo:live-market
+```
+
 ## Running Examples
 
 All examples can be run directly with Node.js:
