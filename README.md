@@ -7,7 +7,7 @@ A modern, fluent SDK for building USSD applications in Node.js. Write declarativ
 
 ## Featured demo: Mavuno Co-op
 
-[Mavuno Co-op](examples/live-market/README.md) is a runnable, multi-step USSD ordering app. Use its browser keypad to browse a catalog, build a cart, choose pickup, place an order, then find and cancel it from a new session. The HTTP server uses this library's state machine and Redis storage. Redis also holds demo inventory and orders, with atomic checkout when two sessions compete for the same stock.
+[Mavuno Co-op](examples/live-market/README.md) is a runnable, multi-step USSD ordering app built with the SDK's fluent `createApp().state(...).build()` API. Use its browser keypad to browse a catalog, build a cart, choose pickup, place an order, then find and cancel it from a new session. The HTTP server uses Redis storage for sessions. Redis also holds demo inventory and orders, with atomic checkout when two sessions compete for the same stock.
 
 ```bash
 docker run --rm -d --name ussd-live-redis -p 127.0.0.1:16379:6379 redis:7-alpine

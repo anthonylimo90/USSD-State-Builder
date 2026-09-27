@@ -103,6 +103,10 @@ describeLive('Mavuno Co-op over HTTP and Redis', () => {
   });
 
   test('keeps the state on invalid quantity and supports back navigation', async () => {
+    expect(await dial('help-session')).toContain('Mavuno Co-op');
+    expect(await dial('help-session', '9')).toContain('Invalid choice');
+    expect(await dial('help-session', '4')).toBe('END Demo orders only. No real purchases are made.');
+
     const session = 'validation-session';
     await dial(session);
     await dial(session, '1');

@@ -1,6 +1,6 @@
 # Mavuno Co-op live USSD test
 
-This is a simulated ordering service. It uses the library's `USSDStateMachine` and `RedisStorage` through a real HTTP server. Redis also holds demo inventory and orders. No payment or fulfillment occurs.
+This is a simulated ordering service. Its [app definition](app.js) uses the SDK's fluent `createApp().state(...).build()` API with `.on(...).goto(...)` routes, `.validate(...)`, and `.run(...)` handlers. The HTTP server uses `RedisStorage` for sessions; Redis also holds demo inventory and orders. No payment or fulfillment occurs.
 
 ## Run it
 

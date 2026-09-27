@@ -1,4 +1,4 @@
-const { USSDStateMachine, Validators } = require('../../index');
+const { createApp, Validators } = require('../../index');
 const { CATALOG, PRODUCTS } = require('./catalog');
 
 const MAIN_MENU = 'CON Mavuno Co-op (demo)\n1 Shop\n2 Cart\n3 My orders\n4 Help';
@@ -19,28 +19,16 @@ function cartResponse(cart) {
 }
 
 function createMarketApp({ storage, market }) {
-  const states = {
-    MENU: {
-      handler: async (input, sessionId, context) => {
-        const data = context.sessionData || {};
-        if (!input) return { response: MAIN_MENU };
-        if (input === '1') return { response: CATEGORY_MENU, nextState: 'CATEGORY' };
-        if (input === '2') return { response: cartResponse(data.cart), nextState: 'CART' };
-        if (input === '3') {
-          const orders = await market.listOrders(data.phone);
-          const list = orders.map(order => `${order.id} ${order.status}`).join('\n');
-          return {
-            response: `CON ${list || 'No orders yet'}\nEnter an order number\n0 Back`,
-            nextState: 'ORDER_CODE'
-          };
-        }
-        if (input === '4') return { response: 'END Demo orders only. No real purchases are made.' };
-        return { response: `CON Invalid choice\n${MAIN_MENU.slice(4)}` };
-      }
-    },
+  return createApp()
+    .state('MENU', s => s
+      .message(MAIN_MENU.slice(4))
+      .run(input => input ? `Invalid choice\n${MAIN_MENU.slice(4)}` : undefined)
+      .on('1').goto('CATEGORY')
+      .on('2').goto('CART')
+      .on('3').goto('ORDER_CODE')
+      .on('4').end('Demo orders only. No real purchases are made.'))
 
-    CATEGORY: {
-      handler: async input => {
+    .state('CATEGORY', s => s.run(async input => {
         if (!input) return { response: CATEGORY_MENU };
         const category = { '1': 'seeds', '2': 'soil', '3': 'tools' }[input];
         if (!category) return { response: `CON Invalid choice\n${CATEGORY_MENU.slice(4)}` };
@@ -53,11 +41,9 @@ function createMarketApp({ storage, market }) {
           nextState: 'ITEM',
           data: { category }
         };
-      }
-    },
+      }))
 
-    ITEM: {
-      handler: async (input, sessionId, context) => {
+    .state('ITEM', s => s.run(async (input, sessionId, context) => {
         const products = CATALOG[context.sessionData?.category] || [];
         const lines = await Promise.all(products.map(async (product, index) =>
           `${index + 1} ${product.name} KES ${product.price} (${await market.getStock(product.sku)} left)`
@@ -75,15 +61,14 @@ function createMarketApp({ storage, market }) {
           nextState: 'QUANTITY',
           data: { selectedSku: product.sku }
         };
-      }
-    },
+      }))
 
-    QUANTITY: {
-      validator: async input => {
+    .state('QUANTITY', s => s
+      .validate(async input => {
         await Validators.required('Enter a quantity from 1 to 9')(input);
         await Validators.pattern({ pattern: /^[1-9]$/, message: 'Enter a quantity from 1 to 9' })(input);
-      },
-      handler: async (input, sessionId, context) => {
+      })
+      .run(async (input, sessionId, context) => {
         const data = context.sessionData || {};
         const product = PRODUCTS[data.selectedSku];
         if (!input) return { response: `CON ${product.name}\nQuantity (1-9)?\n0 Back` };
@@ -101,21 +86,17 @@ function createMarketApp({ storage, market }) {
           nextState: 'CART_ACTION',
           data: { cart }
         };
-      }
-    },
+      }))
 
-    CART_ACTION: {
-      handler: async (input, sessionId, context) => {
+    .state('CART_ACTION', s => s.run(async (input, sessionId, context) => {
         if (!input) return { response: 'CON 1 Add item\n2 View cart\n3 Checkout\n0 Back' };
         if (input === '1') return { response: CATEGORY_MENU, nextState: 'CATEGORY' };
         if (input === '2') return { response: cartResponse(context.sessionData?.cart), nextState: 'CART' };
         if (input === '3') return { response: PICKUP_MENU, nextState: 'PICKUP' };
         return { response: 'CON Invalid choice\n1 Add item\n2 View cart\n3 Checkout\n0 Back' };
-      }
-    },
+      }))
 
-    CART: {
-      handler: async (input, sessionId, context) => {
+    .state('CART', s => s.run(async (input, sessionId, context) => {
         const cart = context.sessionData?.cart || {};
         if (!input) return { response: cartResponse(cart) };
         if (input === '1') return { response: CATEGORY_MENU, nextState: 'CATEGORY' };
@@ -125,11 +106,9 @@ function createMarketApp({ storage, market }) {
         }
         if (input === '3') return { response: MAIN_MENU, nextState: 'MENU', data: { cart: {} } };
         return { response: `CON Invalid choice\n${cartResponse(cart).slice(4)}` };
-      }
-    },
+      }))
 
-    PICKUP: {
-      handler: async (input, sessionId, context) => {
+    .state('PICKUP', s => s.run(async (input, sessionId, context) => {
         if (!input) return { response: PICKUP_MENU };
         const pickup = { '1': 'Today 16:00-18:00', '2': 'Tomorrow 09:00-11:00' }[input];
         if (!pickup) return { response: `CON Invalid choice\n${PICKUP_MENU.slice(4)}` };
@@ -138,11 +117,9 @@ function createMarketApp({ storage, market }) {
           nextState: 'CONFIRM',
           data: { pickup }
         };
-      }
-    },
+      }))
 
-    CONFIRM: {
-      handler: async (input, sessionId, context) => {
+    .state('CONFIRM', s => s.run(async (input, sessionId, context) => {
         const data = context.sessionData || {};
         if (!input) return {
           response: `CON Total KES ${cartTotal(data.cart)}\n${data.pickup}\n1 Place order\n2 Cancel\n0 Back`
@@ -160,12 +137,14 @@ function createMarketApp({ storage, market }) {
           return { response: `END Order ${result.id} was cancelled. Start a new session to order again.` };
         }
         return { response: `END Order ${result.id} placed. KES ${result.total}. Pickup: ${data.pickup}. Demo only.` };
-      }
-    },
+      }))
 
-    ORDER_CODE: {
-      handler: async (input, sessionId, context) => {
-        if (!input) return { response: 'CON Enter an order number, e.g. M00001\n0 Back' };
+    .state('ORDER_CODE', s => s.run(async (input, sessionId, context) => {
+        if (!input) {
+          const orders = await market.listOrders(context.sessionData?.phone);
+          const list = orders.map(order => `${order.id} ${order.status}`).join('\n');
+          return { response: `CON ${list || 'No orders yet'}\nEnter an order number\n0 Back` };
+        }
         const id = /^M?\d{1,5}$/i.test(input) ? `M${input.replace(/^M/i, '').padStart(5, '0')}` : null;
         const order = id && await market.getOrder(id, context.sessionData?.phone);
         if (!order) return { response: 'CON Order not found\nEnter another number\n0 Back' };
@@ -174,11 +153,9 @@ function createMarketApp({ storage, market }) {
           nextState: 'ORDER_DETAIL',
           data: { viewOrderId: id }
         };
-      }
-    },
+      }))
 
-    ORDER_DETAIL: {
-      handler: async (input, sessionId, context) => {
+    .state('ORDER_DETAIL', s => s.run(async (input, sessionId, context) => {
         const data = context.sessionData || {};
         const order = await market.getOrder(data.viewOrderId, data.phone);
         if (!order) return { response: 'END Order not found' };
@@ -189,14 +166,13 @@ function createMarketApp({ storage, market }) {
         if (input !== '1') return { response: 'CON Invalid choice\n1 Cancel order\n2 Done\n0 Back' };
         const result = await market.cancelOrder(order.id, data.phone);
         return { response: `END ${result === 'cancelled' ? `Order ${order.id} cancelled.` : 'Order could not be cancelled.'}` };
-      }
-    }
-  };
-
-  return new USSDStateMachine({
-    initialState: 'MENU', states, storage, timeout: 300,
-    enableBackNavigation: true, logger: null
-  });
+      }))
+    .start('MENU')
+    .storage(storage)
+    .timeout(300)
+    .backNavigation(true)
+    .logger(null)
+    .build();
 }
 
 module.exports = { createMarketApp, cartTotal };
