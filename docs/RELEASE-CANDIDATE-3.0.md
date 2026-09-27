@@ -12,7 +12,7 @@ Prepared on 27 September 2026 from Phase 1 work after v2.7.0. This file records 
 
 ## Performance comparison
 
-The unchanged `benchmarks/benchmark.js` was run four times per version, alternating order, on this macOS host with Node 24.18.0. The baseline was the local `v2.7.0` tag and the candidate was this checkout. These are in-memory microbenchmarks, not Redis or provider latency measurements. Representative ranges:
+The unchanged `benchmarks/benchmark.js` was run four times per version, alternating order, on this macOS host with Node 24.18.0. The baseline was the local `v2.7.0` tag and the candidate was the first P1-07 commit (`4d1d59c`). These are in-memory microbenchmarks, not Redis or provider latency measurements. Representative ranges before P1-08:
 
 | Scenario | v2.7.0 ops/sec | 3.0.0-rc.1 ops/sec |
 | --- | ---: | ---: |
@@ -21,8 +21,22 @@ The unchanged `benchmarks/benchmark.js` was run four times per version, alternat
 | Back navigation | 121k–122k | 80k–83k |
 | 100 concurrent sessions | 4.3k–4.4k | 1.7k–2.1k |
 
-End-of-process RSS was 106–107 MB for v2.7.0 and 138–155 MB for the candidate. Heap-used readings varied substantially with garbage-collection timing, so RSS is only a directional signal. The runtime now persists static initial sessions and terminal responses and performs additional lifecycle work; these measurements do not isolate the exact cause of the change. No acceptable regression budget was agreed before this comparison. Treat the performance difference as an open release decision and measure a representative Redis/gateway workload before making a throughput or memory claim.
+End-of-process RSS was 106–107 MB for v2.7.0 and 138–155 MB for the first candidate. Heap-used readings varied substantially with garbage-collection timing, so RSS is only a directional signal.
+
+P1-08 reproduced the regression with a three-run red/green comparison and a smaller static-turn probe. Targeted ablation showed that empty lifecycle dispatch, unnecessary session reads, and no-op middleware calls contributed avoidable async work. The engine now skips those paths when no hook is registered, skips turn timing when there is no observer, and relies on the terminal-response write to refresh TTL for an existing completed session. Hooks added after earlier turns and storage changes made by `beforeProcess` remain visible; focused tests cover those cases.
+
+After the optimization, seven alternating runs of the unchanged in-memory benchmark gave these median values on the same Node 24.18.0 host:
+
+| Scenario | v2.7.0 | First candidate | Optimized candidate |
+| --- | ---: | ---: | ---: |
+| Simple two-state flow, ops/sec | 264k | 172k | 322k |
+| 100 concurrent sessions, batches/sec | 4.48k | 2.07k | 3.68k |
+| End-of-process RSS | 107 MB | 141 MB | 126 MB |
+
+An isolated Redis probe ran 100 batches of ten concurrent sessions per version, each with an initial and terminal turn, using separate prefixes that were removed afterward. Across five alternating runs, median throughput was 11.3k turns/sec for v2.7.0, 7.2k for the first candidate, and 10.2k for the optimized candidate. The baseline had one cold run at 7.1k; these short local measurements are directional and are not a provider or production capacity claim.
+
+The remaining in-memory throughput and RSS difference is partly the cost of retaining static initial sessions and terminal responses, which v2.7.0 did not do reliably. No acceptable regression budget was agreed before this comparison. A representative gateway workload and application-specific latency budget remain a rollout decision; do not make a general throughput or memory promise from these microbenchmarks.
 
 ## Publication boundary
 
-The candidate passed hosted CI and is ready for application compatibility review. Before tagging or publishing, decide whether the observed performance cost is acceptable or needs optimization; repeat the candidate gates at the final commit; test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
+The first candidate passed hosted CI; the optimized candidate must pass the final hosted gates before release review. Before tagging or publishing, agree an application-specific performance budget and test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.

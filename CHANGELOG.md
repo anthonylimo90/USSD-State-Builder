@@ -15,6 +15,7 @@ Release candidate only; npm publication and a Git tag are separate release actio
 - Initial state entry, transitions, back navigation, and completion now fire configured lifecycle notifications. Post-commit notification failures are reported without rejecting an already committed response, including with `hookErrorStrategy: 'throw'`.
 - Completed sessions replay their terminal response until the session TTL expires. Static initial screens, same-state replies, and validation retries refresh inactivity TTL.
 - Whole-turn metrics cover SDK and traditional flows, validation errors, blocked turns, back navigation, and replay. Prometheus histogram buckets now count cumulative observations correctly.
+- Skip empty lifecycle and middleware dispatch, redundant reads, and unused turn timing on unobserved turns; avoid a duplicate state write when an existing session completes. Session persistence and replay semantics are unchanged.
 - Storage adapters consistently reject expired sessions on read and avoid reviving expired state/history. These changes do not make a complete turn atomic.
 
 ### Added

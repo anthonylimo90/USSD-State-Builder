@@ -108,6 +108,7 @@ Outcome: the advertised SDK features behave consistently when combined.
 | P1-05 | Adapter conformance and lease audit | Run a shared suite against InMemory, Redis, MongoDB, and PostgreSQL: expiry on read, TTL refresh, merge semantics, history, deletion, and restart behavior. Test encryption/locking composition and two independent workers. Document unsupported atomic capabilities. | P1-01 |
 | P1-06 | Package and CI gates | Test packed CJS/ESM root and SDK imports; compile TypeScript consumers using NodeNext and bundler resolution; verify declaration/export parity. Use reproducible installs, maintained Node release lines, actual linting, and resource cleanup checks without relying on forced exit. | None |
 | P1-07 | Documentation and compatibility release | Update README, production/security guides, examples, changelog, and support matrix. Replace unsupported blanket production claims with verified configurations. Run Mavuno against the packed release candidate. | P1-02 through P1-06 |
+| P1-08 | Release-candidate performance follow-up | Reproduce the v2.7-to-candidate regression on the same benchmark and Node version; remove avoidable runtime work without weakening lifecycle, replay, or TTL behavior; compare in-memory and Redis workloads; rerun release gates and document residual cost. | P1-07 |
 
 Phase exit gate:
 

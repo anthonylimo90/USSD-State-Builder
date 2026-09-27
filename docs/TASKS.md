@@ -13,6 +13,7 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 - [x] **P1-05** — Storage conformance and lease audit.
 - [x] **P1-06** — Package and CI gates.
 - [x] **P1-07** — Documentation and compatibility release candidate.
+- [~] **P1-08** — Release-candidate performance follow-up.
 
 ## Phase 2: gateway
 

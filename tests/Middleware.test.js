@@ -90,6 +90,12 @@ describe('MiddlewareManager', () => {
 
         expect(manager.count('beforeProcess')).toBe(0);
         expect(manager.count('afterProcess')).toBe(1);
+        expect(manager.count()).toBe(1);
+
+        manager.use('onSessionStart', () => { });
+        expect(manager.count()).toBe(2);
+        manager.clear();
+        expect(manager.count()).toBe(0);
     });
 });
 

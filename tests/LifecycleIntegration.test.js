@@ -1,6 +1,32 @@
 const { createApp, USSDStateMachine, ValidationError } = require('..');
 
 describe('runtime lifecycle contract', () => {
+  test('honors middleware registered after an earlier turn and reads its storage changes', async () => {
+    const events = [];
+    const app = createApp()
+      .state('home', s => s.run((input, sessionId, context) =>
+        context.sessionData?.message || 'Home'))
+      .logger(null)
+      .build();
+
+    expect(await app.processInput('before-hooks', '')).toBe('CON Home');
+    app.use('beforeProcess', async (context, next) => {
+      await app.storage.setData(context.sessionId, { message: 'Updated' }, 300);
+      await next();
+    });
+    app.use('afterProcess', async (context, next) => {
+      events.push(context.response);
+      await next();
+    });
+    app.use('onSessionStart', async (context, next) => {
+      events.push(`start:${context.sessionId}`);
+      await next();
+    });
+
+    expect(await app.processInput('after-hooks', '')).toBe('CON Updated');
+    expect(events).toEqual(['CON Updated', 'start:after-hooks']);
+  });
+
   test('creates a session for a static initial response and reports ordered events', async () => {
     const events = [];
     const app = createApp()
@@ -98,6 +124,19 @@ describe('runtime lifecycle contract', () => {
     expect(events).toEqual(['completed']);
     await app.endSession('completed');
     expect(events).toEqual(['completed']);
+  });
+
+  test('terminal input on an active session preserves its state and replay response', async () => {
+    const app = createApp()
+      .state('home', state => state.message('Home').on('1').end('Done'))
+      .logger(null)
+      .build();
+
+    expect(await app.processInput('active-end', '')).toBe('CON Home');
+    expect(await app.processInput('active-end', '1')).toBe('END Done');
+    expect(await app.getCurrentState('active-end')).toBe('home');
+    expect(await app.processInput('active-end', '1')).toBe('END Done');
+    expect(await app.isSessionActive('active-end')).toBe(false);
   });
 
   test('a failed post-commit notification does not replay the handler or suppress later notifications', async () => {
