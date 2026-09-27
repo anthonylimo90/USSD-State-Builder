@@ -110,7 +110,7 @@ console.log(result.checks.storage);
 
 ### Sessions Expire Too Quickly
 
-Default timeout is 300 seconds. Adjust via `timeout` in the constructor. For Redis, TTL is set on every `setState` call.
+Default timeout is 300 seconds. Adjust via `timeout` in the constructor. Successful same-state replies and validation retries refresh inactivity TTL. Redis refreshes the key TTL on both `setState` and `setData` writes.
 
 ### Back Navigation Not Working
 

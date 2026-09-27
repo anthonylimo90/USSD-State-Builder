@@ -1,10 +1,10 @@
 # Production Deployment Guide
 
-This guide covers best practices for deploying USSD State Machine applications in production environments.
+This guide covers deployment considerations for USSD State Builder. The [support matrix](SUPPORT-MATRIX.md) separates verified configurations from planned gateway and durability work.
 
 ## Storage Adapter Selection
 
-Use `RedisStorage` for production. In-memory storage loses data on restart and does not work across multiple instances.
+Use a persistent adapter such as `RedisStorage` when sessions must survive process restarts or be shared across instances. In-memory storage loses data on restart. Persistent storage alone does not serialize concurrent turns or commit a complete turn atomically; review the [lease and atomicity limits](STORAGE-CONFORMANCE.md).
 
 ```javascript
 const { USSDStateMachine, RedisStorage } = require('ussd-state-builder');
@@ -30,7 +30,7 @@ const stateMachine = new USSDStateMachine({
 
 ## Session Timeout Configuration
 
-Set `timeout` based on your USSD gateway. Most telcos drop sessions after 2-3 minutes of inactivity. A 180-second timeout is a safe default.
+Set `timeout` from your provider's actual session policy and your application needs. The following 180-second value is an example, not a universal provider limit.
 
 ```javascript
 const stateMachine = new USSDStateMachine({
@@ -48,7 +48,7 @@ stateMachine.use('afterProcess', createSessionTimeoutMiddleware({
 
 ## Graceful Shutdown
 
-Always register shutdown handlers to drain in-flight requests and close storage connections cleanly.
+Register shutdown handlers to stop new requests and close storage connections. Confirm request draining behavior in your HTTP server; this helper alone does not guarantee it.
 
 ```javascript
 const { GracefulShutdown } = require('ussd-state-builder');
@@ -144,10 +144,10 @@ const stateMachine = new USSDStateMachine({
 
 ## Scaling Considerations
 
-1. **Stateless application instances** -- All session state lives in Redis, so you can run many instances behind a load balancer without sticky sessions.
+1. **Shared sessions** -- Redis makes session state visible to multiple instances. Concurrent turns for one session still require coordination; a healthy Redis lease serializes cooperative workers but does not fence a worker that resumes after losing the lease.
 2. **Key prefix isolation** -- Use distinct `keyPrefix` values per environment (`ussd:staging:`, `ussd:prod:`) to share a Redis cluster safely.
 3. **Rate limiting** -- Use `createDistributedRateLimitMiddleware` with a shared Redis client so limits apply across all instances.
-4. **Connection pooling** -- Pass a pre-connected Redis client via `config.client` to share a single connection pool across storage and rate limiting.
+4. **Redis clients** -- Pass a pre-connected client via `config.client` when sharing it with other Redis-backed helpers. Size and monitor connections for your deployment; this option is not itself a connection pool.
 5. **History cap** -- Set `maxHistorySize` (default 20) to prevent unbounded memory growth in long-lived sessions.
 
 ```javascript
@@ -161,3 +161,5 @@ const limiter = createDistributedRateLimitMiddleware({
 });
 stateMachine.use('beforeProcess', limiter.middleware);
 ```
+
+Redis-backed rate limiting currently fails open when Redis is unavailable. Choose an application-level failure policy appropriate to your abuse risk. Business effects such as payment or order creation need their own idempotency key and reconciliation process; the engine's terminal response replay is bounded by the session TTL and is not a provider-aware receipt. See the [migration guide](MIGRATING-TO-3.md) for the changed runtime behavior.

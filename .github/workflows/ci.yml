@@ -129,6 +129,11 @@ jobs:
           REDIS_URL: redis://localhost:6379
         run: npm run test:integration -- --runInBand --detectOpenHandles
 
+      - name: Run Mavuno from the packed package
+        env:
+          REDIS_URL: redis://localhost:6379
+        run: npm run test:packed-demo
+
       - name: Run four-adapter conformance
         env:
           RUN_INTEGRATION: '1'
@@ -180,8 +185,18 @@ jobs:
       - name: Run tests
         run: npm test -- --runInBand --detectOpenHandles
 
+      - name: Verify release tag and package version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: node -e "const version = require('./package.json').version; if (process.env.RELEASE_TAG !== 'v' + version) { throw new Error('Release tag must match package version v' + version); }"
+
       - name: Publish to npm
-        run: npm publish
+        run: |
+          if node -e "process.exit(require('./package.json').version.includes('-') ? 0 : 1)"; then
+            npm publish --tag next
+          else
+            npm publish
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

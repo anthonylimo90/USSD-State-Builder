@@ -1,4 +1,4 @@
-const { createApp, Validators } = require('../../index');
+const { createApp, Validators } = require('ussd-state-builder');
 const { CATALOG, PRODUCTS } = require('./catalog');
 
 const MAIN_MENU = 'CON Mavuno Co-op (demo)\n1 Shop\n2 Cart\n3 My orders\n4 Help';

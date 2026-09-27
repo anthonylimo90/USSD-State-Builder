@@ -5,10 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0-rc.1] - 2026-09-27
+
+Release candidate only; npm publication and a Git tag are separate release actions. See the [migration guide](docs/MIGRATING-TO-3.md) and [support matrix](docs/SUPPORT-MATRIX.md).
+
+### Changed
+- Require Node.js 22 or newer for the maintained package matrix.
+- Dynamic-menu selections use the displayed item snapshot, reject ambiguous key conflicts, and honor an explicit visible `0` control before back navigation.
+- Initial state entry, transitions, back navigation, and completion now fire configured lifecycle notifications. Post-commit notification failures are reported without rejecting an already committed response, including with `hookErrorStrategy: 'throw'`.
+- Completed sessions replay their terminal response until the session TTL expires. Static initial screens, same-state replies, and validation retries refresh inactivity TTL.
+- Whole-turn metrics cover SDK and traditional flows, validation errors, blocked turns, back navigation, and replay. Prometheus histogram buckets now count cumulative observations correctly.
+- Storage adapters consistently reject expired sessions on read and avoid reviving expired state/history. These changes do not make a complete turn atomic.
 
 ### Added
-- **Mavuno Co-op featured demo** - Runnable HTTP and Redis USSD app with a browser keypad, multi-step ordering, order lookup and cancellation, atomic stock claims, and an end-to-end Redis CI suite
+- **Mavuno Co-op featured demo** - Runnable HTTP and Redis USSD app with a browser keypad, multi-step ordering, order lookup and cancellation, atomic stock claims, and an end-to-end Redis CI suite.
+- Four-adapter conformance checks, Redis/HTTP integration checks, packed CommonJS/ESM and TypeScript consumer checks, and Node 22/24/26 CI gates.
+- Documentation of lease-loss, transaction, gateway, and external-effect limits, plus a compatibility and rollback guide.
+
+### Known limits
+- No provider-aware request identity, atomic turn receipt, stale-lease fencing, or guaranteed exactly-once business effects. Those remain in Phase 2.
 
 ## [2.7.0] - 2026-09-27
 

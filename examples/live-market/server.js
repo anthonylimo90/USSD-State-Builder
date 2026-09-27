@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { RedisStorage } = require('../../index');
+const { RedisStorage } = require('ussd-state-builder');
 const { CATALOG } = require('./catalog');
 const { MarketStore } = require('./marketStore');
 const { createMarketApp } = require('./app');

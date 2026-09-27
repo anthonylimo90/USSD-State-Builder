@@ -16,7 +16,7 @@ stateMachine.use('beforeProcess', createSanitizationMiddleware({
 }));
 ```
 
-The original input is preserved in `context.originalInput` for audit logging.
+The original input is preserved in `context.originalInput`. Treat it as sensitive and redact it from logs and traces unless a specific retention need is approved.
 
 The state machine also enforces `maxInputLength` (default 160) at the framework level, throwing a `ValidationError` before the handler runs if exceeded.
 
@@ -39,7 +39,7 @@ process.on('SIGTERM', () => rateLimiter.cleanup());
 
 ### Distributed (Multi-Instance)
 
-Use Redis-backed rate limiting so limits apply across all instances. Uses a sliding window algorithm. Fails open if Redis is unavailable.
+Use Redis-backed rate limiting when limits must apply across instances. It uses a sliding window and currently fails open if Redis is unavailable; monitor that condition and decide whether your gateway should reject requests instead.
 
 ```javascript
 const { createDistributedRateLimitMiddleware } = require('ussd-state-builder');
@@ -86,10 +86,9 @@ When a validator throws `ValidationError`, the framework returns `CON {message}\
 
 USSD is text-only, so browser XSS does not apply directly. However, if input is later displayed in web dashboards:
 
-1. Enable `removeSpecialChars` in the sanitization middleware.
-2. Use `Validators.alphanumeric()` or `Validators.pattern()` for free-text fields.
-3. Always use parameterized database queries -- never interpolate USSD input into SQL.
-4. Apply server-side escaping when rendering USSD data in HTML.
+1. Validate input for the field's expected format; sanitize only where it preserves legitimate values.
+2. Use parameterized database queries; never interpolate USSD input into SQL.
+3. Apply output encoding for the target context when rendering USSD data in HTML.
 
 ## Session Security
 
@@ -131,7 +130,7 @@ const { createLoggingMiddleware } = require('ussd-state-builder');
 
 stateMachine.use('beforeProcess', createLoggingMiddleware({
   logger: auditLogger.info.bind(auditLogger),
-  logInput: true,
+  logInput: false,
   logResponse: false,    // avoid logging sensitive response content
   logTiming: true
 }));
@@ -146,3 +145,5 @@ stateMachine.use('beforeProcess', createLoggingMiddleware({
 - [ ] Sensitive data never stored in session
 - [ ] Database queries use parameterized statements
 - [ ] Structured logging with sensitive fields redacted
+- [ ] Verify gateway authentication and the provider's session identity before trusting a callback
+- [ ] Give external business effects their own idempotency and reconciliation path

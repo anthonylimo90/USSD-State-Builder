@@ -32,4 +32,12 @@ RUN_INTEGRATION=1 REDIS_URL=redis://localhost:16379 \
 
 The integration test uses a private Redis key prefix and deletes its keys afterward. It places a two-product order over HTTP, restarts the app, retrieves and cancels the order, tests input validation and back navigation, and races two orders for the final unit of stock.
 
+For the release candidate, verify the installed tarball rather than the checkout source:
+
+```bash
+REDIS_URL=redis://localhost:16379 npm run test:packed-demo
+```
+
+This packs the checkout, installs it into a temporary consumer, starts Mavuno from that installed package, and checks order placement, terminal replay, lookup, cancellation, and restored stock. It cleans its isolated Redis keys and temporary consumer afterward.
+
 Stop the demo with `Ctrl-C`, then stop Redis with `docker stop ussd-live-redis`.

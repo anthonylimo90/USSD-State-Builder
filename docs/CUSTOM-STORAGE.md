@@ -19,7 +19,7 @@ Optional (have default implementations):
   deleteSession / cleanup / close  -- lifecycle
   isConnected()                    -- health checks
   getStateBatch / getDataBatch / deleteSessionBatch    -- bulk operations
-  withTransaction(fn)              -- atomic operations
+  withTransaction(fn)              -- optional, adapter-specific semantics
 ```
 
 ## Step-by-Step: SQLite Adapter
@@ -141,13 +141,9 @@ async deleteSessionBatch(sessionIds) {
   return result.changes;
 }
 
-async withTransaction(fn) {
-  await this._ensureConnected();
-  return this.db.transaction(() => fn(this))();
-}
 ```
 
-For Redis, see `RedisStorage.withTransaction()` which uses `MULTI/EXEC`.
+Do not wrap an asynchronous `fn(this)` in `better-sqlite3`'s synchronous `transaction()` helper: it would commit before awaited work finishes. `withTransaction()` is not a portable atomic-turn API. The current Redis implementation queues a limited write proxy with `MULTI/EXEC` and replaces data rather than merging it; the MongoDB and PostgreSQL helpers do not route every adapter operation through their transaction handle. See the [storage conformance audit](STORAGE-CONFORMANCE.md). A custom adapter must provide and test its own transaction semantics before relying on them for business effects.
 
 ## Testing Your Adapter
 

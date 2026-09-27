@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/ussd-state-builder.svg)](https://www.npmjs.com/package/ussd-state-builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern, fluent SDK for building USSD applications in Node.js. Write declarative, readable code with automatic `CON`/`END` handling, built-in validation, and production-ready features like Redis storage, circuit breakers, and i18n support.
+A fluent SDK for building USSD applications in Node.js, with automatic `CON`/`END` handling, validation, storage adapters, middleware, and i18n. See the [support matrix](docs/SUPPORT-MATRIX.md) and [production guide](docs/PRODUCTION.md) before deploying a multi-worker service.
 
 ## Featured demo: Mavuno Co-op
 
@@ -21,6 +21,8 @@ Open [http://localhost:3100](http://localhost:3100). This is a local simulation 
 ```bash
 npm install ussd-state-builder
 ```
+
+The Phase 1 behavior changes are prepared as `3.0.0-rc.1`. Install that candidate explicitly with `npm install ussd-state-builder@3.0.0-rc.1` only after it is published. See the [3.0 migration guide](docs/MIGRATING-TO-3.md) before upgrading an existing application; this checkout's package version does not imply an npm publication.
 
 ## Quick Start
 
@@ -353,9 +355,9 @@ const app = createApp()
   .build();
 ```
 
-### RedisStorage (Production)
+### RedisStorage (Persistent sessions)
 
-Recommended for production with automatic expiration:
+Redis supports shared, expiring sessions across application instances. It does not make a full turn atomic; see [storage conformance and lease limits](docs/STORAGE-CONFORMANCE.md).
 
 ```javascript
 const { RedisStorage } = require('ussd-state-builder');
