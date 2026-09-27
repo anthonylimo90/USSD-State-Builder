@@ -4,7 +4,7 @@ This matrix describes the checks completed on 27 September 2026. It is evidence 
 
 | Area | Verified configuration | Boundary |
 | --- | --- | --- |
-| Node.js | Previous Phase 1 CI unit suite on 22, 24, and 26; candidate packed CommonJS/ESM and TypeScript consumers on 22 and 24 | Candidate unit matrix awaits hosted CI. Node 22 is the minimum; other lines are not in the maintained matrix. |
+| Node.js | Candidate CI unit suite on 22, 24, and 26; packed CommonJS/ESM and TypeScript consumers on 22 and 24 | Node 22 is the minimum; other lines are not in the maintained matrix. |
 | Package | npm tarball installed in an isolated consumer; root and `/sdk` imports; NodeNext and bundler declarations; packed Mavuno HTTP order and cancellation | Repeat these gates for the final commit before publication. |
 | InMemory | Unit conformance | Development and tests; sessions do not survive restart or move between workers. |
 | Redis | Integration conformance, Redis/HTTP Mavuno flow, and two-client lock/encryption checks | Session persistence and TTL are verified; complete turns are not atomic. A lease without commit fencing can be lost. |

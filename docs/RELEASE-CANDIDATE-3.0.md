@@ -8,7 +8,7 @@ Prepared on 27 September 2026 from Phase 1 work after v2.7.0. This file records 
 - Redis/HTTP integration: 15 passed, including Mavuno order, restart, lookup, cancellation, validation, back navigation, and a final-stock race.
 - Packed consumer: CommonJS and ESM root/SDK imports, declaration parity, NodeNext and bundler TypeScript compilation passed.
 - Packed Mavuno: installed the `3.0.0-rc.1` tarball into a temporary consumer with its Redis dependency; placed an order over HTTP, replayed the terminal response, looked up and cancelled the order in a new session, and observed stock restoration. The test used an isolated Redis prefix and removed its keys.
-- Lint and strict declaration checks passed. The candidate's hosted Node 22/24/26 and four-adapter CI result is to be recorded after pushing this commit.
+- Lint and strict declaration checks passed. [Hosted CI for candidate commit `4d1d59c`](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36338651164) passed Node 22/24/26 tests, package/types/lint, Redis/HTTP, the packed Mavuno gate, and four-adapter conformance. The npm publish job was skipped.
 
 ## Performance comparison
 
@@ -25,4 +25,4 @@ End-of-process RSS was 106–107 MB for v2.7.0 and 138–155 MB for the candidat
 
 ## Publication boundary
 
-The candidate is ready for hosted CI and application compatibility review. Before tagging or publishing, decide whether the observed performance cost is acceptable or needs optimization; repeat the candidate gates at the final commit; test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
+The candidate passed hosted CI and is ready for application compatibility review. Before tagging or publishing, decide whether the observed performance cost is acceptable or needs optimization; repeat the candidate gates at the final commit; test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
