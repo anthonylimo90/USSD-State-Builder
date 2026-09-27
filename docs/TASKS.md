@@ -1,0 +1,51 @@
+# Delivery task list
+
+This is the execution checklist for the [implementation plan](ROADMAP.md). Complete each item against its acceptance criteria and phase gate in that plan. Mark an item complete only after checking its evidence. The IDs here are local to this repository.
+
+Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
+
+## Phase 1: reliability
+
+- [x] **P1-01** — Characterization and runtime contract.
+- [x] **P1-02** — SDK transition and dynamic-menu fixes.
+- [x] **P1-03** — Lifecycle integration.
+- [x] **P1-04** — Metrics correctness.
+- [x] **P1-05** — Storage conformance and lease audit.
+- [x] **P1-06** — Package and CI gates.
+- [ ] **P1-07** — Documentation and compatibility release.
+
+## Phase 2: gateway
+
+- [ ] **P2-01** — Provider contract and fixtures.
+- [ ] **P2-02** — Flow metadata and session version.
+- [ ] **P2-03** — Provider adapter.
+- [ ] **P2-04** — Atomic turn receipts and replay.
+- [ ] **P2-05** — Deadlines and effect recovery.
+- [ ] **P2-06** — Session termination and callbacks.
+- [ ] **P2-07** — Starter and sandbox walkthrough.
+
+## Phase 3: workbench
+
+- [ ] **P3-01** — Trace and fixture schema.
+- [ ] **P3-02** — Local workbench.
+- [ ] **P3-03** — Graph and flow diagnostics.
+- [ ] **P3-04** — Replay and test export.
+- [ ] **P3-05** — Developer onboarding.
+
+## Phase 4: insight and pilots
+
+- [ ] **P4-01** — Metric definitions and aggregation.
+- [ ] **P4-02** — Exports and reference dashboard.
+- [ ] **P4-03** — Retention and observability controls.
+- [ ] **P4-04** — External pilots.
+- [ ] **P4-05** — Product decision.
+
+## Current evidence
+
+- 2026-09-27: Work started on P1-01. Baseline is `8ee06ca` and package version `2.7.0`. The earlier review recorded 888 passing unit tests and 15 passing Redis/HTTP integration tests. See the roadmap for reproduced defects R1–R5.
+- 2026-09-27: P1-01 complete. [Runtime contract](RUNTIME-CONTRACT.md) records target behavior and compatibility boundaries. The four focused probes in `tests/roadmap/reproduce-current-gaps.js` each failed against the baseline as expected: R1 wrong displayed item, R2 absent lifecycle events, R3 refresh/back conflict, R4 invalid histogram buckets. P1-02 is next.
+- 2026-09-27: P1-02 complete. R1 and R3 probes pass. SDK menu regressions cover route and `.next()` entry, changing data, a back re-render, consecutive menus, exact numeric selection, saved data visible to route targets, control precedence, and key conflicts. Full unit suite: 897 passed, 15 skipped. Redis/HTTP integration: 15 passed. P1-03 is next.
+- 2026-09-27: P1-03 complete. R2 probe passes. New lifecycle tests cover static initial sessions, ordered enter/exit and session events, back and `afterProcess`, validation errors, terminal replay, explicit termination, blocked requests, and post-commit notification errors. Full unit suite: 903 passed, 15 skipped. Redis/HTTP integration: 15 passed. Mavuno's replay assertion now reflects stable terminal responses. This is a behavior change requiring release notes and version review. P1-04 is next.
+- 2026-09-27: P1-04 complete. R4 probe passes. Metrics now observe full turns through the SDK and traditional API, including success, validation failure, thrown error, middleware block, back navigation, and terminal replay. Prometheus histogram buckets match cumulative observation counts. Final full unit suite: 907 passed, 15 skipped. Redis/HTTP integration: 15 passed. P1-05 is next.
+- 2026-09-27: Browser-validated the Mavuno demo: place an order, find it in a new session, cancel it, and observe inventory restoration. P1-05 [storage conformance and lease audit](STORAGE-CONFORMANCE.md) passes against InMemory, Redis, MongoDB, and PostgreSQL test services (17 checks). Expired MongoDB reads are filtered immediately; MongoDB/PostgreSQL writes no longer revive expired state and history; PostgreSQL history pop returns the removed entry; Redis history pop does not recreate an absent session. Two independent Redis worker connections pass the encrypted/locked update test. Full unit suite: 912 passed, 20 skipped; Redis/HTTP integration: 15 passed. P1-06 is next.
+- 2026-09-27: P1-06 [package and CI gates](PACKAGE-CI-GATES.md) complete locally. Packed CommonJS/ESM root and SDK consumers run a real turn; value exports match declarations; NodeNext and bundler consumers compile. A clean `npm ci` loads all optional storage drivers. ESLint and strict declaration checks pass. Node 22/24 unit suites pass (912 tests) without forced exit, and Node 24 Redis/HTTP integration passes (15 tests). CI now tests Node 22/24/26, all four adapter services, package/type/lint gates, and open handles. Hosted CI/Node 26 verification awaits a push. P1-07 is next.

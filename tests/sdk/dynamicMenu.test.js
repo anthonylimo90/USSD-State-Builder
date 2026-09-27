@@ -1,6 +1,149 @@
 const { createApp, DynamicMenu, DynamicMenuBuilder } = require('../../lib/sdk');
 
 describe('DynamicMenu', () => {
+  describe('transitioned menus', () => {
+    test('selects the item actually displayed after entering through a route', async () => {
+      let fetchCount = 0;
+      const app = createApp()
+        .state('home', s => s.message('Home').on('1').goto('items'))
+        .state('items', s => s
+          .dynamicMenu(async () => [`Version ${++fetchCount}`])
+          .save('choice')
+          .next('done'))
+        .state('done', s => s.run((input, sid, ctx) => `Selected ${ctx.sessionData.choice}`).end())
+        .logger(null)
+        .build();
+
+      await app.processInput('route-snapshot', '');
+      expect(await app.processInput('route-snapshot', '1')).toContain('Version 1');
+      expect(await app.processInput('route-snapshot', '1')).toBe('END Selected Version 1');
+      expect(fetchCount).toBe(1);
+    });
+
+    test('selects the displayed item after a .next() transition', async () => {
+      let fetchCount = 0;
+      const app = createApp()
+        .state('home', s => s.message('Home').next('items'))
+        .state('items', s => s
+          .dynamicMenu(async () => [`Version ${++fetchCount}`])
+          .save('choice')
+          .next('done'))
+        .state('done', s => s.run((input, sid, ctx) => `Selected ${ctx.sessionData.choice}`).end())
+        .logger(null)
+        .build();
+
+      await app.processInput('next-snapshot', '');
+      expect(await app.processInput('next-snapshot', '1')).toContain('Version 1');
+      expect(await app.processInput('next-snapshot', '1')).toBe('END Selected Version 1');
+      expect(fetchCount).toBe(1);
+    });
+
+    test('uses the local refresh key when back navigation has history', async () => {
+      let fetchCount = 0;
+      const app = createApp()
+        .state('home', s => s.message('Home').on('1').goto('items'))
+        .state('items', s => s
+          .dynamicMenu(async () => [`Version ${++fetchCount}`], { refresh: {} })
+          .save('choice')
+          .next('done'))
+        .state('done', s => s.message('Done').end())
+        .logger(null)
+        .build();
+
+      await app.processInput('refresh-history', '');
+      expect(await app.processInput('refresh-history', '1')).toContain('0. Refresh');
+      expect(await app.processInput('refresh-history', '0')).toContain('Version 2');
+      expect(await app.getCurrentState('refresh-history')).toBe('items');
+    });
+
+    test('re-renders and persists a new snapshot when navigating back', async () => {
+      let fetchCount = 0;
+      const app = createApp()
+        .state('home', s => s.message('Home').on('1').goto('items'))
+        .state('items', s => s
+          .dynamicMenu(async () => [`Version ${++fetchCount}`])
+          .save('choice')
+          .next('review'))
+        .state('review', s => s.message('Review'))
+        .logger(null)
+        .build();
+
+      await app.processInput('back-snapshot', '');
+      expect(await app.processInput('back-snapshot', '1')).toContain('Version 1');
+      await app.processInput('back-snapshot', '1');
+      expect(await app.processInput('back-snapshot', '0')).toContain('Version 2');
+      expect(await app.processInput('back-snapshot', '1')).toContain('Review');
+      expect((await app.getSessionData('back-snapshot')).choice).toBe('Version 2');
+    });
+
+    test('does not treat a partial number as a displayed selection', async () => {
+      const app = createApp()
+        .state('items', s => s.dynamicMenu(async () => ['One']).save('choice').next('done'))
+        .state('done', s => s.message('Done').end())
+        .logger(null)
+        .build();
+
+      await app.processInput('strict-key', '');
+      expect(await app.processInput('strict-key', '1abc')).toBe('CON 1. One');
+      expect(await app.getCurrentState('strict-key')).toBe('items');
+    });
+
+    test('keeps each menu snapshot with the state that displayed it', async () => {
+      const app = createApp()
+        .state('home', s => s.message('Home').on('1').goto('first'))
+        .state('first', s => s.dynamicMenu(async () => ['First item']).save('firstChoice').next('second'))
+        .state('second', s => s.dynamicMenu(async () => ['Second item']).save('secondChoice').next('done'))
+        .state('done', s => s.run((input, sid, ctx) =>
+          `${ctx.sessionData.firstChoice} / ${ctx.sessionData.secondChoice}`).end())
+        .logger(null)
+        .build();
+
+      await app.processInput('two-menus', '');
+      expect(await app.processInput('two-menus', '1')).toContain('First item');
+      expect(await app.processInput('two-menus', '1')).toContain('Second item');
+      expect(await app.processInput('two-menus', '1')).toBe('END First item / Second item');
+      const data = await app.getSessionData('two-menus');
+      expect(data._selectedItem).toBeNull();
+      expect(data._dynamicMenu).toBeNull();
+    });
+
+    test('a route target sees data saved by the source state', async () => {
+      const app = createApp()
+        .state('home', s => s.message('Home').save('choice').on('1').goto('result'))
+        .state('result', s => s.run((input, sid, ctx) => `Saved ${ctx.sessionData.choice}`).end())
+        .logger(null)
+        .build();
+
+      await app.processInput('route-data', '');
+      expect(await app.processInput('route-data', '1')).toBe('END Saved 1');
+    });
+
+    test('explicit route 0 takes precedence over global back navigation', async () => {
+      const app = createApp()
+        .state('home', s => s.message('Home').on('1').goto('menu'))
+        .state('menu', s => s.message('0. Help').on('0').reply('Help'))
+        .logger(null)
+        .build();
+
+      await app.processInput('local-zero', '');
+      await app.processInput('local-zero', '1');
+      expect(await app.processInput('local-zero', '0')).toBe('CON Help');
+      expect(await app.getCurrentState('local-zero')).toBe('menu');
+    });
+
+    test('rejects conflicting menu control keys and duplicate routes', () => {
+      expect(() => DynamicMenu.from(async () => ['One'])
+        .paginated({ pageSize: 2, moreKey: '1' }).build())
+        .toThrow('conflicts with an item selection');
+      expect(() => DynamicMenu.from(async () => ['One'])
+        .paginated({ pageSize: 2, moreKey: '0' }).build())
+        .toThrow('conflicts with back navigation');
+      expect(() => createApp()
+        .state('menu', s => s.message('Menu').on('1').reply('A').on('1').reply('B'))
+        .build()).toThrow('same input route more than once');
+    });
+  });
+
   describe('DynamicMenuBuilder', () => {
     test('throws error if no fetcher is set', () => {
       const builder = new DynamicMenuBuilder();

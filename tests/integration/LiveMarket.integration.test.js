@@ -93,7 +93,9 @@ describeLive('Mavuno Co-op over HTTP and Redis', () => {
     expect(await dial(lookup, '1')).toBe('END Order M00001 cancelled.');
     expect(await app.market.getStock('MAIZE')).toBe(8);
     expect(await app.market.getStock('FERT')).toBe(5);
-    expect(await dial(session, '1')).toBe('END Order M00001 was cancelled. Start a new session to order again.');
+    // A completed handset session replays its terminal response. A later
+    // business change is visible through a new lookup session instead.
+    expect(await dial(session, '1')).toBe(confirmation);
     expect(await app.market.getStock('MAIZE')).toBe(8);
 
     const stranger = 'stranger-session';

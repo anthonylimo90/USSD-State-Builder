@@ -111,14 +111,16 @@ Track request volume, error rates, and response times in real time.
 const { createMetricsMiddleware } = require('ussd-state-builder');
 
 const metrics = createMetricsMiddleware({ bufferSize: 5000 });
-stateMachine.use('beforeProcess', metrics.middleware);
+stateMachine.useTurnObserver(metrics.observeTurn);
 
 // Expose metrics for Prometheus scraping or internal dashboards
 app.get('/metrics', (req, res) => {
   res.json(metrics.getMetrics());
-  // { totalRequests, totalErrors, errorRate, requestsByState, averageResponseTime }
+  // { totalRequests, totalErrors, errorRate, requestsByState, outcomes, averageResponseTime }
 });
 ```
+
+`useTurnObserver()` measures the entire `processInput()` call, including handlers, back navigation, validation failures, blocked requests, and replay. `totalErrors` includes validation failures and thrown errors. Observer failures are logged without changing the USSD response. For the fluent SDK, `.metrics()` installs this observer automatically.
 
 ## Logging Best Practices
 

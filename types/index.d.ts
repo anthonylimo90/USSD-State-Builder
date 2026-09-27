@@ -48,6 +48,10 @@ export interface StateContext {
     previousState?: string;
     /** Language preference */
     language?: string;
+    /** State currently being handled or rendered */
+    currentState?: string;
+    /** True when a state is rendered again after back navigation */
+    isReentry?: boolean;
 }
 
 /**
@@ -103,7 +107,7 @@ export interface StorageAdapter {
     /** Pop state from history */
     popStateHistory?(sessionId: string): Promise<string | undefined>;
     /** Clean up expired sessions */
-    cleanup?(): void | Promise<void>;
+    cleanup?(): void | Promise<void | number>;
     /** Close storage connection */
     close?(): Promise<void>;
 }
@@ -193,6 +197,9 @@ export class USSDStateMachine {
      * @returns USSD response string
      */
     processInput(sessionId: string, input: string, options?: ProcessInputOptions): Promise<string>;
+
+    /** Observe one completed turn without changing its response. */
+    useTurnObserver(observer: (turn: TurnObservation) => void): this;
 
     /**
      * Get session data for a given session ID
@@ -548,7 +555,14 @@ export interface MetricsResult {
     totalErrors: number;
     errorRate: string;
     requestsByState: Record<string, number>;
+    outcomes: Record<string, number>;
     averageResponseTime: string;
+}
+
+export interface TurnObservation {
+    currentState: string;
+    outcome: 'success' | 'validation_error' | 'error' | 'blocked' | 'replay';
+    durationMs: number;
 }
 
 /**
@@ -606,6 +620,7 @@ export function createSanitizationMiddleware(options?: SanitizationMiddlewareOpt
  */
 export function createMetricsMiddleware(options?: {}): {
     middleware: MiddlewareFunction;
+    observeTurn: (turn: TurnObservation) => void;
     getMetrics: () => MetricsResult;
     resetMetrics: () => void;
 };
@@ -1055,3 +1070,10 @@ export {
 } from './sdk';
 
 export * from './advanced';
+export * from './compat';
+
+declare const _default: {
+    USSDStateMachine: typeof USSDStateMachine;
+    createApp: typeof import('./sdk').createApp;
+};
+export default _default;

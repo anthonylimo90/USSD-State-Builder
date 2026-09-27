@@ -1,0 +1,107 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const ts = require('typescript');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const temporary = mkdtempSync(join(tmpdir(), 'ussd-package-'));
+const consumer = join(temporary, 'consumer');
+
+function run(command, args, cwd = consumer) {
+  return execFileSync(command, args, {
+    cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'],
+    env: { ...process.env, npm_config_cache: join(temporary, 'npm-cache') }
+  });
+}
+
+function declaredValues(file) {
+  const program = ts.createProgram([file], {
+    module: ts.ModuleKind.NodeNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeNext
+  });
+  const checker = program.getTypeChecker();
+  const symbol = checker.getSymbolAtLocation(program.getSourceFile(file));
+  return new Set(checker.getExportsOfModule(symbol)
+    .filter(exported => {
+      const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
+      return Boolean(target.flags & ts.SymbolFlags.Value);
+    })
+    .map(exported => exported.name));
+}
+
+try {
+  const packed = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary], root));
+  const tarball = join(temporary, packed[0].filename);
+  mkdirSync(consumer);
+  writeFileSync(join(consumer, 'package.json'), JSON.stringify({ name: 'ussd-package-consumer', private: true }));
+  run('npm', ['install', '--offline', '--ignore-scripts', '--omit=optional', '--no-audit', '--no-fund', '--no-package-lock', tarball]);
+
+  writeFileSync(join(consumer, 'consumer.cjs'), `
+const assert = require('node:assert/strict');
+const root = require('ussd-state-builder');
+const sdk = require('ussd-state-builder/sdk');
+assert.equal(typeof root.USSDStateMachine, 'function');
+assert.equal(typeof root.createApp, 'function');
+assert.equal(typeof sdk.createApp, 'function');
+(async () => {
+  const machine = sdk.createApp().state('START', state => state.message('Welcome')).build();
+  assert.equal(await machine.processInput('cjs-session', ''), 'CON Welcome');
+  console.log(JSON.stringify({ root: Object.keys(root).sort(), sdk: Object.keys(sdk).sort() }));
+})().catch(error => { console.error(error); process.exitCode = 1; });
+`);
+  writeFileSync(join(consumer, 'consumer.mjs'), `
+import assert from 'node:assert/strict';
+import root, * as rootNamed from 'ussd-state-builder';
+import sdk, * as sdkNamed from 'ussd-state-builder/sdk';
+assert.equal(rootNamed.USSDStateMachine, root.USSDStateMachine);
+assert.equal(rootNamed.createApp, root.createApp);
+assert.equal(sdkNamed.createApp, sdk.createApp);
+const machine = sdkNamed.createApp().state('START', state => state.message('Welcome')).build();
+assert.equal(await machine.processInput('esm-session', ''), 'CON Welcome');
+console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 'default').sort(), sdk: Object.keys(sdkNamed).filter(key => key !== 'default').sort() }));
+`);
+  const cjs = JSON.parse(run(process.execPath, ['consumer.cjs']));
+  const esm = JSON.parse(run(process.execPath, ['consumer.mjs']));
+  assert.deepEqual(esm, cjs, 'CJS and ESM named exports must match');
+
+  for (const entry of ['root', 'sdk']) {
+    const file = join(consumer, 'node_modules', 'ussd-state-builder', 'types', entry === 'root' ? 'index.d.ts' : 'sdk.d.ts');
+    const declared = declaredValues(file);
+    declared.delete('default');
+    assert.deepEqual([...declared].sort(), cjs[entry], `${entry} declaration values must match runtime exports`);
+  }
+
+  const consumerSource = `
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics } from 'ussd-state-builder';
+import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
+const storage = new InMemoryStorage();
+const machine: USSDStateMachine = createApp().state('START', s => s.message('Welcome')).storage(storage).build();
+const menu = DynamicMenu.create<string>().fetch(() => ['a']).format(item => item).build();
+const metrics = createExportableMetrics();
+void [rootDefault, sdkDefault, machine, menu, metrics];
+`;
+  writeFileSync(join(consumer, 'consumer.mts'), consumerSource);
+  writeFileSync(join(consumer, 'consumer.ts'), consumerSource);
+  for (const [name, module, resolution, file] of [
+    ['nodenext', 'NodeNext', 'NodeNext', 'consumer.mts'],
+    ['bundler', 'ESNext', 'Bundler', 'consumer.ts']
+  ]) {
+    writeFileSync(join(consumer, `tsconfig.${name}.json`), JSON.stringify({
+      compilerOptions: {
+        target: 'ES2022', module, moduleResolution: resolution,
+        strict: true, noEmit: true, skipLibCheck: true
+      }, files: [file]
+    }));
+    run(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '-p', `tsconfig.${name}.json`]);
+  }
+  const manifest = JSON.parse(readFileSync(join(consumer, 'node_modules/ussd-state-builder/package.json'), 'utf8'));
+  assert.equal(manifest.name, 'ussd-state-builder');
+  console.log(`Packed ${packed[0].filename}: CJS, ESM, declaration parity, NodeNext, and bundler checks passed.`);
+} finally {
+  rmSync(temporary, { recursive: true, force: true });
+}

@@ -554,5 +554,8 @@ export class AppBuilder {
  */
 export function createApp(): AppBuilder;
 
-// Re-export form builder classes
-export { FormBuilder, FieldBuilder, ConfirmStepBuilder };
+declare const _default: {
+  createApp: typeof createApp;
+  DynamicMenu: typeof DynamicMenu;
+};
+export default _default;

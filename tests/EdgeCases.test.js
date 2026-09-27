@@ -378,16 +378,19 @@ describe('Hook Error Strategies', () => {
         expect(logs.length).toBeGreaterThan(0);
     });
 
-    test('should throw hook errors when strategy is throw', async () => {
+    test('should report post-commit hook errors without failing the committed response', async () => {
+        const errors = [];
         const sm = createTestStateMachine({
             hookErrorStrategy: 'throw',
+            logger: { error: (...args) => errors.push(args) },
             hooks: {
                 onStateEnter: () => { throw new Error('hook error'); }
             }
         });
 
-        await sm.processInput('hook-throw', '');
-        await expect(sm.processInput('hook-throw', '1')).rejects.toThrow('hook error');
+        await expect(sm.processInput('hook-throw', '')).resolves.toMatch(/^CON /);
+        expect(await sm.getCurrentState('hook-throw')).toBe(sm.initialState);
+        expect(errors.length).toBeGreaterThan(0);
     });
 
     test('should call callback on hook errors when strategy is callback', async () => {

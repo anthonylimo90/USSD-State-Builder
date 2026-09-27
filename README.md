@@ -277,6 +277,8 @@ const app = createApp()
 | `onEmpty` | Message when no items | `'No items available'` |
 | `onError` | Error handler function | Default message |
 
+Menu selections use the items displayed on that page, even if the data source changes before the next input. Refresh fetches a new list. A menu control or explicit route using `0` takes precedence over global back navigation on that screen; choose another back key or omit the local `0` control when callers need to go back. Navigation controls cannot share an item selection key.
+
 ---
 
 ## Validation
@@ -760,6 +762,8 @@ const app = createApp()
 
 ## Documentation
 
+- [Project Roadmap and Implementation Plan](./docs/ROADMAP.md)
+- [Delivery Task List](./docs/TASKS.md)
 - [Production Deployment Guide](./docs/PRODUCTION.md)
 - [Security Best Practices](./docs/SECURITY.md)
 - [Performance Tuning](./docs/PERFORMANCE.md)
