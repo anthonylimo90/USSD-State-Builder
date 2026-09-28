@@ -77,6 +77,7 @@ export type StateValidator = (input: string) => Promise<void> | void;
  * Context passed to state handlers
  */
 export interface StateContext {
+    turn?: TurnContext;
     /** Current session data */
     sessionData?: Record<string, any>;
     /** Previous state (if available) */
@@ -208,6 +209,9 @@ export interface ProcessInputOptions {
 export class USSDStateMachine {
     readonly flowVersion: string | null;
     getFlowDefinition(): FlowDefinition;
+    prepareTurn(sessionId: string, input: string, options?: ProcessInputOptions & {
+        session?: TurnSessionSnapshot | null; sessionData?: Record<string, any>; turn?: TurnContext;
+    }): Promise<PreparedTurn>;
     /** State configurations */
     states: Record<string, StateConfig>;
     /** Initial state */
@@ -1184,4 +1188,90 @@ export class AfricasTalkingAdapter {
     handle(request: ProviderWireRequest, processTurn: (turn: AfricasTalkingTurn) =>
         string | { response: string; hopMetadata?: string } |
         Promise<string | { response: string; hopMetadata?: string }>): Promise<ProviderHttpResponse>;
+}
+
+export interface TurnContext {
+    /** Stable operation identity; use it with an external service's idempotency/journal API. */
+    idempotencyKey: string;
+    position: number;
+    revision: number;
+}
+export interface TurnSessionSnapshot {
+    state?: string | null;
+    data?: Record<string, any> | null;
+    stateHistory?: string[];
+    expiresAt?: number | null;
+}
+export interface PreparedTurn {
+    response: string;
+    session: TurnSessionSnapshot | null;
+    hopMetadata?: string;
+    /** Invoke only after the complete snapshot and receipt commit. */
+    notify?(): Promise<void>;
+}
+export interface PendingTurn extends TurnContext {
+    token: string;
+    fingerprint: string;
+    flowVersion: string | null;
+}
+export interface TurnReceipt {
+    fingerprint: string;
+    position: number;
+    response: ProviderHttpResponse;
+}
+export interface TurnLedger {
+    schemaVersion: 1;
+    revision: number;
+    binding: ProviderSessionBinding;
+    transcript: string | null;
+    completed: boolean;
+    receipts: TurnReceipt[];
+    pending: PendingTurn | null;
+}
+export interface TurnRecord extends TurnLedger {
+    session: TurnSessionSnapshot | null;
+    now: number;
+    activeExpiresAt: number | null;
+    receiptExpiresAt: number;
+}
+export interface AtomicTurnStore {
+    storage: StorageAdapter;
+    read(key: string): Promise<TurnRecord | { orphan: true; session: TurnSessionSnapshot; now: number } | null>;
+    claim(key: string, revision: number, ledger: TurnLedger, receiptTTL: number, replaceToken?: string | null): Promise<boolean>;
+    commit(key: string, revision: number, token: string, ledger: TurnLedger, session: TurnSessionSnapshot | null,
+        receiptTTL: number, activeMs: number): Promise<boolean>;
+}
+export class InMemoryTurnStore implements AtomicTurnStore {
+    constructor(options: { storage: InMemoryStorage });
+    storage: InMemoryStorage;
+    read: AtomicTurnStore['read'];
+    claim: AtomicTurnStore['claim'];
+    commit: AtomicTurnStore['commit'];
+}
+export class RedisTurnStore implements AtomicTurnStore {
+    constructor(options: { storage: RedisStorage });
+    storage: RedisStorage;
+    read: AtomicTurnStore['read'];
+    claim: AtomicTurnStore['claim'];
+    commit: AtomicTurnStore['commit'];
+}
+export interface TurnGatewayOptions {
+    adapter: AfricasTalkingAdapter;
+    machine: USSDStateMachine;
+    store: AtomicTurnStore;
+    receiptTTL?: number;
+    maxTurns?: number;
+    maxRecordBytes?: number;
+    /** Pure initial-data mapper, with no business effects. */
+    sessionData?: (turn: AfricasTalkingTurn) => Record<string, any> | Promise<Record<string, any>>;
+    /** Reconcile a durable operation journal; never blindly repeat the handler. */
+    recoverTurn?: (context: { turn: AfricasTalkingTurn; pending: PendingTurn; session: TurnSessionSnapshot | null; revision: number }) =>
+        PreparedTurn | null | Promise<PreparedTurn | null>;
+}
+export class TurnGateway {
+    constructor(options: TurnGatewayOptions);
+    handle(request: ProviderWireRequest): Promise<ProviderHttpResponse>;
+    process(turn: AfricasTalkingTurn): Promise<ProviderHttpResponse>;
+    /** Explicit application-authorized reconciliation; normal retries never call this automatically. */
+    recover(request: ProviderWireRequest): Promise<ProviderHttpResponse>;
 }

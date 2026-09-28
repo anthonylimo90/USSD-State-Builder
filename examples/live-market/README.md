@@ -63,7 +63,7 @@ curl -s http://localhost:3100/africas-talking/ussd \
   --data-urlencode 'text='
 ```
 
-Subsequent callbacks send accumulated `text=1`, `text=1*1`, etc. The adapter passes only the newest input into the fluent app. The demo binds the service/caller and rejects repeats, gaps, conflicts and uncertain turns. Atomic receipt replay is still P2-04. This endpoint has no provider authentication or end-event reconciliation; it remains a local demonstration until those gateway requirements and stable ingress are verified. See [adapter behavior and limits](../../docs/AFRICAS-TALKING-ADAPTER.md).
+Subsequent callbacks send accumulated `text=1`, `text=1*1`, etc. The adapter passes only the newest input into the fluent app. The demo binds the service/caller, replays known receipts, and rejects gaps, conflicts and uncertain turns. Runtime state and receipts commit atomically in Redis. External order effects still require application reconciliation after an uncertain turn. This endpoint has no provider authentication or end-event reconciliation; it remains a local demonstration until those gateway requirements and stable ingress are verified. See [adapter behavior and limits](../../docs/AFRICAS-TALKING-ADAPTER.md).
 
 Run all HTTP/Redis suites, including this route, with:
 

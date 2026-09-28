@@ -54,11 +54,11 @@ describeProvider('Africa’s Talking adapter with Mavuno over HTTP and Redis', (
     expect(responses[4]).toContain('x2');
     expect(responses.at(-1)).toMatch(/^END Order M00001 placed/);
     expect(await app.market.getStock('MAIZE')).toBe(6);
-    expect((await callback('order', choices.at(-1))).status).toBe(409);
+    expect((await callback('order', choices.at(-1))).body).toBe(responses.at(-1));
     expect(await app.market.getStock('MAIZE')).toBe(6);
     await app.close();
     await start();
-    expect((await callback('order', '1')).status).toBe(409);
+    expect((await callback('order', '1')).body).toBe(responses[1]);
     await callback('lookup');
     expect((await callback('lookup', '3')).body).toContain('M00001 placed');
     expect((await callback('lookup', '3*M00001')).body).toContain('M00001: placed');
@@ -73,16 +73,17 @@ describeProvider('Africa’s Talking adapter with Mavuno over HTTP and Redis', (
     expect((await callback('bound', '1*1')).status).toBe(409);
     expect(await app.machine.getCurrentState(key('bound'))).toBe('MENU');
     expect((await callback('bound', '1')).status).toBe(200);
-    expect((await callback('bound', '')).status).toBe(409);
+    expect((await callback('bound', '')).body).toContain('Mavuno Co-op');
     expect((await callback('bound', '2')).status).toBe(409);
     expect(await app.machine.getCurrentState(key('bound'))).toBe('CATEGORY');
     expect((await callback('missing-initial', '1')).status).toBe(409);
     expect(await app.machine.getCurrentState(key('missing-initial'))).toBe(null);
   });
 
-  test('concurrent repeats are rejected; empty segments and back navigation consume distinct transcript positions', async () => {
+  test('concurrent repeats replay or await commit; empty segments and back navigation consume distinct transcript positions', async () => {
     const duplicate = await Promise.all([callback('repeat'), callback('repeat')]);
-    expect(duplicate.map(result => result.status).sort()).toEqual([200, 409]);
+    expect(duplicate.some(result => result.status === 200)).toBe(true);
+    expect((await callback('repeat')).body).toBe(duplicate.find(result => result.status === 200).body);
     await callback('navigation');
     await callback('navigation', '1');
     expect((await callback('navigation', '1*')).body).toContain('Choose a category');

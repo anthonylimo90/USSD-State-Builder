@@ -1,8 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { RedisStorage, AfricasTalkingAdapter, ProviderRequestError, createDistributedLockManager } = require('ussd-state-builder');
-const { createProviderTurnHandler } = require('./provider');
+const { RedisStorage, AfricasTalkingAdapter, ProviderRequestError } = require('ussd-state-builder');
+const { createProviderGateway } = require('./provider');
 const { CATALOG } = require('./catalog');
 const { MarketStore } = require('./marketStore');
 const { createMarketApp } = require('./app');
@@ -53,9 +53,8 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
   const market = new MarketStore(storage.client, prefix);
   await market.seed();
   const machine = createMarketApp({ storage, market });
-  const providerTurn = providerAdapter ? createProviderTurnHandler({
-    adapter: providerAdapter, machine, storage, normalizePhone,
-    lockedStorage: createDistributedLockManager(storage, { redisClient: storage.client, keyPrefix: `${prefix}provider-lock:` })
+  const providerGateway = providerAdapter ? createProviderGateway({
+    adapter: providerAdapter, machine, storage, normalizePhone
   }) : null;
 
   const server = http.createServer(async (req, res) => {
@@ -64,7 +63,7 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
         let result;
         try {
           const body = await readProviderBody(req, providerAdapter.maxBodyBytes);
-          result = await providerAdapter.handle({ method: req.method, contentType: req.headers['content-type'], body }, providerTurn);
+          result = await providerGateway.handle({ method: req.method, contentType: req.headers['content-type'], body });
         } catch (error) { result = providerAdapter.errorResponse(error); }
         res.writeHead(result.status, result.headers);
         return res.end(result.body);
@@ -116,7 +115,7 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
   });
 
   return {
-    server, storage, market, machine, providerAdapter,
+    server, storage, market, machine, providerAdapter, providerGateway,
     async close() {
       if (server.listening) await new Promise(resolve => server.close(resolve));
       await storage.close();

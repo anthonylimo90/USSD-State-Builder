@@ -86,14 +86,14 @@ try {
   const providerOrder = await providerDial('provider-order', '1*1*1*2*3*1*1');
   assert.equal(providerOrder.status, 200);
   assert.match(providerOrder.body, /^END Order M00002 placed/);
-  assert.equal((await providerDial('provider-order', '1*1*1*2*3*1*1')).status, 409);
+  assert.deepEqual(await providerDial('provider-order', '1*1*1*2*3*1*1'), providerOrder);
   assert.equal(await app.market.getStock('MAIZE'), 6);
   await providerDial('provider-lookup');
   await providerDial('provider-lookup', '3');
   await providerDial('provider-lookup', '3*M00002');
   assert.equal((await providerDial('provider-lookup', '3*M00002*1')).body, 'END Order M00002 cancelled.');
   assert.equal(await app.market.getStock('MAIZE'), 8);
-  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, replay/repeat rejection, lookup, cancellation, and stock restoration passed.`);
+  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, receipt replay, lookup, cancellation, and stock restoration passed.`);
 } finally {
   if (app) {
     try {
