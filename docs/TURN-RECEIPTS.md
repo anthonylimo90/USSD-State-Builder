@@ -40,7 +40,7 @@ Lifecycle hooks and turn observers run after a successful commit. Their failures
 
 Each handler receives `context.turn.idempotencyKey`, `position` and `revision`. Send the stable operation key to an external service that supports idempotency, or record it in an application effect journal with a trustworthy outcome. Redis atomicity alone cannot make arbitrary external effects exactly once.
 
-Pending ownership is durable and has no automatic takeover timer. A thrown handler, process crash or uncertain commit response blocks ordinary retries. If the commit succeeded despite a lost acknowledgement, the next request finds and replays its receipt. Otherwise an application/operator may explicitly invoke `gateway.recover(rawWireRequest)` with a configured `recoverTurn` resolver:
+Pending operations are durable. Ownership has a bounded commit deadline, with no automatic handler rerun or takeover. A thrown handler, process crash or uncertain commit response blocks ordinary retries. If the commit succeeded despite a lost acknowledgement, the next request finds and replays its receipt. Otherwise an application/operator may explicitly invoke `gateway.recover(rawWireRequest)` with a configured `recoverTurn` resolver:
 
 ```javascript
 recoverTurn: async ({ pending, session }) => {
@@ -54,7 +54,7 @@ recoverTurn: async ({ pending, session }) => {
 }
 ```
 
-Recovery replaces the ownership token with a compare-and-swap, consults the journal and commits the reconstructed snapshot and receipt. It never reruns the original handler. A null/failed resolver remains pending. The gateway preserves the pending flow version and marks recovered terminal responses completed. An obsolete owner cannot commit after ownership replacement. Recovery resolvers must accurately reconstruct runtime state/history/data from a confirmed outcome; they must not blindly repeat an unknown operation. P2-05 will add deadlines and a broader effect-recovery policy.
+Recovery replaces the ownership token with a compare-and-swap, consults the journal and commits the reconstructed snapshot and receipt. It never reruns the original handler. A null/failed resolver remains pending. The gateway preserves the pending flow version and marks recovered terminal responses completed. An obsolete owner cannot commit after ownership replacement. Recovery resolvers must accurately reconstruct runtime state/history/data from a confirmed outcome; they must not blindly repeat an unknown operation. See [deadlines and effect recovery](DEADLINES-AND-RECOVERY.md) for cancellation, ownership expiry and the demo journal policy.
 
 ## Validation boundary
 

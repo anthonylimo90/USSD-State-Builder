@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Gateway request deadlines and abort signals through handlers, middleware, initial-data mapping and recovery, cancellable local lock waits, ownership-loss monitoring and Redis server-time commit fencing. Mavuno journals order/cancellation effects atomically and explicitly reconciles confirmed terminal results. Its provider HTTP route includes body reads and caller disconnection in the request budget.
 - Atomic turn snapshots and exact HTTP receipt replay through `TurnGateway`, `RedisTurnStore` and `InMemoryTurnStore`. Durable pending ownership blocks uncertain retries; explicit journal recovery replaces ownership without rerunning handlers. Active-session and receipt retention are separate.
 - Framework-neutral Africa's Talking form adapter, explicit cumulative/incremental input normalization, scoped session bindings, transcript comparison and plain-text HTTP responses. Mavuno has an optional provider endpoint backed by atomic turn receipts.
 - Inspectable flow definitions shared by SDK diagrams and state inspection, including form/field metadata and declared sensitivity. SDK routes render without handler source inspection; dynamic behavior reports partial coverage.

@@ -86,11 +86,11 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
 import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
-const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.message('Welcome').save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
+const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
 const menu = DynamicMenu.create<string>().fetch(() => ['a']).format(item => item).build();
 const adapter = new AfricasTalkingAdapter({ applicationId: 'typed', serviceCode: '*384*000#' });
-const gateway = new TurnGateway({ adapter, machine, store: new InMemoryTurnStore({ storage }) });
-void gateway.handle({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' });
+const gateway = new TurnGateway({ adapter, machine, store: new InMemoryTurnStore({ storage }), deadlineMs: 1000, leaseMs: 900, ownershipCheckMs: 50 });
+void gateway.handle({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' }, { signal: new AbortController().signal, deadlineAt: Date.now() + 1000 });
 const turn = adapter.normalize({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' });
 const binding = adapter.bindSession(turn);
 const metrics = createExportableMetrics();

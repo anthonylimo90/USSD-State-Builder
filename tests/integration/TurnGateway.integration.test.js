@@ -109,7 +109,7 @@ describeLive('Atomic Redis turns across workers and restart', () => {
         const adapter = new AfricasTalkingAdapter({ applicationId: 'atomic-test', serviceCode: '*384*000#' });
         const machine = createApp().flowVersion('payment-v1').storage(storage).logger(null).state('home', s => s.run(async (input, id, ctx) => {
           await storage.client.incr(${JSON.stringify(executionKey)});
-          await fetch('http://127.0.0.1:${server.address().port}/charge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idempotencyKey: ctx.turn.idempotencyKey }) });
+          await fetch('http://127.0.0.1:${server.address().port}/charge', { method: 'POST', signal: ctx.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idempotencyKey: ctx.turn.idempotencyKey }) });
           process.exit(77);
         })).build();
         new TurnGateway({ adapter, machine, store: new RedisTurnStore({ storage }) }).handle(${JSON.stringify(wire('1'))}).then(() => process.exit(0));
@@ -155,6 +155,102 @@ describeLive('Atomic Redis turns across workers and restart', () => {
       { state: 'wrong' }, 0, 300000)).rejects.toThrow(/commit/);
     expect(await raw[1].getSession(key)).toEqual(prior);
     expect((await stores[1].read(key)).revision).toBe(1);
+  });
+
+  test('Redis server time fences a commit after its ownership deadline', async () => {
+    await gateways[0].handle(wire(''));
+    const previous = await raw[0].getSession(key);
+    const record = await stores[0].read(key);
+    const ledger = { ...record, pending: { token: 'expired-owner' } };
+    expect(await stores[0].claim(key, 1, ledger, 86400, null, 15)).toBe(true);
+    const claimed = await stores[1].read(key);
+    expect(claimed.pending.deadlineAt).toBeGreaterThan(claimed.now);
+    await new Promise(resolve => setTimeout(resolve, 25));
+    expect(await stores[0].commit(key, 1, 'expired-owner', { ...record, revision: 2, pending: null },
+      { state: 'wrong', data: { wrong: true }, stateHistory: ['wrong'] }, 86400, 300000)).toBe(false);
+    expect(await raw[1].getSession(key)).toEqual(previous);
+    expect((await stores[1].read(key)).revision).toBe(1);
+  });
+
+  test('fetch is cancelled after a durable HTTP effect; another worker reconciles its idempotent journal', async () => {
+    const http = require('http');
+    // Jest 27's VM omits Node's native fetch global. Use the host runtime client.
+    const fetch = require('vm').runInThisContext('fetch');
+    const journal = new Map();
+    let effects = 0;
+    let closed;
+    const disconnected = new Promise(resolve => { closed = resolve; });
+    const server = http.createServer(async (req, res) => {
+      const idempotencyKey = req.headers['idempotency-key'];
+      if (req.method === 'POST') {
+        if (!journal.has(idempotencyKey)) { effects++; journal.set(idempotencyKey, { response: 'END Paid', paid: true }); }
+        if (req.url === '/slow') { res.once('close', closed); return; }
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(journal.get(idempotencyKey) || null));
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    const url = `http://127.0.0.1:${server.address().port}`;
+    let calls = 0;
+    let signal;
+    const machine = createApp().flowVersion('v1').storage(raw[0]).logger(null).state('home', s => s.run(async (input, id, ctx) => {
+      if (!input) return { response: 'CON Pay' };
+      calls++;
+      signal = ctx.signal;
+      const result = await fetch(`${url}/slow`, { method: 'POST', signal: ctx.signal,
+        headers: { 'Idempotency-Key': ctx.turn.idempotencyKey } });
+      return { response: (await result.json()).response };
+    })).build();
+    const owner = new TurnGateway({ adapter, machine, store: stores[0], deadlineMs: 200 });
+    try {
+      await owner.handle(wire(''));
+      expect((await owner.handle(wire('1'))).status).toBe(503);
+      expect(signal.aborted).toBe(true);
+      await disconnected;
+      const pending = await stores[1].read(key);
+      expect(pending.revision).toBe(1);
+      expect(effects).toBe(1);
+      expect((await gateways[1].handle(wire('1'))).status).toBe(503);
+      // The external service itself deduplicates repeated delivery of its operation key.
+      await fetch(`${url}/charge`, { method: 'POST', headers: { 'Idempotency-Key': pending.pending.idempotencyKey } });
+      expect(effects).toBe(1);
+      const recovery = new TurnGateway({ adapter, machine: gateways[1].machine, store: stores[1], recoverTurn: async ({ pending, session, signal }) => {
+        const result = await (await fetch(`${url}/journal`, { signal, headers: { 'Idempotency-Key': pending.idempotencyKey } })).json();
+        return result && { response: result.response, session: { ...session, data: { ...session.data, paid: result.paid } } };
+      } });
+      expect((await recovery.recover(wire('1'))).body).toBe('END Paid');
+      expect((await recovery.handle(wire('1'))).body).toBe('END Paid');
+      expect(calls).toBe(1);
+      expect(effects).toBe(1);
+      expect(await stores[0].read(key)).toMatchObject({ revision: 2, pending: null, session: { data: { paid: true } } });
+    } finally {
+      server.closeAllConnections();
+      await new Promise(resolve => server.close(resolve));
+    }
+  }, 5000);
+
+  test('ownership expiry is anchored to Redis time even when the worker wall clock is skewed', async () => {
+    const realNow = Date.now.bind(Date);
+    const clock = jest.spyOn(Date, 'now').mockImplementation(() => realNow() + 3600000);
+    let release;
+    let started;
+    const ready = new Promise(resolve => { started = resolve; });
+    const machine = createApp().storage(raw[0]).logger(null).state('home', s => s.run(async () => {
+      started();
+      await new Promise(resolve => { release = resolve; });
+      return { response: 'CON Ready' };
+    })).build();
+    const owner = new TurnGateway({ adapter, machine, store: stores[0], deadlineMs: 1000 });
+    let work;
+    try {
+      work = owner.handle(wire(''));
+      await ready;
+      const record = await stores[1].read(key);
+      expect(record.pending.deadlineAt - record.now).toBeLessThanOrEqual(1000);
+      expect(record.pending.deadlineAt).toBeGreaterThan(record.now);
+      release();
+      expect((await work).status).toBe(200);
+    } finally { clock.mockRestore(); release?.(); await work; }
   });
 
 });

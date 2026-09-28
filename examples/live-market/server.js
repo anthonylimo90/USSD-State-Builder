@@ -28,25 +28,41 @@ async function readJson(req) {
   return JSON.parse(body || '{}');
 }
 
-function readProviderBody(req, maxBytes) {
+function readProviderBody(req, maxBytes, signal) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let bytes = 0;
-    req.on('data', chunk => {
+    const cleanup = () => {
+      req.removeListener('data', onData);
+      req.removeListener('end', onEnd);
+      req.removeListener('error', onError);
+      req.removeListener('aborted', onAborted);
+      signal.removeEventListener('abort', onAbort);
+    };
+    const fail = error => { cleanup(); req.resume(); reject(error); };
+    const onData = chunk => {
       bytes += chunk.length;
-      if (bytes > maxBytes) {
-        chunks.length = 0;
-        reject(new ProviderRequestError('BODY_TOO_LARGE', 413));
-      } else chunks.push(chunk);
-    });
-    req.once('end', () => resolve(Buffer.concat(chunks)));
-    req.once('error', reject);
-    req.once('aborted', () => reject(new ProviderRequestError('ABORTED_REQUEST')));
+      if (bytes > maxBytes) fail(new ProviderRequestError('BODY_TOO_LARGE', 413));
+      else chunks.push(chunk);
+    };
+    const onEnd = () => { cleanup(); resolve(Buffer.concat(chunks)); };
+    const onError = error => fail(error);
+    const onAborted = () => fail(new ProviderRequestError('ABORTED_REQUEST', 503));
+    const onAbort = () => fail(new ProviderRequestError('REQUEST_DEADLINE', 503));
+    req.on('data', onData);
+    req.once('end', onEnd);
+    req.once('error', onError);
+    req.once('aborted', onAborted);
+    signal.addEventListener('abort', onAbort, { once: true });
+    if (signal.aborted) onAbort();
   });
 }
 
 async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 'ussd:live-market:',
-  serviceCode, applicationId = 'mavuno-demo' } = {}) {
+  serviceCode, applicationId = 'mavuno-demo', providerDeadlineMs = 5000 } = {}) {
+  if (serviceCode && (!Number.isSafeInteger(providerDeadlineMs) || providerDeadlineMs < 1 || providerDeadlineMs > 2147483647)) {
+    throw new TypeError('Invalid provider request deadline');
+  }
   const providerAdapter = serviceCode ? new AfricasTalkingAdapter({ applicationId, serviceCode }) : null;
   const storage = new RedisStorage({ url: redisUrl, keyPrefix: `${prefix}session:` });
   await storage._ensureConnected();
@@ -54,17 +70,24 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
   await market.seed();
   const machine = createMarketApp({ storage, market });
   const providerGateway = providerAdapter ? createProviderGateway({
-    adapter: providerAdapter, machine, storage, normalizePhone
+    adapter: providerAdapter, machine, storage, normalizePhone, market, deadlineMs: providerDeadlineMs
   }) : null;
 
   const server = http.createServer(async (req, res) => {
     try {
       if (providerAdapter && req.url === '/africas-talking/ussd') {
         let result;
+        const controller = new AbortController();
+        const deadlineAt = Date.now() + providerDeadlineMs;
+        const timer = setTimeout(() => controller.abort(), providerDeadlineMs);
+        const onClose = () => { if (!res.writableFinished) controller.abort(); };
+        res.once('close', onClose);
         try {
-          const body = await readProviderBody(req, providerAdapter.maxBodyBytes);
-          result = await providerGateway.handle({ method: req.method, contentType: req.headers['content-type'], body });
+          const body = await readProviderBody(req, providerAdapter.maxBodyBytes, controller.signal);
+          result = await providerGateway.handle({ method: req.method, contentType: req.headers['content-type'], body },
+            { signal: controller.signal, deadlineAt });
         } catch (error) { result = providerAdapter.errorResponse(error); }
+        finally { clearTimeout(timer); res.removeListener('close', onClose); }
         res.writeHead(result.status, result.headers);
         return res.end(result.body);
       }
@@ -128,7 +151,8 @@ if (require.main === module) {
     redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
     prefix: process.env.MARKET_PREFIX || 'ussd:live-market:',
     serviceCode: process.env.AT_SERVICE_CODE,
-    applicationId: process.env.AT_APPLICATION_ID || 'mavuno-demo'
+    applicationId: process.env.AT_APPLICATION_ID || 'mavuno-demo',
+    providerDeadlineMs: Number(process.env.AT_DEADLINE_MS || 5000)
   }).then(app => {
     const port = Number(process.env.PORT || 3100);
     app.server.listen(port, '127.0.0.1', () => {

@@ -126,7 +126,7 @@ function createMarketApp({ storage, market }) {
         };
         if (input === '2') return { response: 'END Order cancelled. Nothing was reserved.' };
         if (input !== '1') return { response: 'CON Invalid choice\n1 Place order\n2 Cancel\n0 Back' };
-        const result = await market.placeOrder(sessionId, data.phone, data.cart, data.pickup);
+        const result = await market.placeOrder(sessionId, data.phone, data.cart, data.pickup, { signal: context.signal, idempotencyKey: context.turn?.idempotencyKey });
         if (result.status === 'out_of_stock') {
           return {
             response: `CON ${PRODUCTS[result.sku].name}: ${result.available} left. Edit cart.\n1 Add 2 Checkout 3 Clear\n0 Back`,
@@ -164,7 +164,7 @@ function createMarketApp({ storage, market }) {
         };
         if (input === '2') return { response: 'END Thank you for using Mavuno Co-op.' };
         if (input !== '1') return { response: 'CON Invalid choice\n1 Cancel order\n2 Done\n0 Back' };
-        const result = await market.cancelOrder(order.id, data.phone);
+        const result = await market.cancelOrder(order.id, data.phone, { signal: context.signal, idempotencyKey: context.turn?.idempotencyKey });
         return { response: `END ${result === 'cancelled' ? `Order ${order.id} cancelled.` : 'Order could not be cancelled.'}` };
       }))
     .start('MENU')

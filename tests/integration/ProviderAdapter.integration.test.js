@@ -127,4 +127,36 @@ describeProvider('Africa’s Talking adapter with Mavuno over HTTP and Redis', (
     expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
     expect(response.body).toMatch(/^END /);
   });
+  test('an order effect survives failed turn commit and is recovered without reserving stock again', async () => {
+    const id = 'recover-order';
+    const choices = ['', '1', '1*1', '1*1*1', '1*1*1*2', '1*1*1*2*3', '1*1*1*2*3*1'];
+    for (const text of choices) expect((await callback(id, text)).status).toBe(200);
+    const stock = await app.market.getStock('MAIZE');
+    const original = app.providerGateway.store.commit.bind(app.providerGateway.store);
+    app.providerGateway.store.commit = async () => { throw new Error('lost before runtime commit'); };
+    const last = '1*1*1*2*3*1*1';
+    try { expect((await callback(id, last)).status).toBe(500); }
+    finally { app.providerGateway.store.commit = original; }
+    expect(await app.market.getStock('MAIZE')).toBe(stock - 2);
+    expect((await callback(id, last)).status).toBe(503);
+    const request = { method: 'POST', contentType: 'application/x-www-form-urlencoded', body: new URLSearchParams(fields(id, last)).toString() };
+    const recovered = await app.providerGateway.recover(request);
+    expect(recovered.body).toMatch(/^END Order M\d+ placed/);
+    expect((await callback(id, last)).body).toBe(recovered.body);
+    expect(await app.market.getStock('MAIZE')).toBe(stock - 2);
+    const orderId = recovered.body.match(/M\d+/)[0];
+    await callback('recover-cancel');
+    await callback('recover-cancel', '3');
+    await callback('recover-cancel', `3*${orderId}`);
+    app.providerGateway.store.commit = async () => { throw new Error('lost cancellation commit'); };
+    try { expect((await callback('recover-cancel', `3*${orderId}*1`)).status).toBe(500); }
+    finally { app.providerGateway.store.commit = original; }
+    expect(await app.market.getStock('MAIZE')).toBe(stock);
+    const cancelled = await app.providerGateway.recover({ method: 'POST', contentType: 'application/x-www-form-urlencoded',
+      body: new URLSearchParams(fields('recover-cancel', `3*${orderId}*1`)).toString() });
+    expect(cancelled.body).toBe(`END Order ${orderId} cancelled.`);
+    expect((await callback('recover-cancel', `3*${orderId}*1`)).body).toBe(cancelled.body);
+    expect(await app.market.getStock('MAIZE')).toBe(stock);
+  });
+
 });

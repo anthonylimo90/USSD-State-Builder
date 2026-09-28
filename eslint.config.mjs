@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 
 const nodeGlobals = Object.fromEntries([
-  'Buffer', '__dirname', 'clearInterval', 'clearTimeout', 'console', 'exports', 'fetch',
+  'AbortController', 'AbortSignal', 'Buffer', '__dirname', 'clearInterval', 'clearTimeout', 'console', 'exports', 'fetch',
   'global', 'module', 'performance', 'process', 'queueMicrotask', 'require',
   'setImmediate', 'setInterval', 'setTimeout', 'URL', 'URLSearchParams'
 ].map(name => [name, 'readonly']));
