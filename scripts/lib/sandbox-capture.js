@@ -62,8 +62,14 @@ function createSanitizer() {
 function createCaptureServer({ record, maxCaptures = 500 }) {
   const sanitize = createSanitizer();
   let captured = 0;
-  return http.createServer(async (req, res) => {
+  const outcomes = {};
+  const server = http.createServer(async (req, res) => {
+    // Fixed route labels and numeric statuses only; never retain arbitrary
+    // paths, headers, identities, request bodies or error messages here.
+    const route = ['/ussd', '/events'].includes(req.url) ? req.url : 'other';
     const send = (status, response) => {
+      const key = `${route}:${status}`;
+      outcomes[key] = (outcomes[key] || 0) + 1;
       res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(response);
     };
@@ -103,6 +109,8 @@ function createCaptureServer({ record, maxCaptures = 500 }) {
       return error.status === 413 ? send(413, 'Request too large') : send(400, 'Invalid capture request');
     }
   });
+  server.getCaptureStats = () => ({ captured, outcomes: { ...outcomes } });
+  return server;
 }
 
 module.exports = { parseForm, createSanitizer, createCaptureServer };

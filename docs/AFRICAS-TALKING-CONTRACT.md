@@ -103,6 +103,8 @@ Local resilience fixtures may deliberately reorder, duplicate, or conflict reque
 
 ## Capture and fixture decisions still open
 
+Actual interactive callback evidence is now [retained and reconciled](../tests/fixtures/africas-talking/captured/2026-09-28-manifest.md): empty initial text, cumulative repeated choices, back-token/free-text transport, and successful CON/END display. End-event records, deliberate failures, deadline/limit checks, and provider-origin controls remain unverified; P2-01 is still open.
+
 - [ ] Capture initial request, successive selections including `1` then `1`, back navigation, free text, and terminal response. Retain method/media type, field names, sanitized shape and timing.
 - [ ] Capture `Success`, user abandonment/timeout `Incomplete`, and a deliberately failed sandbox response. Verify presence/emptiness of event fields, timestamp format, `hopsCount`, and `hopsMetadata`.
 - [ ] Compare an optional metadata response header with the following callback and eventual event. Keep the label non-sensitive.

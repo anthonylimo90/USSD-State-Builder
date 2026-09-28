@@ -1,6 +1,53 @@
 const { parseForm, createSanitizer, createCaptureServer } = require('../scripts/lib/sandbox-capture');
 const fixtures = require('./fixtures/africas-talking/requests.json');
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+
+describe('retained actual sandbox callback contracts', () => {
+  const records = fs.readFileSync(path.join(__dirname,
+    'fixtures/africas-talking/captured/2026-09-28-sandbox.jsonl'), 'utf8')
+    .trim().split('\n').map(line => JSON.parse(line));
+
+  test('observed forms survive sanitation and decoding without losing the five-field shape', () => {
+    expect(records).toHaveLength(9);
+    for (const record of records) {
+      expect(record.provenance).toBe('sandbox-capture-verified');
+      expect(record.providerAuthenticated).toBe(false);
+      expect(record.request).toMatchObject({ method: 'POST', route: '/ussd',
+        contentType: 'application/x-www-form-urlencoded' });
+      expect(Object.keys(record.request.body).sort()).toEqual(
+        ['sessionId', 'serviceCode', 'phoneNumber', 'networkCode', 'text'].sort());
+      expect({ ...parseForm(new URLSearchParams(record.request.body).toString()) })
+        .toEqual(record.request.body);
+      expect(record.unknownFieldCount).toBe(0);
+    }
+  });
+
+  test('actual repeated choices advance positions while retaining session and caller scope', () => {
+    const turns = records.slice(0, 4);
+    const bodies = turns.map(record => record.request.body);
+    expect(bodies.map(body => body.text)).toEqual(
+      ['', 'value-1', 'value-1*value-1', 'value-1*value-1*value-2']);
+    for (const key of ['sessionId', 'serviceCode', 'phoneNumber', 'networkCode']) {
+      expect(new Set(bodies.map(body => body[key])).size).toBe(1);
+    }
+    expect(turns.map(record => record.response.body.slice(0, 4))).toEqual(
+      ['CON ', 'CON ', 'CON ', 'END ']);
+    expect(records[4].request.body.sessionId).not.toBe(bodies[0].sessionId);
+    expect(records[5].request.body.sessionId).not.toBe(bodies[0].sessionId);
+    expect(records[5].request.body.text).toBe('');
+  });
+
+  test('back-token and free-text transport preserves the cumulative transcript', () => {
+    const turns = records.slice(5);
+    expect(turns.map(record => record.request.body.text)).toEqual(
+      ['', 'value-3', 'value-3*value-4', 'value-3*value-4*value-2']);
+    expect(turns.at(-1).response.body).toBe('END Sandbox probe complete.');
+    // No end-event fixture exists yet; synthetic events must not fill that gap.
+    expect(records.filter(record => record.request.route === '/events')).toEqual([]);
+  });
+});
 
 describe('Africa\'s Talking contract evidence', () => {
   test.each(fixtures.cases.filter(item => item.expected.fields))('$id decodes the provider form unchanged', fixture => {
@@ -111,5 +158,17 @@ describe('local sandbox capture probe over HTTP', () => {
     expect(await request('/ussd', '{"secret": "value"}', 'application/json')).toMatchObject({ status: 415 });
     expect(await request('/wrong', 'text=')).toMatchObject({ status: 404 });
     expect(records).toEqual([]);
+  });
+
+  test('counts rejected event traffic without retaining arbitrary paths or payloads', async () => {
+    await request('/events', '{"secret": "value"}', 'application/json');
+    await request('/events', 'status=Success');
+    await request('/private-secret-path', 'secret=private-value');
+    expect(server.getCaptureStats()).toEqual({ captured: 1,
+      outcomes: { '/events:415': 1, '/events:200': 1, 'other:404': 1 } });
+    const copy = server.getCaptureStats();
+    copy.outcomes['/events:415'] = 99;
+    expect(server.getCaptureStats().outcomes['/events:415']).toBe(1);
+    expect(JSON.stringify(server.getCaptureStats())).not.toContain('secret');
   });
 });

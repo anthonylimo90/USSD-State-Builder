@@ -18,5 +18,8 @@ server.listen(port, '127.0.0.1', () => {
   console.log(`Sanitized evidence: ${output}`);
 });
 for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.once(signal, () => server.close(() => fs.closeSync(file)));
+  process.once(signal, () => server.close(() => {
+    fs.closeSync(file);
+    console.log(`Capture totals: ${JSON.stringify(server.getCaptureStats())}`);
+  }));
 }

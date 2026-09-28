@@ -1,6 +1,6 @@
 # Africa's Talking sandbox evidence checklist
 
-Status: P2-01's local fixture and capture tooling is ready. **No actual sandbox callbacks have been captured.** This document tracks the remaining provider evidence; it does not claim a connected Mavuno deployment.
+Status: Eleven actual sandbox interactive callbacks are [retained and reconciled](../tests/fixtures/africas-talking/captured/2026-09-28-manifest.md), including repeated choices, a cancellation attempt, the back token, free text, and terminal responses. **End-event evidence remains pending**, so P2-01 is still in progress. This does not claim a connected Mavuno deployment.
 
 The [provider contract](AFRICAS-TALKING-CONTRACT.md) records verified documentation and outstanding questions. The [synthetic fixtures](../tests/fixtures/africas-talking/README.md) exercise the wire shapes without claiming provider traffic.
 
@@ -16,6 +16,8 @@ The probe binds to localhost, accepts form-encoded `POST /ussd` and `POST /event
 Use a controlled HTTPS tunnel or an existing callback host to route the two paths to this probe. Configure the callback/event URLs in the sandbox dashboard according to the [official setup guidance](https://help.africastalking.com/en/articles/9915125-how-do-i-go-live-with-ussd). Record the transport and access controls in the evidence manifest; a received POST alone does not prove its source. Do not expose the existing Mavuno JSON endpoint as an Africa's Talking adapter.
 
 The recorder accepts at most 500 records, limits each request to 16 KiB and 32 form fields, rejects duplicate decoded keys, and stores no headers, query strings, raw phone numbers, session IDs, entered values, error messages, or app response values from provider notifications. Those size limits are local tooling policy, not provider limits. It emits no raw request/error logging. Identity maps live only in process memory and are lost on restart. A restarted run cannot join aliases to an earlier run.
+
+On shutdown the recorder also prints aggregate response counts using only fixed route labels (`/ussd`, `/events`, `other`) and numeric HTTP statuses. These counters distinguish rejected requests from no requests reaching the probe without retaining arbitrary paths, headers or payloads. Save them with the observation window in the manifest when diagnosing missing notifications.
 
 Caller, service, session, and network values become stable aliases. Transcript segments become stable value aliases; repeated choices remain equal, positions and empty segments remain visible. Recognized event status values (`Success`, `Incomplete`, `Failed`) are retained; other event values are redacted. Unknown field names/values are omitted and only a count is retained. Optional headers such as hop metadata are not captured by this probe. This prevents identity disclosure but means the capture cannot replay exact app choices, measure notification durations/costs, or prove header behavior. Use a separate synthetic test for exact replay; verify duration/cost/header behavior in the sandbox console and document only sanitized observations.
 
@@ -43,12 +45,12 @@ Use a sandbox account and a provisioned simulator service code. Keep capture tra
 
 Required scenarios:
 
-- [ ] First dial: initial callback has empty `text`; fixed menu renders.
-- [ ] Choose `1` twice: callback transcript advances from `1` to `1*1`, rather than confusing the second choice with a duplicate.
-- [ ] Choose `2`: `END` is displayed and the handset/simulator session closes.
+- [x] First dial: initial callback has empty `text`; fixed menu renders.
+- [x] Choose `1` twice: callback transcript advances from `1` to `1*1`, rather than confusing the second choice with a duplicate.
+- [x] Choose `2`: `END` is displayed and the handset/simulator session closes.
 - [ ] Capture the corresponding end notification and reconcile its session alias and documented field presence with the callback records.
-- [ ] Cancel/abandon a separate session; record whether and how the provider sends an end notification.
-- [ ] Record observed ordering/timing of end events. Absence during a bounded observation window is an observation, not proof that events never occur.
+- [x] Cancel/abandon a separate session; record whether and how the provider sends an end notification. CANCEL closed the simulator; no accepted end-event record was retained. This does not prove non-delivery (rejected requests are not logged by the current probe).
+- [x] Record observed ordering/timing of end events. A separate diagnostic run counted zero requests to `/events` through 77 seconds after END. Absence during a bounded observation window is an observation, not proof that events never occur.
 - [ ] Confirm callback authentication/network controls supported by this sandbox setup. Do not claim a caller binding check authenticates the provider.
 - [ ] Exercise or obtain first-party confirmation for retries, request identity, ordering, and delivery guarantees. If the simulator cannot provoke a retry, retain the uncertainty and the synthetic replay cases.
 - [ ] Verify response limits/encoding and error/deadline behavior for the intended deployment profile. Sandbox behavior does not verify Kenyan telco limits; distinguish documentation from observations and keep live checks pending until provisioning.
