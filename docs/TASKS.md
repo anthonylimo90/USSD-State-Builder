@@ -17,7 +17,7 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 
 ## Phase 2: gateway
 
-- [ ] **P2-01** — Provider contract and fixtures.
+- [~] **P2-01** — Provider contract and fixtures. [Contract](AFRICAS-TALKING-CONTRACT.md), synthetic fixtures, and [capture tooling](AFRICAS-TALKING-SANDBOX.md) verified locally; actual sandbox callback/end-event evidence pending.
 - [ ] **P2-02** — Flow metadata and session version.
 - [ ] **P2-03** — Provider adapter.
 - [ ] **P2-04** — Atomic turn receipts and replay.
@@ -54,3 +54,4 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 - 2026-09-27: P1-08 performance follow-up complete. The [candidate evidence](RELEASE-3.0.md) records the red comparison, root cause, seven-run in-memory comparison, and five-run Redis comparison. Empty lifecycle/middleware work and redundant session reads were removed; terminal completion avoids an extra state write. Local 914-test unit suite, 15-test Redis/HTTP suite, packed consumer/demo, types, and lint passed. [Hosted CI for `220fb87`](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36340339892) passed Node 22/24/26, packed demo, and four-adapter conformance. Residual workload-specific capacity and rollback review remain release decisions; npm publication was skipped.
 
 - 2026-09-28: Stable `3.0.0` published in place of the unpublished RC. Release commit `4dddf10` passed push and release CI; npm trusted publishing succeeded with signed provenance. Public npm `latest` is `3.0.0`. Fresh registry consumers passed CJS/ESM turns, declaration parity, NodeNext/bundler compilation, and the HTTP/Redis Mavuno ordering, replay, lookup, cancellation, and stock restoration flow. See [published release verification](RELEASE-3.0.md#published-release-verification--2026-09-28).
+- 2026-09-28: P2-01 local preparation verified. Current official Africa's Talking callback/end-event documentation reviewed; [provider contract](AFRICAS-TALKING-CONTRACT.md) records field/media schemas, cumulative input, Kenyan timing/length boundaries, and unresolved authentication/retry/encoding guarantees. Eighteen synthetic wire scenarios and 23 evidence-tool tests cover form encoding, repeats/late requests, caller/service changes, event statuses, privacy sanitation, bounded capture, and HTTP responses. Full unit suite: 937 passed, 20 skipped; lint and whitespace checks passed without detected open handles. The actual capture CLI passed a synthetic localhost smoke test, including plaintext output, sanitized disk records, mode `0600`, and shutdown. No provider traffic was captured; P2-01 remains in progress pending the [sandbox evidence checklist](AFRICAS-TALKING-SANDBOX.md).

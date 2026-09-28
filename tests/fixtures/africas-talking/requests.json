@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "provenance": "synthetic",
+  "capturedFromSandbox": false,
+  "cases": [
+    {
+      "id": "initial",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text="
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": ""
+        },
+        "segments": []
+      }
+    },
+    {
+      "id": "first-choice",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1"
+        },
+        "segments": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "repeated-choice",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2A1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*1"
+        },
+        "segments": [
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "duplicate-repeated-choice",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2A1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*1"
+        },
+        "segments": [
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "later-turn",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2A1%2A2"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*1*2"
+        },
+        "segments": [
+          "1",
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "late-earlier-turn",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1"
+        },
+        "segments": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "unicode-input",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2AMkulima+wa+Kiswahili"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*Mkulima wa Kiswahili"
+        },
+        "segments": [
+          "1",
+          "Mkulima wa Kiswahili"
+        ]
+      }
+    },
+    {
+      "id": "encoded-reserved-input",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2AA%2BB+%26+C%3D10%25"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*A+B & C=10%"
+        },
+        "segments": [
+          "1",
+          "A+B & C=10%"
+        ]
+      }
+    },
+    {
+      "id": "empty-final-segment",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2A"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*"
+        },
+        "segments": [
+          "1",
+          ""
+        ]
+      }
+    },
+    {
+      "id": "new-session-same-choice",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-b&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-b",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1"
+        },
+        "segments": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "caller-conflict",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000002&networkCode=99999&serviceCode=%2A384%2A000%23&text=1%2A1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000002",
+          "networkCode": "99999",
+          "serviceCode": "*384*000#",
+          "text": "1*1"
+        },
+        "segments": [
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "service-conflict",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A001%23&text=1%2A1"
+      },
+      "expected": {
+        "fields": {
+          "sessionId": "synthetic-session-a",
+          "phoneNumber": "+254700000001",
+          "networkCode": "99999",
+          "serviceCode": "*384*001#",
+          "text": "1*1"
+        },
+        "segments": [
+          "1",
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "missing-session",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=1"
+      },
+      "expected": {
+        "adapterReject": "missing-session"
+      }
+    },
+    {
+      "id": "duplicate-text",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=&text=1"
+      },
+      "expected": {
+        "captureReject": true
+      }
+    },
+    {
+      "id": "invalid-percent",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/handle_sessions",
+      "request": {
+        "method": "POST",
+        "path": "/ussd",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "sessionId=synthetic-session-a&phoneNumber=%2B254700000001&networkCode=99999&serviceCode=%2A384%2A000%23&text=&unexpected=%ZZ"
+      },
+      "expected": {
+        "captureReject": true
+      }
+    },
+    {
+      "id": "end-success",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/notifications",
+      "request": {
+        "method": "POST",
+        "path": "/events",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "date=2026-09-28+12%3A00%3A00&sessionId=synthetic-session-a&serviceCode=%2A384%2A000%23&networkCode=99999&phoneNumber=%2B254700000001&status=Success&cost=KES+0.00&durationInMillis=12000&hopsCount=3&hopsMetadata=probe-start%7Cprobe-step%7Cprobe-end&input=1%2A2&lastAppResponse=END+Sandbox+probe+complete."
+      },
+      "expected": {
+        "fields": {
+          "date": "2026-09-28 12:00:00",
+          "sessionId": "synthetic-session-a",
+          "serviceCode": "*384*000#",
+          "networkCode": "99999",
+          "phoneNumber": "+254700000001",
+          "status": "Success",
+          "cost": "KES 0.00",
+          "durationInMillis": "12000",
+          "hopsCount": "3",
+          "hopsMetadata": "probe-start|probe-step|probe-end",
+          "input": "1*2",
+          "lastAppResponse": "END Sandbox probe complete."
+        },
+        "eventStatus": "Success"
+      }
+    },
+    {
+      "id": "end-incomplete",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/notifications",
+      "request": {
+        "method": "POST",
+        "path": "/events",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "date=2026-09-28+12%3A00%3A00&sessionId=synthetic-session-a&serviceCode=%2A384%2A000%23&networkCode=99999&phoneNumber=%2B254700000001&status=Incomplete&cost=KES+0.00&durationInMillis=12000&hopsCount=3&hopsMetadata=probe-start%7Cprobe-step%7Cprobe-end&input=1%2A2&lastAppResponse=END+Sandbox+probe+complete."
+      },
+      "expected": {
+        "fields": {
+          "date": "2026-09-28 12:00:00",
+          "sessionId": "synthetic-session-a",
+          "serviceCode": "*384*000#",
+          "networkCode": "99999",
+          "phoneNumber": "+254700000001",
+          "status": "Incomplete",
+          "cost": "KES 0.00",
+          "durationInMillis": "12000",
+          "hopsCount": "3",
+          "hopsMetadata": "probe-start|probe-step|probe-end",
+          "input": "1*2",
+          "lastAppResponse": "END Sandbox probe complete."
+        },
+        "eventStatus": "Incomplete"
+      }
+    },
+    {
+      "id": "end-failed",
+      "provenance": "synthetic",
+      "source": "https://developers.africastalking.com/docs/ussd/notifications",
+      "request": {
+        "method": "POST",
+        "path": "/events",
+        "contentType": "application/x-www-form-urlencoded",
+        "body": "date=2026-09-28+12%3A00%3A00&sessionId=synthetic-session-a&serviceCode=%2A384%2A000%23&networkCode=99999&phoneNumber=%2B254700000001&status=Failed&cost=KES+0.00&durationInMillis=12000&hopsCount=3&hopsMetadata=probe-start%7Cprobe-step%7Cprobe-end&input=1%2A2&lastAppResponse=END+Sandbox+probe+complete.&errorMessage=Synthetic+application+timeout"
+      },
+      "expected": {
+        "fields": {
+          "date": "2026-09-28 12:00:00",
+          "sessionId": "synthetic-session-a",
+          "serviceCode": "*384*000#",
+          "networkCode": "99999",
+          "phoneNumber": "+254700000001",
+          "status": "Failed",
+          "cost": "KES 0.00",
+          "durationInMillis": "12000",
+          "hopsCount": "3",
+          "hopsMetadata": "probe-start|probe-step|probe-end",
+          "input": "1*2",
+          "lastAppResponse": "END Sandbox probe complete.",
+          "errorMessage": "Synthetic application timeout"
+        },
+        "eventStatus": "Failed"
+      }
+    }
+  ]
+}
