@@ -167,6 +167,9 @@ jobs:
     needs: [test, lint, package, integration]
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
+    permissions:
+      contents: read
+      id-token: write
     
     steps:
       - name: Checkout repository
@@ -176,8 +179,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24.x'
-          cache: npm
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm supports trusted publishing
+        run: |
+          npm --version
+          node -e "const [major, minor, patch] = require('node:child_process').execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim().split('.').map(Number); if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) { throw new Error('Trusted publishing requires npm >= 11.5.1'); }"
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -197,8 +204,6 @@ jobs:
           else
             npm publish
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   docs:
     name: Deploy Documentation
