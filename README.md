@@ -22,7 +22,7 @@ Open [http://localhost:3100](http://localhost:3100). This is a local simulation 
 npm install ussd-state-builder
 ```
 
-The Phase 1 behavior changes are prepared as `3.0.0-rc.1`. Install that candidate explicitly with `npm install ussd-state-builder@3.0.0-rc.1` only after it is published. See the [3.0 migration guide](docs/MIGRATING-TO-3.md) before upgrading an existing application; this checkout's package version does not imply an npm publication.
+Version 3.0 requires Node.js 22 or newer. See the [3.0 migration guide](docs/MIGRATING-TO-3.md) before upgrading an existing application and the [release evidence](docs/RELEASE-3.0.md) for validation and performance limits.
 
 ## Quick Start
 

@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0-rc.1] - 2026-09-27
+## [3.0.0] - 2026-09-28
 
-Release candidate only; npm publication and a Git tag are separate release actions. See the [migration guide](docs/MIGRATING-TO-3.md) and [support matrix](docs/SUPPORT-MATRIX.md).
+Major release for the Phase 1 behavior changes. See the [migration guide](docs/MIGRATING-TO-3.md), [support matrix](docs/SUPPORT-MATRIX.md), and [release evidence](docs/RELEASE-3.0.md).
 
 ### Changed
 - Require Node.js 22 or newer for the maintained package matrix.

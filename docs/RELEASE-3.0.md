@@ -1,9 +1,10 @@
-# 3.0.0-rc.1 release-candidate evidence
+# 3.0.0 release evidence
 
-Prepared on 27 September 2026 from Phase 1 work after v2.7.0. This file records candidate evidence; it is not a publication record. The [migration guide](MIGRATING-TO-3.md), [support matrix](SUPPORT-MATRIX.md), and [changelog](../CHANGELOG.md) describe the contract and boundaries.
+Phase 1 validation was prepared on 27 September 2026 after v2.7.0. On 28 September 2026, the maintainer authorized a stable `3.0.0` release instead of publishing a prerelease because there are no current customers to migrate. The [migration guide](MIGRATING-TO-3.md), [support matrix](SUPPORT-MATRIX.md), and [changelog](../CHANGELOG.md) retain the compatibility and operational boundaries for future adopters.
 
 ## Functional gates
 
+- Stable package check on 28 September: the `3.0.0` tarball passed the isolated CommonJS/ESM and TypeScript consumer checks and the packed Mavuno order/replay/lookup/cancellation flow against Redis.
 - Unit suite: 914 passed, 20 skipped with open-handle detection after P1-08.
 - Redis/HTTP integration: 15 passed, including Mavuno order, restart, lookup, cancellation, validation, back navigation, and a final-stock race.
 - Packed consumer: CommonJS and ESM root/SDK imports, declaration parity, NodeNext and bundler TypeScript compilation passed.
@@ -37,6 +38,6 @@ An isolated Redis probe ran 100 batches of ten concurrent sessions per version, 
 
 The remaining in-memory throughput and RSS difference is partly the cost of retaining static initial sessions and terminal responses, which v2.7.0 did not do reliably. No acceptable regression budget was agreed before this comparison. A representative gateway workload and application-specific latency budget remain a rollout decision; do not make a general throughput or memory promise from these microbenchmarks.
 
-## Publication boundary
+## Stable release decision
 
-The optimized candidate passed hosted CI. Before tagging or publishing, agree an application-specific performance budget and test active-session drain and rollback in the adopting application. Tagging, npm publication, and documentation deployment are separate release actions. The current documentation CI job is a placeholder and does not deploy a site.
+The optimized candidate passed hosted CI. Stable publication is authorized; the final `3.0.0` commit must pass the hosted release gates and publish through npm trusted publishing under `latest`. Future production adopters should agree an application-specific performance budget and test session drain and rollback before rollout. The documentation CI job is a placeholder and does not deploy a site.
