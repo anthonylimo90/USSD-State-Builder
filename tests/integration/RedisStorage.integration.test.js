@@ -181,3 +181,40 @@ describeIntegration('RedisStorage Integration', () => {
         expect(storage.isConnected()).toBe(true);
     });
 });
+
+describeIntegration('Versioned flow deployment over locked Redis workers', () => {
+    test('retains original handlers across connections and avoids nested locks when replaying completion', async () => {
+        const { randomUUID } = require('crypto');
+        const { createApp } = require('../../lib/sdk');
+        const { createDistributedLockManager } = require('../../lib/DistributedLock');
+        const prefix = `ussd:flow-version:${randomUUID()}:`;
+        const raws = [0, 1].map(() => new RedisStorage({ url: REDIS_URL, keyPrefix: prefix }));
+        let effects = 0;
+        try {
+            await Promise.all(raws.map(storage => storage._ensureConnected()));
+            const workers = raws.map(raw => createDistributedLockManager(raw, {
+                redisClient: raw.client, keyPrefix: `${prefix}lock:`, retryInterval: 1, retryJitter: 1
+            }));
+            const original = storage => createApp().flowVersion('v1').storage(storage).logger(null)
+                .state('home', s => s.message('Original').on('1').goto('done'))
+                .state('done', s => s.run(async () => {
+                    effects++;
+                    await new Promise(resolve => setTimeout(resolve, 25));
+                    return { response: 'END Receipt', data: { order: 'original' } };
+                })).build();
+            const first = original(workers[0]);
+            const retained = original(workers[1]);
+            const deployed = createApp().flowVersion('v2', { previousFlows: [retained] }).storage(workers[1])
+                .state('home', s => s.message('New')).build();
+            await first.processInput('shared', '');
+            expect(await Promise.all([first.processInput('shared', '1'), deployed.processInput('shared', '1')]))
+                .toEqual(['END Receipt', 'END Receipt']);
+            expect(effects).toBe(1);
+            expect((await workers[1].getData('shared')).__ussdFlow.version).toBe('v1');
+            expect(await deployed.processInput('new', '')).toBe('CON New');
+        } finally {
+            await Promise.all(['shared', 'new'].map(id => raws[0].deleteSession(id)));
+            await Promise.all(raws.map(raw => raw.close()));
+        }
+    });
+});

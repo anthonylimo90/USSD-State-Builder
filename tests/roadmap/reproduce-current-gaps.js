@@ -2,7 +2,7 @@
 // Run one case with: node tests/roadmap/reproduce-current-gaps.js R1
 // An assertion failure means that the named defect is still present.
 const assert = require('assert').strict;
-const { createApp, PrometheusExporter } = require('../..');
+const { createApp, PrometheusExporter, FlowDiagram } = require('../..');
 
 const cases = {
   async R1() {
@@ -61,6 +61,13 @@ const cases = {
     assert.match(await app.processInput('roadmap-r3', '1'), /0\. Refresh/);
     assert.match(await app.processInput('roadmap-r3', '0'), /Version 2/);
     assert.equal(await app.getCurrentState('roadmap-r3'), 'items');
+  },
+
+  async R5() {
+    const app = createApp().state('home', s => s.message('Home').on('1').goto('done'))
+      .state('done', s => s.message('Done').end()).build();
+    for (const state of Object.values(app.states)) state.handler.toString = () => { throw new Error('Source inspection'); };
+    assert.match(new FlowDiagram(app).toMermaid(), /home --> done : 1/);
   },
 
   async R4() {

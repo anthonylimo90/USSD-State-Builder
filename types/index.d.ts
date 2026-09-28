@@ -1,3 +1,38 @@
+export type FieldSensitivity = 'unspecified' | 'public' | 'sensitive' | 'secret';
+export interface FlowTransition {
+    input?: string;
+    to?: string;
+    terminal?: boolean;
+    kind?: string;
+}
+export interface StateMetadata {
+    terminal?: boolean;
+    dynamic?: boolean;
+    transitions?: FlowTransition[];
+    field?: { name: string; sensitivity?: FieldSensitivity };
+    form?: { name: string; role: 'field' | 'confirm' };
+}
+export interface FlowStateDefinition extends Omit<StateMetadata, 'terminal'> {
+    id: string;
+    terminal: boolean | null;
+    dynamic: boolean;
+    transitions: FlowTransition[];
+    localInputKeys: string[];
+}
+export interface FlowDefinition {
+    schemaVersion: 1;
+    source: 'sdk' | 'traditional';
+    flowVersion: string | null;
+    initialState: string;
+    navigation: { backKey: '0' | null };
+    coverage: 'complete' | 'partial';
+    states: Record<string, FlowStateDefinition>;
+}
+export interface FlowVersionOptions {
+    previousFlows?: USSDStateMachine[];
+    restartResponse?: string;
+}
+
 /**
  * USSD State Machine TypeScript Definitions
  */
@@ -58,6 +93,8 @@ export interface StateContext {
  * Configuration for a single state
  */
 export interface StateConfig {
+    metadata?: StateMetadata;
+    localInputKeys?: string[];
     /** Handler function that processes input and returns response */
     handler: StateHandler;
     /** Optional validator function to validate input before processing */
@@ -139,7 +176,8 @@ export interface Logger {
 /**
  * Configuration for the USSD State Machine
  */
-export interface USSDConfig {
+export interface USSDConfig extends FlowVersionOptions {
+    flowVersion?: string;
     /** The initial state when a new session starts */
     initialState: string;
     /** Session timeout in seconds (default: 300) */
@@ -168,6 +206,8 @@ export interface ProcessInputOptions {
  * Main USSD State Machine class
  */
 export class USSDStateMachine {
+    readonly flowVersion: string | null;
+    getFlowDefinition(): FlowDefinition;
     /** State configurations */
     states: Record<string, StateConfig>;
     /** Initial state */
@@ -561,7 +601,7 @@ export interface MetricsResult {
 
 export interface TurnObservation {
     currentState: string;
-    outcome: 'success' | 'validation_error' | 'error' | 'blocked' | 'replay';
+    outcome: 'success' | 'validation_error' | 'error' | 'blocked' | 'replay' | 'flow_restart';
     durationMs: number;
 }
 
@@ -777,6 +817,8 @@ export function getEnabledNamespaces(): string[];
  * State machine summary
  */
 export interface StateMachineSummary {
+    metadataCoverage: 'complete' | 'partial';
+    flowVersion: string | null;
     totalStates: number;
     initialState: string;
     backNavigationEnabled: boolean;
@@ -791,6 +833,7 @@ export interface StateMachineSummary {
  * State information
  */
 export interface StateInfo {
+    definition: FlowStateDefinition;
     name: string;
     isInitialState: boolean;
     hasHandler: boolean;

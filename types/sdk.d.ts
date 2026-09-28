@@ -13,7 +13,7 @@ import {
   MiddlewareFunction,
   LifecycleHooks,
   ValidatorFunction,
-  Logger
+  Logger, FieldSensitivity, StateMetadata, FlowVersionOptions
 } from './index';
 
 /**
@@ -79,6 +79,8 @@ export interface MenuItem {
  * State builder for defining individual USSD states
  */
 export class StateBuilder {
+  metadata(metadata: StateMetadata): StateBuilder;
+  sensitivity(level: FieldSensitivity): StateBuilder;
   /**
    * Set a static display message for this state
    * @param text - Message text (no CON/END prefix needed)
@@ -297,6 +299,7 @@ export type StateConfigurator = (stateBuilder: StateBuilder) => void;
  * Field builder for form fields
  */
 export class FieldBuilder {
+  sensitivity(level: FieldSensitivity): FieldBuilder;
   /**
    * Set the prompt message for this field
    */
@@ -451,6 +454,7 @@ export interface SDKStateMachine extends USSDStateMachine {
  * Top-level application builder
  */
 export class AppBuilder {
+  flowVersion(version: string, options?: FlowVersionOptions): AppBuilder;
   /**
    * Define a state via callback
    * @param name - State name

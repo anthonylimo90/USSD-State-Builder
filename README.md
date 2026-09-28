@@ -764,6 +764,8 @@ const app = createApp()
 
 ## Documentation
 
+- [Flow definitions and session versions](docs/FLOW-DEFINITIONS.md): inspect declared routes and safely retain or restart active sessions when a flow changes.
+
 - [Project Roadmap and Implementation Plan](./docs/ROADMAP.md)
 - [Delivery Task List](./docs/TASKS.md)
 - [Production Deployment Guide](./docs/PRODUCTION.md)

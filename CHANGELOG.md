@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Inspectable flow definitions shared by SDK diagrams and state inspection, including form/field metadata and declared sensitivity. SDK routes render without handler source inspection; dynamic behavior reports partial coverage.
+- Opt-in session flow versions, retained original flows, and controlled restart receipts for incompatible active sessions. Retained machines share storage and reuse the entrypoint's session lock.
+
+### Changed
+- SDK builds snapshot declarations so subsequent builder edits do not change a compiled flow. Machines sharing a storage object also share local session locks.
+
 ## [3.0.0] - 2026-09-28
 
 Major release for the Phase 1 behavior changes. See the [migration guide](docs/MIGRATING-TO-3.md), [support matrix](docs/SUPPORT-MATRIX.md), and [release evidence](docs/RELEASE-3.0.md).
