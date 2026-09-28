@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Framework-neutral Africa's Talking form adapter, explicit cumulative/incremental input normalization, scoped session bindings, transcript comparison and plain-text HTTP responses. Mavuno has an optional provider endpoint with a conservative sequencing guard; atomic receipts remain pending.
 - Inspectable flow definitions shared by SDK diagrams and state inspection, including form/field metadata and declared sensitivity. SDK routes render without handler source inspection; dynamic behavior reports partial coverage.
 - Opt-in session flow versions, retained original flows, and controlled restart receipts for incompatible active sessions. Retained machines share storage and reuse the entrypoint's session lock.
 

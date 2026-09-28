@@ -135,5 +135,10 @@ export const RouteBuilder = pkg.RouteBuilder;
 export const DynamicMenu = pkg.DynamicMenu;
 export const DynamicMenuBuilder = pkg.DynamicMenuBuilder;
 
+// Provider wire adapters
+export const AfricasTalkingAdapter = pkg.AfricasTalkingAdapter;
+export const ProviderRequestError = pkg.ProviderRequestError;
+export const normalizeUssdInput = pkg.normalizeUssdInput;
+
 // Default export
 export default pkg;

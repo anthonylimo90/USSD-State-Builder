@@ -764,6 +764,8 @@ const app = createApp()
 
 ## Documentation
 
+- [Africa's Talking adapter](docs/AFRICAS-TALKING-ADAPTER.md): framework-neutral form normalization, caller/session binding, and an optional Mavuno endpoint.
+
 - [Flow definitions and session versions](docs/FLOW-DEFINITIONS.md): inspect declared routes and safely retain or restart active sessions when a flow changes.
 
 - [Project Roadmap and Implementation Plan](./docs/ROADMAP.md)

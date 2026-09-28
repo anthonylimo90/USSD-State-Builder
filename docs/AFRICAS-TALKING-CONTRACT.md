@@ -2,7 +2,7 @@
 
 Research date: 2026-09-28. Roadmap item: P2-01. Initial target: Africa's Talking sandbox, with Kenyan operator limits recorded separately.
 
-This is a documentation-verified contract and a preparation guide for captured fixtures. **No provider traffic has been captured in this work.** The [local fixture corpus](../tests/fixtures/africas-talking/) is synthetic; passing it does not establish sandbox interoperability. Follow the [sandbox capture walkthrough](AFRICAS-TALKING-SANDBOX.md) before closing P2-01 or claiming provider validation.
+This is a documentation-verified contract and a preparation guide for captured fixtures. **Eleven sanitized sandbox interactive callbacks have since been captured**, alongside the synthetic [local fixture corpus](../tests/fixtures/africas-talking/). See the [capture manifest](../tests/fixtures/africas-talking/captured/2026-09-28-manifest.md). Interactive captures do not establish end-event delivery, authenticated provider origin, or live operator guarantees. Follow the [sandbox capture walkthrough](AFRICAS-TALKING-SANDBOX.md) before closing P2-01 or claiming provider validation.
 
 The official developer portal returned HTTP 403 to the web retrieval tool but loaded in the in-app browser. Its rendered Overview, Handle Sessions, Notifications, and general Notifications pages were read directly. Help Center sources below were also read. Official documentation establishes expected behavior; dated Help Center guidance and actual service provisioning still need reconfirmation for a live launch.
 
@@ -124,3 +124,5 @@ The sandbox uses a simulator rather than a handset and requires an externally re
 This document's timing and menu budgets apply only to the named Kenyan operators and source dates. No Nigeria, Uganda, Tanzania, Rwanda, Malawi, Zambia, Ghana, South Africa, or other country-specific operational guarantee is made. Product availability is not proof of shared deadlines, character rules, provisioning, or billing behavior. [Official product-country availability](https://help.africastalking.com/en/articles/2727792-which-countries-are-africa-s-talking-products-in)
 
 P2-01 remains open until sanitized actual sandbox samples are retained and unresolved provider assertions are either confirmed or explicitly limited. The Phase 2 exit gate additionally requires the complete Mavuno journey and later receipt/deadline/recovery work; documentation and synthetic tests alone cannot meet it.
+
+The framework-neutral adapter and local demo endpoint are implemented under P2-03; see [adapter API and validation boundaries](AFRICAS-TALKING-ADAPTER.md). P2-01 remains open for event-delivery evidence.

@@ -1120,3 +1120,68 @@ declare const _default: {
     createApp: typeof import('./sdk').createApp;
 };
 export default _default;
+
+export type UssdInputMode = 'cumulative' | 'incremental';
+export interface NormalizedUssdInput {
+    inputMode: UssdInputMode;
+    input: string;
+    transcript: string | null;
+    position: number | null;
+}
+export function normalizeUssdInput(text: string, mode: UssdInputMode): NormalizedUssdInput;
+export interface ProviderWireRequest {
+    method: string;
+    contentType?: string;
+    /** Raw form bytes. Do not pass an already parsed framework body. */
+    body: string | Buffer;
+}
+export interface ProviderSessionBinding {
+    provider: 'africas-talking';
+    applicationId: string;
+    sessionId: string;
+    serviceCode: string;
+    phoneNumber: string;
+    networkCode: string;
+}
+export interface AfricasTalkingTurn extends ProviderSessionBinding {
+    sessionKey: string;
+    inputMode: 'cumulative';
+    input: string;
+    transcript: string;
+    position: number;
+}
+export interface ProviderHttpResponse {
+    status: number;
+    headers: Record<string, string>;
+    body: string;
+}
+export interface AfricasTalkingAdapterOptions {
+    applicationId: string;
+    serviceCode: string;
+    phonePattern?: RegExp;
+    maxBodyBytes?: number;
+    maxTranscriptLength?: number;
+    maxFieldLength?: number;
+    maxInputLength?: number;
+    maxResponseBytes?: number;
+}
+export class ProviderRequestError extends Error {
+    readonly code: string;
+    readonly status: number;
+    constructor(code: string, status?: number);
+}
+export class AfricasTalkingAdapter {
+    constructor(options: AfricasTalkingAdapterOptions);
+    readonly applicationId: string;
+    readonly serviceCode: string;
+    readonly maxBodyBytes: number;
+    normalize(request: ProviderWireRequest): AfricasTalkingTurn;
+    bindSession(turn: AfricasTalkingTurn, existing?: ProviderSessionBinding | null): ProviderSessionBinding;
+    compareTranscript(turn: AfricasTalkingTurn, previous?: string | null):
+        'initial' | 'missing_initial' | 'repeat' | 'next' | 'stale' | 'gap' | 'conflict';
+    formatResponse(response: string, options?: { hopMetadata?: string }): ProviderHttpResponse;
+    errorResponse(error: unknown): ProviderHttpResponse;
+    handle(request: ProviderWireRequest, processTurn: (turn: AfricasTalkingTurn) =>
+        string | { response: string; hopMetadata?: string } |
+        Promise<string | { response: string; hopMetadata?: string }>): Promise<ProviderHttpResponse>;
+}

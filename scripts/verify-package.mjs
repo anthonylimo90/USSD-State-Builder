@@ -47,6 +47,9 @@ const root = require('ussd-state-builder');
 const sdk = require('ussd-state-builder/sdk');
 assert.equal(typeof root.USSDStateMachine, 'function');
 assert.equal(typeof root.createApp, 'function');
+const adapter = new root.AfricasTalkingAdapter({ applicationId: 'packed', serviceCode: '*384*000#' });
+assert.equal(adapter.formatResponse('CON Welcome').headers['Content-Type'], 'text/plain; charset=utf-8');
+assert.equal(root.normalizeUssdInput('1*1', 'cumulative').position, 2);
 assert.equal(typeof sdk.createApp, 'function');
 (async () => {
   const machine = sdk.createApp().flowVersion('packed-v1').state('START', state => state.message('Welcome')).build();
@@ -80,12 +83,16 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.message('Welcome').save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
 const menu = DynamicMenu.create<string>().fetch(() => ['a']).format(item => item).build();
+const adapter = new AfricasTalkingAdapter({ applicationId: 'typed', serviceCode: '*384*000#' });
+const turn = adapter.normalize({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' });
+const binding = adapter.bindSession(turn);
 const metrics = createExportableMetrics();
+void [binding, new ProviderRequestError('INVALID'), normalizeUssdInput('1*1', 'incremental')];
 void [rootDefault, sdkDefault, machine, menu, metrics];
 `;
   writeFileSync(join(consumer, 'consumer.mts'), consumerSource);

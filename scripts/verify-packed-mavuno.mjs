@@ -21,12 +21,12 @@ function run(command, args, cwd = consumer) {
   });
 }
 
-function request(port, method, route, body) {
+function request(port, method, route, body, contentType = 'application/json') {
   return new Promise((resolve, reject) => {
-    const payload = body === undefined ? null : JSON.stringify(body);
+    const payload = body === undefined ? null : contentType === 'application/json' ? JSON.stringify(body) : body;
     const req = http.request({
       host: '127.0.0.1', port, path: route, method,
-      headers: payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}
+      headers: payload ? { 'Content-Type': contentType, 'Content-Length': Buffer.byteLength(payload) } : {}
     }, res => {
       let output = '';
       res.on('data', chunk => { output += chunk; });
@@ -49,7 +49,7 @@ try {
   const installed = require(join(packageRoot, 'package.json'));
   assert.equal(installed.version, JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version);
   const { createLiveMarket } = require(join(packageRoot, 'examples/live-market/server.js'));
-  app = await createLiveMarket({ redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:16379', prefix });
+  app = await createLiveMarket({ redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:16379', prefix, serviceCode: '*384*000#' });
   await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
   const port = app.server.address().port;
   const phoneNumber = '0712345678';
@@ -77,7 +77,23 @@ try {
   assert.match(await dial('lookup', 'M00001'), /KES 1300/);
   assert.equal(await dial('lookup', '1'), 'END Order M00001 cancelled.');
   assert.equal(await app.market.getStock('MAIZE'), 8);
-  console.log(`Packed ${packed[0].filename}: Mavuno order, replay, lookup, cancellation, and stock restoration passed.`);
+  const providerDial = (sessionId, text = '') => request(port, 'POST', '/africas-talking/ussd',
+    new URLSearchParams({ sessionId, text, phoneNumber: '+254712345678', networkCode: '99999', serviceCode: '*384*000#' }).toString(),
+    'application/x-www-form-urlencoded');
+  for (const text of ['', '1', '1*1', '1*1*1', '1*1*1*2', '1*1*1*2*3', '1*1*1*2*3*1']) {
+    assert.equal((await providerDial('provider-order', text)).status, 200);
+  }
+  const providerOrder = await providerDial('provider-order', '1*1*1*2*3*1*1');
+  assert.equal(providerOrder.status, 200);
+  assert.match(providerOrder.body, /^END Order M00002 placed/);
+  assert.equal((await providerDial('provider-order', '1*1*1*2*3*1*1')).status, 409);
+  assert.equal(await app.market.getStock('MAIZE'), 6);
+  await providerDial('provider-lookup');
+  await providerDial('provider-lookup', '3');
+  await providerDial('provider-lookup', '3*M00002');
+  assert.equal((await providerDial('provider-lookup', '3*M00002*1')).body, 'END Order M00002 cancelled.');
+  assert.equal(await app.market.getStock('MAIZE'), 8);
+  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, replay/repeat rejection, lookup, cancellation, and stock restoration passed.`);
 } finally {
   if (app) {
     try {

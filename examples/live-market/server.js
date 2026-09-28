@@ -1,7 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { RedisStorage } = require('ussd-state-builder');
+const { RedisStorage, AfricasTalkingAdapter, ProviderRequestError, createDistributedLockManager } = require('ussd-state-builder');
+const { createProviderTurnHandler } = require('./provider');
 const { CATALOG } = require('./catalog');
 const { MarketStore } = require('./marketStore');
 const { createMarketApp } = require('./app');
@@ -27,15 +28,47 @@ async function readJson(req) {
   return JSON.parse(body || '{}');
 }
 
-async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 'ussd:live-market:' } = {}) {
+function readProviderBody(req, maxBytes) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let bytes = 0;
+    req.on('data', chunk => {
+      bytes += chunk.length;
+      if (bytes > maxBytes) {
+        chunks.length = 0;
+        reject(new ProviderRequestError('BODY_TOO_LARGE', 413));
+      } else chunks.push(chunk);
+    });
+    req.once('end', () => resolve(Buffer.concat(chunks)));
+    req.once('error', reject);
+    req.once('aborted', () => reject(new ProviderRequestError('ABORTED_REQUEST')));
+  });
+}
+
+async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 'ussd:live-market:',
+  serviceCode, applicationId = 'mavuno-demo' } = {}) {
+  const providerAdapter = serviceCode ? new AfricasTalkingAdapter({ applicationId, serviceCode }) : null;
   const storage = new RedisStorage({ url: redisUrl, keyPrefix: `${prefix}session:` });
   await storage._ensureConnected();
   const market = new MarketStore(storage.client, prefix);
   await market.seed();
   const machine = createMarketApp({ storage, market });
+  const providerTurn = providerAdapter ? createProviderTurnHandler({
+    adapter: providerAdapter, machine, storage, normalizePhone,
+    lockedStorage: createDistributedLockManager(storage, { redisClient: storage.client, keyPrefix: `${prefix}provider-lock:` })
+  }) : null;
 
   const server = http.createServer(async (req, res) => {
     try {
+      if (providerAdapter && req.url === '/africas-talking/ussd') {
+        let result;
+        try {
+          const body = await readProviderBody(req, providerAdapter.maxBodyBytes);
+          result = await providerAdapter.handle({ method: req.method, contentType: req.headers['content-type'], body }, providerTurn);
+        } catch (error) { result = providerAdapter.errorResponse(error); }
+        res.writeHead(result.status, result.headers);
+        return res.end(result.body);
+      }
       if (req.method === 'GET' && req.url === '/') {
         return send(res, 200, fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
       }
@@ -83,7 +116,7 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
   });
 
   return {
-    server, storage, market, machine,
+    server, storage, market, machine, providerAdapter,
     async close() {
       if (server.listening) await new Promise(resolve => server.close(resolve));
       await storage.close();
@@ -94,7 +127,9 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
 if (require.main === module) {
   createLiveMarket({
     redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
-    prefix: process.env.MARKET_PREFIX || 'ussd:live-market:'
+    prefix: process.env.MARKET_PREFIX || 'ussd:live-market:',
+    serviceCode: process.env.AT_SERVICE_CODE,
+    applicationId: process.env.AT_APPLICATION_ID || 'mavuno-demo'
   }).then(app => {
     const port = Number(process.env.PORT || 3100);
     app.server.listen(port, '127.0.0.1', () => {

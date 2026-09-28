@@ -90,7 +90,10 @@ const { WebhookManager } = require('./lib/WebhookManager');
 const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
 
+const { AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput } = require('./lib/AfricasTalkingAdapter');
+
 module.exports = {
+  AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput,
   // Core
   USSDStateMachine,
 
