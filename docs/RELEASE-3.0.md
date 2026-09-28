@@ -40,4 +40,11 @@ The remaining in-memory throughput and RSS difference is partly the cost of reta
 
 ## Stable release decision
 
-The optimized candidate passed hosted CI. Stable publication is authorized; the final `3.0.0` commit must pass the hosted release gates and publish through npm trusted publishing under `latest`. Future production adopters should agree an application-specific performance budget and test session drain and rollback before rollout. The documentation CI job is a placeholder and does not deploy a site.
+The optimized candidate passed hosted CI. The final `3.0.0` commit passed the hosted release gates and was published through npm trusted publishing under `latest`. Future production adopters should agree an application-specific performance budget and test session drain and rollback before rollout. The documentation CI job is a placeholder and does not deploy a site.
+
+## Published release verification — 2026-09-28
+
+- Stable tag `v3.0.0` points to release commit `4dddf1063f398501767a9e9d02f64a4f16bbc1d9`. Both [push CI](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36393763341) and [release CI](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/36394008289) passed, including the npm publish job.
+- [GitHub release](https://github.com/anthonylimo90/USSD-State-Builder/releases/tag/v3.0.0) is stable. [npm version 3.0.0](https://www.npmjs.com/package/ussd-state-builder/v/3.0.0) is available under `latest`, with signed GitHub Actions provenance. Registry tarball SHA-1: `e444bc2ae7dbe338b6cc130d21a135e450b35e94`.
+- Fresh temporary consumers installed `ussd-state-builder@3.0.0` directly from npm, independently of the local tarball. CommonJS/ESM root and SDK turns, export/declaration parity, and NodeNext/bundler TypeScript compilation passed.
+- The registry-installed Mavuno demo passed the HTTP/Redis order, terminal replay, new-session lookup, cancellation, and stock restoration flow. Test keys and temporary consumers were removed afterward.
