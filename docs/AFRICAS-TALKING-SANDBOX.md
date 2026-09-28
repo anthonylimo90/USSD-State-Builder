@@ -4,6 +4,8 @@ Status: Eleven actual sandbox interactive callbacks are [retained and reconciled
 
 The [provider contract](AFRICAS-TALKING-CONTRACT.md) records verified documentation and outstanding questions. The [synthetic fixtures](../tests/fixtures/africas-talking/README.md) exercise the wire shapes without claiming provider traffic.
 
+The [event-delivery follow-up](AFRICAS-TALKING-EVENT-DIAGNOSIS.md) confirms public POST controls succeed for both routes. A longer provider observation exposed Cloudflare 1033/HTTP 530 before interactive callbacks reached the probe, so a longer successful-session notification test remains blocked on provider-to-host connectivity. This does not prove the cause of the earlier missing events.
+
 ## Run the evidence probe
 
 ```bash
