@@ -85,6 +85,7 @@ const { SessionEncryption, createEncryptedStorage } = require('./lib/SessionEncr
 const { PrometheusExporter, OpenTelemetryCollector, createExportableMetrics } = require('./lib/MetricsExporter');
 const { SlidingWindowRateLimit, createSlidingWindowRateLimit } = require('./lib/SlidingWindowRateLimit');
 const { FlowDiagram } = require('./lib/FlowDiagram');
+const { analyzeFlowDefinition } = require('./lib/FlowAnalysis');
 const { USSDSimulator } = require('./lib/USSDSimulator');
 const { WebhookManager } = require('./lib/WebhookManager');
 const { PluginManager, createPlugin } = require('./lib/PluginManager');
@@ -224,6 +225,7 @@ module.exports = {
 
   // Flow diagram generator
   FlowDiagram,
+  analyzeFlowDefinition,
 
   // USSD Simulator
   USSDSimulator,

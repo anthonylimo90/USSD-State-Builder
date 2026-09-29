@@ -33,9 +33,10 @@ test('serves the local workspace and shared keypad with same-origin policy', asy
   expect(page.headers['content-security-policy']).toContain("script-src 'self'");
   expect((await request('/keypad.js')).text).toContain('attachKeypad');
   expect((await request('/ui.js')).status).toBe(200);
+  expect((await request('/graph.js')).text).toContain('renderFlowGraph');
   expect((await request('/style.css')).status).toBe(200);
   const config = await request('/api/workbench');
-  expect(config.json.flows.map(flow => flow.id)).toEqual(['sdk-shop', 'traditional-shop']);
+  expect(config.json.flows.map(flow => flow.id)).toEqual(['sdk-shop', 'traditional-shop', 'diagnostics', 'dynamic']);
   expect((await request('/api/workbench', { headers: { host: 'attacker.example' } })).status).toBe(403);
   expect((await request('/api/workbench', { headers: { origin: 'https://attacker.example' } })).status).toBe(403);
   expect((await request('/api/workbench', { headers: { 'sec-fetch-site': 'cross-site' } })).status).toBe(403);
@@ -44,6 +45,10 @@ test('serves the local workspace and shared keypad with same-origin policy', asy
 test('HTTP session lifecycle includes validation, state, redaction, isolation and reset', async () => {
   const a = (await request('/api/sessions', { method: 'POST', body: { flowId: 'sdk-shop' } })).json;
   const b = (await request('/api/sessions', { method: 'POST', body: { flowId: 'traditional-shop' } })).json;
+  expect(a.analysis).toMatchObject({ coverage: 'complete', valid: true, summary: { states: 4, errors: 0, warnings: 0 } });
+  // SDK routes reserve their keys explicitly; traditional handlers need not.
+  const structure = analysis => analysis.nodes.map(({ localInputKeys, ...node }) => node);
+  expect(structure(b.analysis)).toEqual(structure(a.analysis));
   const turn = input => request(`/api/sessions/${a.id}/turns`, { method: 'POST', body: { input } });
   expect((await turn('')).json.state).toBe('MENU');
   await turn('1');
@@ -70,4 +75,17 @@ test('rejects malformed/oversized requests and never returns arbitrary exception
   app.workbench.flows.get('sdk-shop').createMachine = factory;
   expect(failed.status).toBe(500);
   expect(failed.text).not.toContain('SECRET_FACTORY_ERROR');
+});
+
+test('serves structural diagnostics and treats dynamic uncertainty as information', async () => {
+  const broken = (await request('/api/sessions', { method: 'POST', body: { flowId: 'diagnostics' } })).json;
+  expect(broken.analysis.valid).toBe(false);
+  expect(broken.analysis.diagnostics.map(item => item.type)).toEqual(expect.arrayContaining([
+    'MISSING_TARGET', 'CONFLICTING_INPUT', 'NAVIGATION_CONFLICT', 'UNREACHABLE_STATE', 'DEAD_END'
+  ]));
+  const dynamic = (await request('/api/sessions', { method: 'POST', body: { flowId: 'dynamic' } })).json;
+  expect(dynamic.analysis).toMatchObject({ valid: true, coverage: 'partial', summary: { errors: 0, warnings: 0 } });
+  expect(dynamic.analysis.nodes.find(node => node.id === 'DONE').reachability).toBe('unknown');
+  await request(`/api/sessions/${broken.id}`, { method: 'DELETE' });
+  await request(`/api/sessions/${dynamic.id}`, { method: 'DELETE' });
 });

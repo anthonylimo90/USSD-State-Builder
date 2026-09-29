@@ -42,6 +42,15 @@
           <h3>Navigation history</h3><div id="state-history" class="navigation-history">No previous states.</div>
         </aside>
       </div>
+      <section class="flow-analysis" aria-label="Flow analysis">
+        <div class="section-heading"><h2>Flow graph</h2><span id="graph-summary">Declared transitions only</span></div>
+        <p id="graph-note" class="muted history-help">Declarations show possible paths; runtime history shows what happened.</p>
+        <div id="graph" class="graph-scroll" tabindex="0" role="region" aria-label="Scrollable declared flow graph"></div>
+        <p class="muted graph-legend">Green: current state · ?: unknown exits · dashed edge: back conflict · dashed node: unreachable · red: missing target</p>
+        <details class="graph-text"><summary>All states and transitions · text view</summary><ul id="graph-text"></ul></details>
+        <div class="section-heading diagnostics-heading"><h2>Diagnostics</h2><span id="diagnostic-count"></span></div>
+        <ul id="diagnostics" class="diagnostics"></ul>
+      </section>
       <section class="turns" aria-label="Turn history">
         <div class="section-heading"><h2>Turn history</h2><span id="turn-count">0 turns</span></div>
         <p class="muted history-help">Inputs, responses and error text are excluded from this history.</p>

@@ -1,4 +1,4 @@
-import { StorageAdapter, USSDConfig, USSDStateMachine, MiddlewareFunction } from './index';
+import { StorageAdapter, USSDConfig, USSDStateMachine, MiddlewareFunction, FlowAnalysis } from './index';
 
 export interface DistributedLockOptions {
     redisClient: {
@@ -94,6 +94,7 @@ export function createSlidingWindowRateLimit(options?: SlidingWindowOptions): {
 };
 
 export class FlowDiagram {
+    analyze(): FlowAnalysis;
     constructor(stateMachine: USSDStateMachine | USSDConfig, options?: Record<string, any>);
     toMermaid(): string;
     toDot(): string;

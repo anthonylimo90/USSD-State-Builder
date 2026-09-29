@@ -4,7 +4,33 @@ Run `npm ci`, then `npm run workbench` on Node 22 or newer. Open the printed URL
 
 Choose a flow and create a session. **Dial**, reply `1`, enter an invalid quantity to see validation feedback, then reply `2` and enter a synthetic PIN such as `1234`. The inspector reads the actual stored state after each turn, shows public quantity data, and hides the PIN. Create a second session to compare flows; switching preserves each session's screen and history. **Reset** clears that session and creates a fresh application instance. **Close session** deletes its runtime session. The default limit is eight sessions, and sessions stay available until closed, reset or the process stops. Runtime expiry is shown explicitly and requires a reset.
 
-The handset, session controls, state inspector and history work with either API. Declared transitions are metadata; dynamic/unannotated handlers show partial coverage. Navigation history comes from storage, and turn duration/outcome comes from the [versioned runtime trace](TRACE-AND-FIXTURES.md). A terminal trace has no active next state, while the inspector can still show the stored terminal state (for example `DONE`). Graph diagnostics and deterministic test export are the next roadmap items.
+The handset, session controls, state inspector and history work with either API. Declared transitions are metadata; dynamic/unannotated handlers show partial coverage. Navigation history comes from storage, and turn duration/outcome comes from the [versioned runtime trace](TRACE-AND-FIXTURES.md). A terminal trace has no active next state, while the inspector can still show the stored terminal state (for example `DONE`). The flow graph highlights the stored current state, and structural diagnostics use only declared metadata. Deterministic replay and test export are the next roadmap item.
+
+## Graph and diagnostics
+
+The graph shows declared state/input transitions and END exits. Green marks the current stored state; `?` marks unknown exits. Missing targets appear in red, unreachable states use dashed outlines, and a conflicting back-key route uses a dashed edge. Global back edges are not invented: their target depends on runtime navigation history. An ended session can still highlight its stored terminal state; an idle or expired session has no current-state highlight.
+
+Analysis follows paths from the initial state, so an isolated cycle is unreachable even though each state has incoming links. It reports missing targets, invalid transition targets, conflicting input destinations and terminal states with outgoing state transitions as errors. A declared `0` route without a local override conflicts with history-based back navigation; when history is empty, the runtime can still fall through to that route. Explicit SDK `.on('0')` routes and dynamic-menu refresh/pagination controls retain their intentional local overrides.
+
+Known nonterminal states without a declared forward or END exit produce a dead-end warning. A reachable state that can go back through history is instead marked with an informational back-only exit. Self replies are legitimate exits. Dynamic or unannotated handlers produce incomplete-analysis information, not errors or speculative dead-end warnings. States without a declared path are marked **unknown** if a reachable handler may hide transitions; an unknown handler in a disconnected island does not obscure that island's lack of a declared path.
+
+Choose **Diagnostics fixture** to inspect intentionally broken declarations (missing target, input/back conflict, dead end and isolated cycle). This fixture is for diagnostics only; its handset does not execute the declared business paths. Choose **Dynamic fixture** to see partial metadata with zero errors or warnings, then dial and reply `1`: the runtime reaches `DONE` even though no route was declared. The two demo shops remain the valid end-to-end journeys.
+
+The diagram is capped at 60 configured states, 120 declared edges and 30 missing targets, with a visible truncation notice. The keyboard-focusable graph scrolls independently, follows a changed current state, and has an expandable text view containing every configured state and declared transition. Full diagnostics are not truncated.
+
+Programmatic analysis uses the same contract:
+
+```js
+import { analyzeFlowDefinition, FlowDiagram, StateInspector } from 'ussd-state-builder';
+const analysis = analyzeFlowDefinition(machine.getFlowDefinition());
+console.log(analysis.coverage, analysis.valid, analysis.diagnostics);
+// These work with either traditional or SDK machines:
+new StateInspector(machine).analyze();
+new FlowDiagram(machine).analyze();
+// Fluent-built machines also provide machine.inspect().analyze().
+```
+
+Analysis never executes handlers or reads their source, and contains no prompts, field values or turn data. It checks declarations rather than proving runtime behavior: guards, validators, middleware and business conditions can affect which path runs. Keep custom metadata consistent with your handlers. `StateInspector.validate()` also checks handler/validator/hook types. Legacy diagram exports can still infer edges for wholly unannotated traditional flows; their heuristic edges never enter this authoritative analysis or the workbench graph.
 
 ## Attach a flow
 

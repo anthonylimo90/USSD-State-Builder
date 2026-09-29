@@ -1,10 +1,13 @@
 const { LocalWorkbench, createWorkbenchServer } = require('ussd-state-builder');
 const { createSdkFlow, createTraditionalFlow } = require('./flows');
+const { createDiagnosticsFixture, createDynamicFixture } = require('./diagnostics');
 
 function createDemoWorkbench() {
   return new LocalWorkbench({ flows: [
     { id: 'sdk-shop', name: 'Demo shop · SDK', createMachine: createSdkFlow },
-    { id: 'traditional-shop', name: 'Demo shop · traditional', createMachine: createTraditionalFlow }
+    { id: 'traditional-shop', name: 'Demo shop · traditional', createMachine: createTraditionalFlow },
+    { id: 'diagnostics', name: 'Diagnostics fixture', createMachine: createDiagnosticsFixture },
+    { id: 'dynamic', name: 'Dynamic fixture', createMachine: createDynamicFixture }
   ] });
 }
 

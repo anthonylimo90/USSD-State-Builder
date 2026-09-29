@@ -28,6 +28,28 @@ export interface FlowDefinition {
     coverage: 'complete' | 'partial';
     states: Record<string, FlowStateDefinition>;
 }
+export interface FlowDiagnostic {
+    type: string;
+    severity: 'error' | 'warning' | 'info';
+    message: string;
+    state?: string;
+}
+export interface FlowAnalysis {
+    schemaVersion: 1;
+    transitionSource: 'declared';
+    coverage: 'complete' | 'partial';
+    initialState: string;
+    backKey: '0' | null;
+    valid: boolean;
+    nodes: Array<{ id: string; isInitial: boolean; terminal: boolean | null;
+        dynamic: boolean; reachability: 'declared' | 'unknown' | 'unreachable'; localInputKeys: string[] }>;
+    edges: Array<FlowTransition & { id: string; from: string; terminal: boolean; missingTarget: boolean; navigationConflict: boolean }>;
+    diagnostics: FlowDiagnostic[];
+    summary: { states: number; transitions: number; errors: number; warnings: number; unknownStates: number };
+}
+/** Pure declaration analysis; never executes or inspects handlers. */
+export function analyzeFlowDefinition(definition: FlowDefinition): FlowAnalysis;
+
 export interface FlowVersionOptions {
     previousFlows?: USSDStateMachine[];
     restartResponse?: string;
@@ -680,6 +702,7 @@ export interface WorkbenchSession {
     initialState: string;
     stateInfo: Record<string, unknown> | null;
     definition: FlowDefinition;
+    analysis: FlowAnalysis;
     data: { values: Record<string, string | number | boolean | null>; hiddenFields: number };
     stateHistory: string[];
     /** Latest handset response only; excluded from trace history. */
@@ -1011,10 +1034,10 @@ export class StateInspector {
 
     toMermaid(): string;
 
-    /**
-     * Validate the state machine configuration
-     * @returns Validation result with errors and warnings
-     */
+    /** Analyze declared structure without inspecting or executing handlers. */
+    analyze(): FlowAnalysis;
+
+    /** Validate declared structure and executable configuration. */
     validate(): ValidationResult;
 
     /**

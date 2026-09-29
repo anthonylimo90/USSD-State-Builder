@@ -127,6 +127,7 @@ export const createSlidingWindowRateLimit = pkg.createSlidingWindowRateLimit;
 
 // Flow diagram generator
 export const FlowDiagram = pkg.FlowDiagram;
+export const analyzeFlowDefinition = pkg.analyzeFlowDefinition;
 
 // USSD Simulator
 export const USSDSimulator = pkg.USSDSimulator;

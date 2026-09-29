@@ -70,11 +70,14 @@ assert.equal(typeof root.SessionEventGateway, 'function');
       .state('START', state => state.message('Welcome').on('1').goto('NEXT'))
       .state('NEXT', state => state.message('Next')).build() }] });
   const session = await workbench.createSession();
+  assert.equal(session.analysis.transitionSource, 'declared');
+  assert.equal(root.analyzeFlowDefinition(session.definition).nodes.length, 2);
+  assert.deepEqual(new root.FlowDiagram(machine).analyze(), root.analyzeFlowDefinition(machine.getFlowDefinition()));
   await workbench.getTester(session.id).start().input('1').expectState('NEXT').run();
   assert.equal((await workbench.inspect(session.id)).totalTurns, 2);
   assert.equal((await workbench.reset(session.id)).state, null);
   const packageRoot = require('node:path').dirname(require.resolve('ussd-state-builder'));
-  for (const asset of ['index.html', 'ui.js', 'keypad.js', 'style.css']) {
+  for (const asset of ['index.html', 'ui.js', 'graph.js', 'keypad.js', 'style.css']) {
     assert.ok(require('node:fs').statSync(require('node:path').join(packageRoot, 'lib/workbench', asset)).size > 0);
   }
   await workbench.close();
@@ -105,10 +108,15 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer, analyzeFlowDefinition, FlowAnalysis, FlowDiagram, StateInspector } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
+const analysis: FlowAnalysis = analyzeFlowDefinition(machine.getFlowDefinition());
+const inspected: FlowAnalysis = new StateInspector(machine).analyze();
+const diagramAnalysis: FlowAnalysis = new FlowDiagram(machine).analyze();
+const sdkInspection: FlowAnalysis = createApp().state('HOME', s => s.end()).build().inspect().analyze();
+void [analysis, inspected, diagramAnalysis, sdkInspection];
 const menu = DynamicMenu.create<string>().fetch(() => ['a']).format(item => item).build();
 const adapter = new AfricasTalkingAdapter({ applicationId: 'typed', serviceCode: '*384*000#' });
 const gateway = new TurnGateway({ adapter, machine, store: new InMemoryTurnStore({ storage }), deadlineMs: 1000, leaseMs: 900, ownershipCheckMs: 50 });
