@@ -21,12 +21,13 @@ function run(command, args, cwd = consumer) {
   });
 }
 
-function request(port, method, route, body, contentType = 'application/json') {
+function request(port, method, route, body, contentType = 'application/json', token) {
   return new Promise((resolve, reject) => {
     const payload = body === undefined ? null : contentType === 'application/json' ? JSON.stringify(body) : body;
     const req = http.request({
       host: '127.0.0.1', port, path: route, method,
-      headers: payload ? { 'Content-Type': contentType, 'Content-Length': Buffer.byteLength(payload) } : {}
+      headers: payload ? { 'Content-Type': contentType, 'Content-Length': Buffer.byteLength(payload),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}) } : {}
     }, res => {
       let output = '';
       res.on('data', chunk => { output += chunk; });
@@ -49,7 +50,10 @@ try {
   const installed = require(join(packageRoot, 'package.json'));
   assert.equal(installed.version, JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version);
   const { createLiveMarket } = require(join(packageRoot, 'examples/live-market/server.js'));
-  app = await createLiveMarket({ redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:16379', prefix, serviceCode: '*384*000#' });
+  const providerEventToken = 'packed-provider-event-token';
+  const orderEventToken = 'packed-order-event-token';
+  app = await createLiveMarket({ redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:16379', prefix,
+    serviceCode: '*384*000#', providerEventToken, orderEventToken });
   await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
   const port = app.server.address().port;
   const phoneNumber = '0712345678';
@@ -88,12 +92,23 @@ try {
   assert.match(providerOrder.body, /^END Order M00002 placed/);
   assert.deepEqual(await providerDial('provider-order', '1*1*1*2*3*1*1'), providerOrder);
   assert.equal(await app.market.getStock('MAIZE'), 6);
+  const endBody = new URLSearchParams({ date: '2026-09-29 10:11:12', sessionId: 'provider-order',
+    serviceCode: '*384*000#', networkCode: '99999', phoneNumber: '+254712345678', status: 'Success',
+    cost: '0.00', durationInMillis: '1234', hopsCount: '8', hopsMetadata: '',
+    input: '1*1*1*2*3*1*1', lastAppResponse: providerOrder.body }).toString();
+  assert.equal((await request(port, 'POST', '/africas-talking/events', endBody,
+    'application/x-www-form-urlencoded', providerEventToken)).status, 200);
+  assert.equal((await request(port, 'POST', '/africas-talking/events', endBody,
+    'application/x-www-form-urlencoded', providerEventToken)).status, 200);
+  assert.equal((await request(port, 'POST', '/demo/order-events',
+    { orderId: 'M00002', eventId: 'packed-delayed', version: 1, status: 'Delayed' },
+    'application/json', orderEventToken)).status, 200);
   await providerDial('provider-lookup');
-  await providerDial('provider-lookup', '3');
+  assert.match((await providerDial('provider-lookup', '3')).body, /M00002 placed, Delayed/);
   await providerDial('provider-lookup', '3*M00002');
   assert.equal((await providerDial('provider-lookup', '3*M00002*1')).body, 'END Order M00002 cancelled.');
   assert.equal(await app.market.getStock('MAIZE'), 8);
-  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, receipt replay, lookup, cancellation, and stock restoration passed.`);
+  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, receipt replay, end-event acknowledgement, async callback lookup, cancellation, and stock restoration passed.`);
 } finally {
   if (app) {
     try {

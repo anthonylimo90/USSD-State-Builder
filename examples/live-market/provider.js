@@ -1,7 +1,7 @@
 const { TurnGateway, RedisTurnStore, ProviderRequestError } = require('ussd-state-builder');
 
-function createProviderGateway({ adapter, machine, storage, normalizePhone, market, deadlineMs = 5000 }) {
-  return new TurnGateway({ adapter, machine, store: new RedisTurnStore({ storage }), deadlineMs,
+function createProviderGateway({ adapter, machine, storage, normalizePhone, market, eventStore, deadlineMs = 5000 }) {
+  return new TurnGateway({ adapter, machine, store: new RedisTurnStore({ storage }), eventStore, deadlineMs,
     recoverTurn: async ({ pending, session, signal }) => {
       signal.throwIfAborted();
       const result = session && await market.readOperation(pending.idempotencyKey, session.state, session.data?.phone);

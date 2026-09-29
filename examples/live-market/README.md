@@ -63,7 +63,7 @@ curl -s http://localhost:3100/africas-talking/ussd \
   --data-urlencode 'text='
 ```
 
-Subsequent callbacks send accumulated `text=1`, `text=1*1`, etc. The adapter passes only the newest input into the fluent app. The demo binds the service/caller, replays known receipts, and rejects gaps, conflicts and uncertain turns. Runtime state and receipts commit atomically in Redis. Confirmed terminal order/cancellation effects can be reconciled explicitly through `app.providerGateway.recover(wireRequest)` without a second stock mutation. Unknown/nonterminal outcomes remain pending. This endpoint has no provider authentication or end-event reconciliation; it remains a local demonstration until those gateway requirements and stable ingress are verified. See [adapter behavior and limits](../../docs/AFRICAS-TALKING-ADAPTER.md).
+Subsequent callbacks send accumulated `text=1`, `text=1*1`, etc. The adapter passes only the newest input into the fluent app. The demo binds the service/caller, replays known receipts, and rejects gaps, conflicts and uncertain turns. Runtime state and receipts commit atomically in Redis. Confirmed terminal order/cancellation effects can be reconciled explicitly through `app.providerGateway.recover(wireRequest)` without a second stock mutation. Unknown/nonterminal outcomes remain pending. It remains a local demonstration until provider-origin controls and stable ingress are verified. See [adapter behavior and limits](../../docs/AFRICAS-TALKING-ADAPTER.md).
 
 Run all HTTP/Redis suites, including this route, with:
 
@@ -72,3 +72,9 @@ REDIS_URL=redis://localhost:16379 npm run test:integration -- --runInBand --dete
 ```
 
 The provider route uses one request deadline, including body reads, and aborts handler work when the caller disconnects. Set `AT_DEADLINE_MS` (default 5000). Order/cancellation journals persist for 24 hours; this local demo exposes no recovery HTTP endpoint. See [deadlines and effect recovery](../../docs/DEADLINES-AND-RECOVERY.md) for the supported guarantees and operator recovery contract.
+
+## Optional event callbacks
+
+Set `AT_EVENT_TOKEN` with `AT_SERVICE_CODE` to enable `/africas-talking/events`, and `MARKET_ORDER_EVENT_TOKEN` to enable `/demo/order-events`. Each token must be 16–256 characters. The local routes require `Authorization: Bearer <token>` and are absent when their token is unset. These headers are a local ingress policy; the provider documentation does not establish support for custom callback authorization. Verify the provider's actual source controls before connecting a real service. See [session end events and asynchronous results](../../docs/SESSION-END-AND-CALLBACKS.md).
+
+The order callback accepts bounded JSON such as `{ "orderId": "M00001", "eventId": "evt-1", "version": 1, "status": "Ready" }`. It updates a durable order result without modifying stock or the handset session. A new session with the order's bound phone sees `Ready` under **My orders**. Duplicate and older versions are safely acknowledged; same-version conflicts and updates to cancelled orders return 409 for operator inspection. The browser demo can also show this result after a new session is started.

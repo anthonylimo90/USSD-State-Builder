@@ -1221,6 +1221,7 @@ export interface PendingTurn extends TurnContext {
     token: string;
     fingerprint: string;
     flowVersion: string | null;
+    kind?: 'turn' | 'recovery';
 }
 export interface TurnReceipt {
     fingerprint: string;
@@ -1241,6 +1242,7 @@ export interface TurnRecord extends TurnLedger {
     now: number;
     activeExpiresAt: number | null;
     receiptExpiresAt: number;
+    closed?: boolean;
 }
 export interface AtomicTurnStore {
     readonly supportsDeadlines: true;
@@ -1279,6 +1281,7 @@ export interface TurnGatewayOptions {
     /** Pure initial-data mapper, with no business effects. */
     sessionData?: (turn: AfricasTalkingTurn, context: { signal: AbortSignal; deadlineAt: number }) => Record<string, any> | Promise<Record<string, any>>;
     /** Reconcile a durable operation journal; never blindly repeat the handler. */
+    eventStore?: RedisSessionEventStore;
     recoverTurn?: (context: { turn: AfricasTalkingTurn; pending: PendingTurn; session: TurnSessionSnapshot | null; revision: number; signal: AbortSignal; deadlineAt: number }) =>
         PreparedTurn | null | Promise<PreparedTurn | null>;
 }
@@ -1289,4 +1292,35 @@ export class TurnGateway {
     process(turn: AfricasTalkingTurn, options?: TurnRequestOptions): Promise<ProviderHttpResponse>;
     /** Explicit application-authorized reconciliation; normal retries never call this automatically. */
     recover(request: ProviderWireRequest, options?: TurnRequestOptions): Promise<ProviderHttpResponse>;
+}
+
+export interface AfricasTalkingEndEvent {
+    sessionKey: string;
+    binding: ProviderSessionBinding;
+    occurredAt: number;
+    status: 'Incomplete' | 'Success' | 'Failed';
+    fingerprint: string;
+    fields: Readonly<Record<string, string>>;
+}
+export class AfricasTalkingEventAdapter {
+    constructor(options: AfricasTalkingAdapterOptions);
+    normalize(request: ProviderWireRequest): AfricasTalkingEndEvent;
+}
+export interface SessionEventRecord {
+    schemaVersion: 1;
+    revision: number;
+    binding: ProviderSessionBinding;
+    bindingSource: 'turn' | 'event_only';
+    events: Array<{ fingerprint: string; occurredAt: number; status: AfricasTalkingEndEvent['status'] }>;
+    outcome: AfricasTalkingEndEvent['status'] | 'conflict';
+}
+export class RedisSessionEventStore {
+    constructor(options: { storage: RedisStorage; retentionSeconds?: number; maxEvents?: number });
+    readonly storage: RedisStorage;
+    read(sessionKey: string): Promise<SessionEventRecord | null>;
+    accept(event: AfricasTalkingEndEvent): Promise<{ classification: 'accepted' | 'duplicate' | 'stale' | 'conflict'; record: SessionEventRecord }>;
+}
+export class SessionEventGateway {
+    constructor(options: { adapter: AfricasTalkingEventAdapter; store: RedisSessionEventStore });
+    handle(request: ProviderWireRequest): Promise<ProviderHttpResponse & { classification?: string }>;
 }

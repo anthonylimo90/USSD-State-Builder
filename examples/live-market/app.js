@@ -142,14 +142,14 @@ function createMarketApp({ storage, market }) {
     .state('ORDER_CODE', s => s.run(async (input, sessionId, context) => {
         if (!input) {
           const orders = await market.listOrders(context.sessionData?.phone);
-          const list = orders.map(order => `${order.id} ${order.status}`).join('\n');
+          const list = orders.map(order => `${order.id} ${order.status}${order.fulfillment ? `, ${order.fulfillment.status}` : ''}`).join('\n');
           return { response: `CON ${list || 'No orders yet'}\nEnter an order number\n0 Back` };
         }
         const id = /^M?\d{1,5}$/i.test(input) ? `M${input.replace(/^M/i, '').padStart(5, '0')}` : null;
         const order = id && await market.getOrder(id, context.sessionData?.phone);
         if (!order) return { response: 'CON Order not found\nEnter another number\n0 Back' };
         return {
-          response: `CON ${order.id}: ${order.status}\nKES ${order.total}, ${order.pickup}\n1 Cancel order\n2 Done\n0 Back`,
+          response: `CON ${order.id}: ${order.status}${order.fulfillment ? `, ${order.fulfillment.status}` : ''}\nKES ${order.total}, ${order.pickup}\n1 Cancel order\n2 Done\n0 Back`,
           nextState: 'ORDER_DETAIL',
           data: { viewOrderId: id }
         };
@@ -160,7 +160,7 @@ function createMarketApp({ storage, market }) {
         const order = await market.getOrder(data.viewOrderId, data.phone);
         if (!order) return { response: 'END Order not found' };
         if (!input) return {
-          response: `CON ${order.id}: ${order.status}\nKES ${order.total}, ${order.pickup}\n1 Cancel order\n2 Done\n0 Back`
+          response: `CON ${order.id}: ${order.status}${order.fulfillment ? `, ${order.fulfillment.status}` : ''}\nKES ${order.total}, ${order.pickup}\n1 Cancel order\n2 Done\n0 Back`
         };
         if (input === '2') return { response: 'END Thank you for using Mavuno Co-op.' };
         if (input !== '1') return { response: 'CON Invalid choice\n1 Cancel order\n2 Done\n0 Back' };

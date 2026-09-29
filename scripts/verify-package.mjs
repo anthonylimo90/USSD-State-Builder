@@ -51,6 +51,15 @@ const adapter = new root.AfricasTalkingAdapter({ applicationId: 'packed', servic
 assert.equal(adapter.formatResponse('CON Welcome').headers['Content-Type'], 'text/plain; charset=utf-8');
 assert.equal(root.normalizeUssdInput('1*1', 'cumulative').position, 2);
 assert.equal(typeof sdk.createApp, 'function');
+const events = new root.AfricasTalkingEventAdapter({ applicationId: 'packed', serviceCode: '*384*000#' });
+const endEvent = events.normalize({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: new URLSearchParams({
+  date: '2026-09-29 10:11:12', sessionId: 's1', serviceCode: '*384*000#', networkCode: '99999',
+  phoneNumber: '+254700000001', status: 'Success', cost: '0.00', durationInMillis: '1234',
+  hopsCount: '2', hopsMetadata: '', input: '1', lastAppResponse: 'END Done'
+}).toString() });
+assert.equal(endEvent.status, 'Success');
+assert.equal(typeof root.RedisSessionEventStore, 'function');
+assert.equal(typeof root.SessionEventGateway, 'function');
 (async () => {
   const machine = sdk.createApp().flowVersion('packed-v1').state('START', state => state.message('Welcome')).build();
   assert.equal(await machine.processInput('cjs-session', ''), 'CON Welcome');
@@ -83,7 +92,7 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
@@ -91,6 +100,10 @@ const menu = DynamicMenu.create<string>().fetch(() => ['a']).format(item => item
 const adapter = new AfricasTalkingAdapter({ applicationId: 'typed', serviceCode: '*384*000#' });
 const gateway = new TurnGateway({ adapter, machine, store: new InMemoryTurnStore({ storage }), deadlineMs: 1000, leaseMs: 900, ownershipCheckMs: 50 });
 void gateway.handle({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' }, { signal: new AbortController().signal, deadlineAt: Date.now() + 1000 });
+const eventAdapter = new AfricasTalkingEventAdapter({ applicationId: 'typed', serviceCode: '*384*000#' });
+const eventStore = new RedisSessionEventStore({ storage: new RedisStorage() });
+const eventGateway = new SessionEventGateway({ adapter: eventAdapter, store: eventStore });
+void eventGateway.handle({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'date=' });
 const turn = adapter.normalize({ method: 'POST', contentType: 'application/x-www-form-urlencoded', body: 'text=' });
 const binding = adapter.bindSession(turn);
 const metrics = createExportableMetrics();

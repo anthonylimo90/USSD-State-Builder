@@ -767,6 +767,7 @@ const app = createApp()
 - [Africa's Talking adapter](docs/AFRICAS-TALKING-ADAPTER.md): framework-neutral form normalization, caller/session binding, and an optional Mavuno endpoint.
 - [Atomic turn receipts](docs/TURN-RECEIPTS.md): staged runtime commits, recorded HTTP replay, bounded retention and explicit journal recovery.
 - [Deadlines and effect recovery](docs/DEADLINES-AND-RECOVERY.md): cooperative cancellation, Redis ownership expiry and confirmed demo operation recovery.
+- [Session end events and asynchronous results](docs/SESSION-END-AND-CALLBACKS.md): durable callback reconciliation, turn fencing and authorized order lookup.
 
 - [Flow definitions and session versions](docs/FLOW-DEFINITIONS.md): inspect declared routes and safely retain or restart active sessions when a flow changes.
 

@@ -52,12 +52,32 @@ redis.call('HSET', KEYS[2], ARGV[1], cjson.encode(order))
 return finish('cancelled')
 `;
 
+const ORDER_EVENT = `
+local order = redis.call('HGET', KEYS[1], ARGV[1])
+if not order then return 'missing' end
+local previous = redis.call('HGET', KEYS[2], ARGV[1])
+if previous then
+ local item = cjson.decode(previous)
+ local version = tonumber(ARGV[2])
+ if version < item.version then return 'stale' end
+ if ARGV[3] == item.eventId and version ~= item.version then return 'conflict' end
+ if version == item.version then
+  if item.eventId == ARGV[3] and item.status == ARGV[4] then return 'duplicate' end
+  return 'conflict'
+ end
+end
+if cjson.decode(order).status ~= 'placed' then return 'closed' end
+redis.call('HSET', KEYS[2], ARGV[1], cjson.encode({version=tonumber(ARGV[2]), eventId=ARGV[3], status=ARGV[4]}))
+return 'accepted'
+`;
+
 class MarketStore {
   constructor(client, prefix = 'ussd:live-market:') {
     this.client = client;
     this.prefix = prefix;
     this.stockKey = `${prefix}stock`;
     this.ordersKey = `${prefix}orders`;
+    this.orderEventsKey = `${prefix}order-events`;
     this.sequenceKey = `${prefix}order-sequence`;
   }
 
@@ -103,7 +123,22 @@ class MarketStore {
     const raw = await this.client.hGet(this.ordersKey, orderId);
     if (!raw) return null;
     const order = JSON.parse(raw);
-    return order.phone === phone ? order : null;
+    if (order.phone !== phone) return null;
+    const rawEvent = await this.client.hGet(this.orderEventsKey, orderId);
+    if (rawEvent && order.status === 'placed') {
+      const event = JSON.parse(rawEvent);
+      order.fulfillment = { status: event.status, version: event.version };
+    }
+    return order;
+  }
+
+  async acceptOrderEvent({ orderId, eventId, version, status }) {
+    if (typeof orderId !== 'string' || !/^M\d{5,12}$/.test(orderId) ||
+        typeof eventId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(eventId) ||
+        !Number.isSafeInteger(version) || version < 1 || version > 2147483647 ||
+        !['Ready', 'Delayed'].includes(status)) throw new TypeError('Invalid order event');
+    return this.client.eval(ORDER_EVENT, { keys: [this.ordersKey, this.orderEventsKey],
+      arguments: [orderId, String(version), eventId, status] });
   }
 
   async listOrders(phone) {

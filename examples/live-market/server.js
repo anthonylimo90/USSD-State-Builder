@@ -1,7 +1,9 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { RedisStorage, AfricasTalkingAdapter, ProviderRequestError } = require('ussd-state-builder');
+const { timingSafeEqual } = require('crypto');
+const { RedisStorage, AfricasTalkingAdapter, AfricasTalkingEventAdapter,
+  RedisSessionEventStore, SessionEventGateway, ProviderRequestError } = require('ussd-state-builder');
 const { createProviderGateway } = require('./provider');
 const { CATALOG } = require('./catalog');
 const { MarketStore } = require('./marketStore');
@@ -12,6 +14,12 @@ function normalizePhone(value) {
   if (/^07\d{8}$/.test(phone)) return `254${phone.slice(1)}`;
   if (/^\+?2547\d{8}$/.test(phone)) return phone.replace(/^\+/, '');
   return null;
+}
+
+function authorized(req, token) {
+  const actual = Buffer.from(req.headers.authorization || '');
+  const expected = Buffer.from(`Bearer ${token}`);
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
 function send(res, status, body, contentType = 'application/json; charset=utf-8') {
@@ -59,22 +67,60 @@ function readProviderBody(req, maxBytes, signal) {
 }
 
 async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 'ussd:live-market:',
-  serviceCode, applicationId = 'mavuno-demo', providerDeadlineMs = 5000 } = {}) {
+  serviceCode, applicationId = 'mavuno-demo', providerDeadlineMs = 5000,
+  providerEventToken, orderEventToken } = {}) {
   if (serviceCode && (!Number.isSafeInteger(providerDeadlineMs) || providerDeadlineMs < 1 || providerDeadlineMs > 2147483647)) {
     throw new TypeError('Invalid provider request deadline');
   }
+  for (const token of [providerEventToken, orderEventToken]) {
+    if (token !== undefined && (typeof token !== 'string' || token.length < 16 || token.length > 256)) {
+      throw new TypeError('Event ingress tokens must be 16–256 characters');
+    }
+  }
   const providerAdapter = serviceCode ? new AfricasTalkingAdapter({ applicationId, serviceCode }) : null;
+  const eventAdapter = serviceCode ? new AfricasTalkingEventAdapter({ applicationId, serviceCode }) : null;
   const storage = new RedisStorage({ url: redisUrl, keyPrefix: `${prefix}session:` });
   await storage._ensureConnected();
   const market = new MarketStore(storage.client, prefix);
   await market.seed();
   const machine = createMarketApp({ storage, market });
+  const eventStore = providerAdapter ? new RedisSessionEventStore({ storage }) : null;
+  const eventGateway = eventAdapter ? new SessionEventGateway({ adapter: eventAdapter, store: eventStore }) : null;
   const providerGateway = providerAdapter ? createProviderGateway({
-    adapter: providerAdapter, machine, storage, normalizePhone, market, deadlineMs: providerDeadlineMs
+    adapter: providerAdapter, machine, storage, normalizePhone, market, eventStore, deadlineMs: providerDeadlineMs
   }) : null;
 
   const server = http.createServer(async (req, res) => {
     try {
+      if (providerAdapter && providerEventToken && req.url === '/africas-talking/events') {
+        if (!authorized(req, providerEventToken)) return send(res, 401, 'Unavailable', 'text/plain; charset=utf-8');
+        let result;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), providerDeadlineMs);
+        try {
+          const body = await readProviderBody(req, eventAdapter.maxBodyBytes, controller.signal);
+          result = await eventGateway.handle({ method: req.method, contentType: req.headers['content-type'], body });
+        } catch (error) { result = { status: error instanceof ProviderRequestError ? error.status : 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body: 'Unavailable' }; }
+        finally { clearTimeout(timer); }
+        res.writeHead(result.status, result.headers);
+        return res.end(result.body);
+      }
+      if (orderEventToken && req.url === '/demo/order-events') {
+        if (!authorized(req, orderEventToken)) return send(res, 401, { error: 'Unauthorized' });
+        if (req.method !== 'POST') return send(res, 405, { error: 'POST required' });
+        let event;
+        try { event = await readJson(req); }
+        catch { return send(res, 400, { error: 'Invalid event' }); }
+        try {
+          const classification = await market.acceptOrderEvent(event);
+          return send(res, classification === 'missing' ? 404 : ['conflict', 'closed'].includes(classification) ? 409 : 200,
+            { classification });
+        } catch (error) {
+          if (error instanceof TypeError) return send(res, 400, { error: 'Invalid event' });
+          throw error;
+        }
+      }
       if (providerAdapter && req.url === '/africas-talking/ussd') {
         let result;
         const controller = new AbortController();
@@ -138,7 +184,7 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
   });
 
   return {
-    server, storage, market, machine, providerAdapter, providerGateway,
+    server, storage, market, machine, providerAdapter, providerGateway, eventAdapter, eventStore, eventGateway,
     async close() {
       if (server.listening) await new Promise(resolve => server.close(resolve));
       await storage.close();
@@ -152,7 +198,9 @@ if (require.main === module) {
     prefix: process.env.MARKET_PREFIX || 'ussd:live-market:',
     serviceCode: process.env.AT_SERVICE_CODE,
     applicationId: process.env.AT_APPLICATION_ID || 'mavuno-demo',
-    providerDeadlineMs: Number(process.env.AT_DEADLINE_MS || 5000)
+    providerDeadlineMs: Number(process.env.AT_DEADLINE_MS || 5000),
+    providerEventToken: process.env.AT_EVENT_TOKEN,
+    orderEventToken: process.env.MARKET_ORDER_EVENT_TOKEN
   }).then(app => {
     const port = Number(process.env.PORT || 3100);
     app.server.listen(port, '127.0.0.1', () => {

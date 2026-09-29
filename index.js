@@ -93,10 +93,14 @@ const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicM
 const { AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput } = require('./lib/AfricasTalkingAdapter');
 
 const { TurnGateway } = require('./lib/TurnGateway');
+const { AfricasTalkingEventAdapter } = require('./lib/AfricasTalkingEventAdapter');
+const { RedisSessionEventStore } = require('./lib/RedisSessionEventStore');
+const { SessionEventGateway } = require('./lib/SessionEventGateway');
 const { RedisTurnStore, InMemoryTurnStore } = require('./lib/TurnStore');
 
 module.exports = {
   TurnGateway, RedisTurnStore, InMemoryTurnStore,
+  AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway,
   AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput,
   // Core
   USSDStateMachine,

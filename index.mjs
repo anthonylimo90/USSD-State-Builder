@@ -141,6 +141,9 @@ export const ProviderRequestError = pkg.ProviderRequestError;
 export const normalizeUssdInput = pkg.normalizeUssdInput;
 
 export const TurnGateway = pkg.TurnGateway;
+export const AfricasTalkingEventAdapter = pkg.AfricasTalkingEventAdapter;
+export const RedisSessionEventStore = pkg.RedisSessionEventStore;
+export const SessionEventGateway = pkg.SessionEventGateway;
 export const RedisTurnStore = pkg.RedisTurnStore;
 export const InMemoryTurnStore = pkg.InMemoryTurnStore;
 

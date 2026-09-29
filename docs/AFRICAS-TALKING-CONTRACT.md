@@ -83,7 +83,7 @@ A separately configured event callback receives a `POST` with `application/x-www
 
 The network table identifies sandbox Athena as `99999`; Kenyan entries include Safaricom `63902`, Airtel `63903`, Orange `63907`, and Equitel `63999`. Treat labels as documentation values rather than current provisioning guarantees. [Official USSD Notifications](https://developers.africastalking.com/docs/ussd/notifications)
 
-Local event policy: acknowledge only after safe durable acceptance; do not run a new interactive turn. Keep decimal money as text until currency/format is established. Treat event success as session completion, not proof of payment/order success. Preserve business-operation results independently of session expiry. Duplicate, late, and conflicting notifications require P2-06 reconciliation.
+Local event policy: acknowledge only after safe durable acceptance; do not run a new interactive turn. Keep decimal money as text until currency/format is established. Treat event success as session completion, not proof of payment/order success. Preserve business-operation results independently of session expiry. P2-06 implements bounded local reconciliation for duplicate, late, and conflicting notifications; actual provider delivery and origin remain unverified. See [session end events](SESSION-END-AND-CALLBACKS.md).
 
 ## Authentication and network controls
 
