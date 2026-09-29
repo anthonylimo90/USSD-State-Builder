@@ -88,6 +88,14 @@ export const debuggers = pkg.debuggers;
 export const isDebugEnabled = pkg.isDebugEnabled;
 export const getEnabledNamespaces = pkg.getEnabledNamespaces;
 
+// Versioned traces and replay fixtures
+export const TRACE_SCHEMA_VERSION = pkg.TRACE_SCHEMA_VERSION;
+export const MAX_TRACE_BYTES = pkg.MAX_TRACE_BYTES;
+export const MAX_FIXTURE_BYTES = pkg.MAX_FIXTURE_BYTES;
+export const createTraceEvent = pkg.createTraceEvent;
+export const createTraceObserver = pkg.createTraceObserver;
+export const createReplayFixture = pkg.createReplayFixture;
+
 // State introspection
 export const StateInspector = pkg.StateInspector;
 

@@ -89,6 +89,8 @@ const { USSDSimulator } = require('./lib/USSDSimulator');
 const { WebhookManager } = require('./lib/WebhookManager');
 const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
+const { TRACE_SCHEMA_VERSION, MAX_TRACE_BYTES, MAX_FIXTURE_BYTES,
+  createTraceEvent, createTraceObserver, createReplayFixture } = require('./lib/TraceSchema');
 
 const { AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput } = require('./lib/AfricasTalkingAdapter');
 
@@ -180,6 +182,14 @@ module.exports = {
   debuggers,
   isDebugEnabled,
   getEnabledNamespaces,
+
+  // Versioned, redacted turn traces and replay fixtures
+  TRACE_SCHEMA_VERSION,
+  MAX_TRACE_BYTES,
+  MAX_FIXTURE_BYTES,
+  createTraceEvent,
+  createTraceObserver,
+  createReplayFixture,
 
   // State introspection
   StateInspector,

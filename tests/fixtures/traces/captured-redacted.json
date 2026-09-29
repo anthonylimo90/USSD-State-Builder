@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "fixtureType": "turn-sequence",
+  "provenance": "captured-redacted",
+  "caseId": "provider-capture-shape-example",
+  "flowVersion": null,
+  "clock": { "startMs": 1780000000000 },
+  "turns": [
+    {
+      "atMs": 0,
+      "input": { "kind": "redacted", "alias": "input-alias-1" },
+      "external": [
+        { "operation": "inventory", "atMs": 20, "result": "success", "statusCode": 200, "responseRef": null }
+      ],
+      "expected": { "outcome": "success", "state": null }
+    }
+  ]
+}

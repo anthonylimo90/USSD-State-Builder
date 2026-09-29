@@ -611,9 +611,59 @@ export interface MetricsResult {
 
 export interface TurnObservation {
     currentState: string;
+    previousState?: string | null;
+    nextState?: string | null;
+    flowVersion?: string | null;
     outcome: 'success' | 'validation_error' | 'error' | 'blocked' | 'replay' | 'flow_restart';
+    errorClass?: 'validation' | 'timeout' | 'storage' | 'provider' | 'handler' | 'unknown' | null;
     durationMs: number;
 }
+
+export const TRACE_SCHEMA_VERSION: 1;
+export const MAX_TRACE_BYTES: 2048;
+export const MAX_FIXTURE_BYTES: 65536;
+export interface TraceEvent {
+    schemaVersion: 1;
+    eventType: 'turn';
+    occurredAt: string;
+    flowVersion: string | null;
+    requestId: string;
+    turnId: string;
+    previousState: string | null;
+    nextState: string | null;
+    outcome: TurnObservation['outcome'];
+    durationMs: number;
+    errorClass: NonNullable<TurnObservation['errorClass']> | null;
+}
+export interface TraceFixtureExternal {
+    operation: string;
+    atMs: number;
+    result: 'success' | 'error';
+    statusCode: number | null;
+    /** Named fake response in a synthetic fixture; null for captured metadata. */
+    responseRef: string | null;
+}
+export interface TraceFixtureTurn {
+    atMs: number;
+    input: { kind: 'synthetic'; value: string } | { kind: 'redacted'; alias: string };
+    external: TraceFixtureExternal[];
+    expected: { outcome: TurnObservation['outcome']; state: string | null };
+}
+export interface TraceFixture {
+    schemaVersion: 1;
+    fixtureType: 'turn-sequence';
+    provenance: 'synthetic' | 'captured-redacted';
+    caseId: string;
+    flowVersion: string | null;
+    clock: { startMs: number };
+    turns: TraceFixtureTurn[];
+}
+/** Unknown fields are rejected; raw input, response, error and session data are not trace fields. */
+export function createTraceEvent(source: TraceEvent): Readonly<TraceEvent>;
+export function createTraceObserver(onEvent: (event: Readonly<TraceEvent>) => void,
+    options?: { now?: () => string; id?: () => string }): (turn: TurnObservation) => void;
+/** Captured-redacted fixtures cannot contain executable inputs or response references. */
+export function createReplayFixture(source: TraceFixture): Readonly<TraceFixture>;
 
 /**
  * Create a logging middleware

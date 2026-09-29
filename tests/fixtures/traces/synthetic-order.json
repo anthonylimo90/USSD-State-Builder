@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "fixtureType": "turn-sequence",
+  "provenance": "synthetic",
+  "caseId": "mavuno-order-example",
+  "flowVersion": "demo-v1",
+  "clock": { "startMs": 1780000000000 },
+  "turns": [
+    {
+      "atMs": 0,
+      "input": { "kind": "synthetic", "value": "" },
+      "external": [],
+      "expected": { "outcome": "success", "state": "MENU" }
+    },
+    {
+      "atMs": 1000,
+      "input": { "kind": "synthetic", "value": "1" },
+      "external": [
+        { "operation": "catalog", "atMs": 1010, "result": "success", "statusCode": 200, "responseRef": "synthetic-catalog-1" }
+      ],
+      "expected": { "outcome": "success", "state": "CATEGORY" }
+    }
+  ]
+}
