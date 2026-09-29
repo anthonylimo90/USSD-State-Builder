@@ -66,6 +66,20 @@ describeProvider('Africa’s Talking adapter with Mavuno over HTTP and Redis', (
     expect(await app.market.getStock('MAIZE')).toBe(8);
   });
 
+  test('keeps a two-product provider journey within the starter output budget', async () => {
+    const steps = ['', '1', '1', '1', '2', '1', '2', '1', '1', '2', '2', '2', '1'];
+    const choices = [];
+    let terminal;
+    for (const step of steps) {
+      if (step) choices.push(step);
+      const result = await callback('two-product-budget', choices.join('*'));
+      expect(result.status).toBe(200);
+      expect(Buffer.byteLength(result.body, 'utf8')).toBeLessThanOrEqual(160);
+      terminal = result.body;
+    }
+    expect(terminal).toMatch(/^END Order M\d+ placed/);
+  });
+
   test('rejects caller/service changes, gaps, stale and divergent transcripts without moving state', async () => {
     await callback('bound');
     expect((await callback('bound', '1', { phoneNumber: '+254712345679' })).status).toBe(409);
@@ -126,6 +140,33 @@ describeProvider('Africa’s Talking adapter with Mavuno over HTTP and Redis', (
     expect(response.status).toBe(413);
     expect(response.headers['content-type']).toBe('text/plain; charset=utf-8');
     expect(response.body).toMatch(/^END /);
+  });
+  test('uses the network budget before committing a receipt', async () => {
+    const scoped = await createLiveMarket({ redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
+      prefix: `${prefix}budget:`, serviceCode, responseBudgets: { default: 40, '99999': 160 } });
+    await new Promise(resolve => scoped.server.listen(0, '127.0.0.1', resolve));
+    const scopedPort = scoped.server.address().port;
+    const sendToScoped = (sessionId, networkCode) => new Promise((resolve, reject) => {
+      const body = new URLSearchParams(fields(sessionId, '', { networkCode })).toString();
+      const req = http.request({ host: '127.0.0.1', port: scopedPort, path: '/africas-talking/ussd', method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) } }, res => {
+        res.resume(); res.on('end', () => resolve(res.statusCode));
+      });
+      req.on('error', reject); req.end(body);
+    });
+    try {
+      expect(await sendToScoped('allowed', '99999')).toBe(200);
+      expect(await sendToScoped('limited', 'unknown')).toBe(500);
+      const limitedKey = adapter.normalize({ method: 'POST', contentType: 'application/x-www-form-urlencoded',
+        body: new URLSearchParams(fields('limited', '', { networkCode: 'unknown' })).toString() }).sessionKey;
+      const record = await scoped.providerGateway.store.read(limitedKey);
+      expect(record.pending).toBeTruthy();
+      expect(record.receipts).toHaveLength(0);
+    } finally {
+      const keys = await scoped.storage.client.keys(`${prefix}budget:*`);
+      if (keys.length) await scoped.storage.client.del(keys);
+      await scoped.close();
+    }
   });
   test('an order effect survives failed turn commit and is recovered without reserving stock again', async () => {
     const id = 'recover-order';

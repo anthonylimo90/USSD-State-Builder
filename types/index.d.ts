@@ -1174,6 +1174,8 @@ export interface AfricasTalkingAdapterOptions {
     maxFieldLength?: number;
     maxInputLength?: number;
     maxResponseBytes?: number;
+    /** Complete UTF-8 response byte limits, including CON/END. Unknown networks use default. */
+    responseBudgets?: Readonly<Record<string, number>>;
 }
 export class ProviderRequestError extends Error {
     readonly code: string;
@@ -1189,7 +1191,7 @@ export class AfricasTalkingAdapter {
     bindSession(turn: AfricasTalkingTurn, existing?: ProviderSessionBinding | null): ProviderSessionBinding;
     compareTranscript(turn: AfricasTalkingTurn, previous?: string | null):
         'initial' | 'missing_initial' | 'repeat' | 'next' | 'stale' | 'gap' | 'conflict';
-    formatResponse(response: string, options?: { hopMetadata?: string }): ProviderHttpResponse;
+    formatResponse(response: string, options?: { hopMetadata?: string; networkCode?: string; turn?: AfricasTalkingTurn }): ProviderHttpResponse;
     errorResponse(error: unknown): ProviderHttpResponse;
     handle(request: ProviderWireRequest, processTurn: (turn: AfricasTalkingTurn) =>
         string | { response: string; hopMetadata?: string } |

@@ -68,7 +68,7 @@ function readProviderBody(req, maxBytes, signal) {
 
 async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 'ussd:live-market:',
   serviceCode, applicationId = 'mavuno-demo', providerDeadlineMs = 5000,
-  providerEventToken, orderEventToken } = {}) {
+  providerEventToken, orderEventToken, responseBudgets = { default: 160 } } = {}) {
   if (serviceCode && (!Number.isSafeInteger(providerDeadlineMs) || providerDeadlineMs < 1 || providerDeadlineMs > 2147483647)) {
     throw new TypeError('Invalid provider request deadline');
   }
@@ -77,7 +77,7 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
       throw new TypeError('Event ingress tokens must be 16–256 characters');
     }
   }
-  const providerAdapter = serviceCode ? new AfricasTalkingAdapter({ applicationId, serviceCode }) : null;
+  const providerAdapter = serviceCode ? new AfricasTalkingAdapter({ applicationId, serviceCode, responseBudgets }) : null;
   const eventAdapter = serviceCode ? new AfricasTalkingEventAdapter({ applicationId, serviceCode }) : null;
   const storage = new RedisStorage({ url: redisUrl, keyPrefix: `${prefix}session:` });
   await storage._ensureConnected();
@@ -90,8 +90,23 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
     adapter: providerAdapter, machine, storage, normalizePhone, market, eventStore, deadlineMs: providerDeadlineMs
   }) : null;
 
+  let draining = false;
+  let closePromise;
   const server = http.createServer(async (req, res) => {
     try {
+      if (req.method === 'GET' && req.url === '/live') return send(res, 200, { status: 'alive' });
+      if (draining) {
+        res.setHeader('Connection', 'close');
+        return req.url === '/africas-talking/ussd'
+          ? send(res, 503, 'END Service unavailable. Please try again.', 'text/plain; charset=utf-8')
+          : send(res, 503, { status: 'draining' });
+      }
+      if (req.method === 'GET' && (req.url === '/ready' || req.url === '/health')) {
+        try {
+          await storage.client.ping();
+          return send(res, draining ? 503 : 200, { status: draining ? 'draining' : 'ok', app: 'Mavuno Co-op demo' });
+        } catch { return send(res, 503, { status: 'unready' }); }
+      }
       if (providerAdapter && providerEventToken && req.url === '/africas-talking/events') {
         if (!authorized(req, providerEventToken)) return send(res, 401, 'Unavailable', 'text/plain; charset=utf-8');
         let result;
@@ -140,10 +155,6 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
       if (req.method === 'GET' && req.url === '/') {
         return send(res, 200, fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
       }
-      if (req.method === 'GET' && req.url === '/health') {
-        await storage.client.ping();
-        return send(res, 200, { status: 'ok', app: 'Mavuno Co-op demo' });
-      }
       if (req.method === 'GET' && req.url === '/catalog') {
         const categories = await Promise.all(Object.entries(CATALOG).map(async ([name, products]) => [
           name,
@@ -183,11 +194,23 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
     }
   });
 
+  const drain = () => { draining = true; };
   return {
     server, storage, market, machine, providerAdapter, providerGateway, eventAdapter, eventStore, eventGateway,
+    drain,
     async close() {
-      if (server.listening) await new Promise(resolve => server.close(resolve));
-      await storage.close();
+      if (closePromise) return closePromise;
+      drain();
+      closePromise = (async () => {
+        if (server.listening) {
+          await new Promise(resolve => {
+            const timer = setTimeout(() => server.closeAllConnections(), Math.max(10000, providerDeadlineMs + 1000));
+            server.close(() => { clearTimeout(timer); resolve(); });
+          });
+        }
+        await storage.close();
+      })();
+      return closePromise;
     }
   };
 }
@@ -200,7 +223,8 @@ if (require.main === module) {
     applicationId: process.env.AT_APPLICATION_ID || 'mavuno-demo',
     providerDeadlineMs: Number(process.env.AT_DEADLINE_MS || 5000),
     providerEventToken: process.env.AT_EVENT_TOKEN,
-    orderEventToken: process.env.MARKET_ORDER_EVENT_TOKEN
+    orderEventToken: process.env.MARKET_ORDER_EVENT_TOKEN,
+    responseBudgets: process.env.AT_RESPONSE_BUDGETS ? JSON.parse(process.env.AT_RESPONSE_BUDGETS) : { default: 160 }
   }).then(app => {
     const port = Number(process.env.PORT || 3100);
     app.server.listen(port, '127.0.0.1', () => {

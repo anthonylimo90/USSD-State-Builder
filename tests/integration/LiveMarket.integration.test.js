@@ -62,6 +62,8 @@ describeLive('Mavuno Co-op over HTTP and Redis', () => {
   test('runs a two-product order, survives restart, rejects replay, and restores stock on cancellation', async () => {
     const health = await request('GET', '/health');
     expect(JSON.parse(health.body).status).toBe('ok');
+    expect((await request('GET', '/live')).status).toBe(200);
+    expect((await request('GET', '/ready')).status).toBe(200);
     const initialStock = JSON.parse((await request('GET', '/catalog')).body);
     expect(initialStock.seeds[0].available).toBe(8);
 
@@ -104,6 +106,15 @@ describeLive('Mavuno Co-op over HTTP and Redis', () => {
     expect(await dial(stranger, 'M00001', '0712000000')).toContain('Order not found');
   });
 
+  test('readiness reports a Redis outage without hiding process liveness', async () => {
+    const ping = app.storage.client.ping;
+    app.storage.client.ping = async () => { throw new Error('simulated Redis outage'); };
+    try {
+      expect((await request('GET', '/ready')).status).toBe(503);
+      expect((await request('GET', '/live')).status).toBe(200);
+    } finally { app.storage.client.ping = ping; }
+  });
+
   test('keeps the state on invalid quantity and supports back navigation', async () => {
     expect(await dial('help-session')).toContain('Mavuno Co-op');
     expect(await dial('help-session', '9')).toContain('Invalid choice');
@@ -132,5 +143,28 @@ describeLive('Mavuno Co-op over HTTP and Redis', () => {
     expect(responses.filter(response => response.startsWith('END Order'))).toHaveLength(1);
     expect(responses.filter(response => response.includes('0 left'))).toHaveLength(1);
     expect(await app.market.getStock('MAIZE')).toBe(0);
+  });
+
+  test('shutdown waits for an in-flight HTTP response before closing Redis', async () => {
+    const getStock = app.market.getStock.bind(app.market);
+    let entered;
+    let release;
+    const started = new Promise(resolve => { entered = resolve; });
+    const hold = new Promise(resolve => { release = resolve; });
+    app.market.getStock = async sku => { entered(); await hold; return getStock(sku); };
+    const response = request('GET', '/catalog');
+    await started;
+    app.drain();
+    expect((await request('GET', '/ready')).status).toBe(503);
+    expect((await request('GET', '/live')).status).toBe(200);
+    expect((await request('GET', '/catalog')).status).toBe(503);
+    let closed = false;
+    const closing = app.close().then(() => { closed = true; });
+    expect(closed).toBe(false);
+    release();
+    expect((await response).status).toBe(200);
+    await closing;
+    expect(closed).toBe(true);
+    await start();
   });
 });

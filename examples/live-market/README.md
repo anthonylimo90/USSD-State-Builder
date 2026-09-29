@@ -4,6 +4,8 @@ This is a simulated ordering service. Its [app definition](app.js) uses the SDK'
 
 ## Run it
 
+Use Node 22 or newer. Install dependencies with `npm ci`. The starter's [environment example](.env.example) lists every runtime setting; export values in your shell or deployment environment before starting the process. It does not load `.env` files automatically.
+
 ```bash
 docker run --rm -d --name ussd-live-redis -p 127.0.0.1:16379:6379 redis:7-alpine
 REDIS_URL=redis://localhost:16379 PORT=3100 npm run demo:live-market
@@ -42,6 +44,8 @@ This packs the checkout, installs it into a temporary consumer, starts Mavuno fr
 
 Stop the demo with `Ctrl-C`, then stop Redis with `docker stop ussd-live-redis`.
 
+`GET /live` reports that the process can answer HTTP. `GET /ready` checks Redis and returns 503 if it is unavailable; `/health` is a compatibility alias for readiness. Embedders can call `app.drain()` to make readiness return 503 and reject new work while existing requests finish, then call `app.close()`. On `SIGINT` or `SIGTERM`, the CLI drains and stops accepting new requests, waits up to at least ten seconds for current requests to finish, then closes Redis. A forced drain closes remaining HTTP connections; retry an uncertain provider turn through the documented recovery path. Use a host that removes an unready instance from traffic before terminating it. The CLI binds to `127.0.0.1`; put a controlled HTTPS ingress in front of it for sandbox callbacks.
+
 ## Africa's Talking form endpoint
 
 Enable the optional cumulative-input route with an explicitly configured service:
@@ -64,6 +68,8 @@ curl -s http://localhost:3100/africas-talking/ussd \
 ```
 
 Subsequent callbacks send accumulated `text=1`, `text=1*1`, etc. The adapter passes only the newest input into the fluent app. The demo binds the service/caller, replays known receipts, and rejects gaps, conflicts and uncertain turns. Runtime state and receipts commit atomically in Redis. Confirmed terminal order/cancellation effects can be reconciled explicitly through `app.providerGateway.recover(wireRequest)` without a second stock mutation. Unknown/nonterminal outcomes remain pending. It remains a local demonstration until provider-origin controls and stable ingress are verified. See [adapter behavior and limits](../../docs/AFRICAS-TALKING-ADAPTER.md).
+
+`AT_RESPONSE_BUDGETS` is a JSON object with a mandatory `default` UTF-8 byte limit and optional numeric network-code keys, for example `'{"default":160,"63902":160}'`. It counts the entire response including the prefix and never clips a menu. The starter uses 160 bytes for unknown networks. This is a local safety margin, not proof of carrier character accounting or Unicode rendering. Test the actual network, language, long cart and error screens before changing limits. An over-budget prepared turn returns an error and stays pending for inspection; do not blindly replay a business effect. See the [sandbox walkthrough](../../docs/MAVUNO-SANDBOX-WALKTHROUGH.md).
 
 Run all HTTP/Redis suites, including this route, with:
 

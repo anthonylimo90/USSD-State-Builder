@@ -41,8 +41,9 @@ Call `bindSession(turn, existingBinding)` against the session's stored binding b
 | `maxTranscriptLength` | 4096 | UTF-16 units in accumulated text |
 | `maxInputLength` | 160 | UTF-16 units in the newest input |
 | `maxResponseBytes` | 16384 | UTF-8 bytes in an application menu |
+| `responseBudgets` | unset | Optional `default` and numeric network-code UTF-8 byte ceilings, including `CON `/`END ` |
 
-All limits are positive integers; forms are also limited to 32 fields. These defaults are local resource bounds, not operator character budgets. Configure conservative menus for the intended network and verify actual operator limits during P2-07. Oversized menus fail rather than being clipped. Fixed error menus are independent of the application menu bound.
+Resource limits are positive integers; forms are also limited to 32 fields. The default resource bounds are not operator character budgets. `responseBudgets` requires a `default` ceiling and accepts values from 32 through `maxResponseBytes`; an unknown network uses the default. It counts encoded UTF-8 bytes of the complete response, so accented letters, combining marks and emoji can consume more than one byte. This is a conservative local policy, not a claim about a carrier's character-counting rules or glyph support. Oversized menus fail rather than being clipped, and a claimed turn remains pending for inspection/recovery. Fixed error menus are independent of the application menu bound. Verify actual operator limits before live deployment.
 
 Successful menus use HTTP 200 and `Content-Type: text/plain; charset=utf-8`, with the unquoted body and `Cache-Control: no-store`. Empty/invalid prefixes, leading whitespace/BOM, disallowed controls, invalid hop labels or oversized menus fail closed.
 

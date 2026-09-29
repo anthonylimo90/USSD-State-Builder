@@ -56,6 +56,21 @@ describe('Africa’s Talking request normalization', () => {
     expect(() => new AfricasTalkingAdapter(config).normalize({ ...request(), body: `${form()}${Array.from({ length: 40 }, (_, i) => `&x${i}=1`).join('')}` })).toThrow();
   });
 
+  test('applies network output budgets to complete UTF-8 responses without clipping multilingual text', () => {
+    const adapter = new AfricasTalkingAdapter({ ...config, responseBudgets: { default: 32, '63902': 36 } });
+    const accented = `CON ${'a'.repeat(25)}é`;
+    const emoji = `CON ${'a'.repeat(24)}😀`;
+    const combining = `CON ${'a'.repeat(25)}e\u0301`;
+    expect(Buffer.byteLength(accented)).toBe(31);
+    expect(adapter.formatResponse(accented, { networkCode: '99999' }).body).toBe(accented);
+    expect(adapter.formatResponse(emoji, { networkCode: '99999' }).body).toBe(emoji);
+    expect(() => adapter.formatResponse(`${emoji}x`, { networkCode: '99999' })).toThrow('Invalid or oversized');
+    expect(() => adapter.formatResponse(`${emoji}x`, { networkCode: 'constructor' })).toThrow('Invalid or oversized');
+    expect(adapter.formatResponse(`${emoji}x`, { networkCode: '63902' }).body).toBe(`${emoji}x`);
+    expect(() => adapter.formatResponse(`${combining}xx`, { networkCode: '99999' })).toThrow('Invalid or oversized');
+    expect(() => new AfricasTalkingAdapter({ ...config, responseBudgets: { '63902': 160 } })).toThrow(TypeError);
+  });
+
   test('normalizes sanitized captures as aliases without claiming they contain real subscriber identities', () => {
     const files = ['2026-09-28-sandbox.jsonl', '2026-09-28-diagnostic.jsonl'];
     for (const file of files) {
