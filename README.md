@@ -7,6 +7,10 @@ A fluent SDK for building USSD applications in Node.js, with automatic `CON`/`EN
 
 The [versioned trace and fixture contract](docs/TRACE-AND-FIXTURES.md) defines bounded, redacted turn events and distinguishes synthetic test inputs from captured dependency shapes.
 
+## Local workbench
+
+Run `npm run workbench` from this checkout to open a reusable local keypad with isolated sessions, actual runtime state, public data, navigation history, validation feedback and turn timing. The bundled SDK and traditional examples run without Redis or a provider account. Use `npm run workbench -- --cli` for the interactive simulator, or [attach your own synthetic flow](docs/LOCAL-WORKBENCH.md).
+
 ## Featured demo: Mavuno Co-op
 
 [Mavuno Co-op](examples/live-market/README.md) is a runnable, multi-step USSD ordering app built with the SDK's fluent `createApp().state(...).build()` API. Use its browser keypad to browse a catalog, build a cart, choose pickup, place an order, then find and cancel it from a new session. The HTTP server uses Redis storage for sessions. Redis also holds demo inventory and orders, with atomic checkout when two sessions compete for the same stock.

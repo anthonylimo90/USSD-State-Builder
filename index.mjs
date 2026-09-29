@@ -95,6 +95,9 @@ export const MAX_FIXTURE_BYTES = pkg.MAX_FIXTURE_BYTES;
 export const createTraceEvent = pkg.createTraceEvent;
 export const createTraceObserver = pkg.createTraceObserver;
 export const createReplayFixture = pkg.createReplayFixture;
+export const LocalWorkbench = pkg.LocalWorkbench;
+export const WorkbenchError = pkg.WorkbenchError;
+export const createWorkbenchServer = pkg.createWorkbenchServer;
 
 // State introspection
 export const StateInspector = pkg.StateInspector;

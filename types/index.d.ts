@@ -665,6 +665,57 @@ export function createTraceObserver(onEvent: (event: Readonly<TraceEvent>) => vo
 /** Captured-redacted fixtures cannot contain executable inputs or response references. */
 export function createReplayFixture(source: TraceFixture): Readonly<TraceFixture>;
 
+export interface WorkbenchFlow {
+    id: string;
+    name: string;
+    /** Return a fresh machine with synthetic storage and dependencies for each session. */
+    createMachine: (context: { sessionId: string }) => USSDStateMachine | Promise<USSDStateMachine>;
+}
+export interface WorkbenchSession {
+    id: string;
+    flowId: string;
+    name: string;
+    status: 'idle' | 'active' | 'ended' | 'expired' | 'error';
+    state: string | null;
+    initialState: string;
+    stateInfo: Record<string, unknown> | null;
+    definition: FlowDefinition;
+    data: { values: Record<string, string | number | boolean | null>; hiddenFields: number };
+    stateHistory: string[];
+    /** Latest handset response only; excluded from trace history. */
+    response: string | null;
+    error: string | null;
+    ended: boolean;
+    validationError: boolean;
+    totalTurns: number;
+    history: TraceEvent[];
+}
+export class WorkbenchError extends Error {
+    constructor(code: string, status?: number);
+    code: string;
+    status: number;
+}
+export class LocalWorkbench {
+    constructor(options: { flows: WorkbenchFlow[]; maxSessions?: number; maxHistory?: number });
+    describe(): { flows: Array<{ id: string; name: string }>; maxSessions: number; maxHistory: number };
+    createSession(flowId?: string): Promise<WorkbenchSession>;
+    listSessions(): Array<{ id: string; flowId: string; name: string; turns: number; busy: boolean }>;
+    inspect(id: string): Promise<WorkbenchSession>;
+    send(id: string, input: string): Promise<WorkbenchSession>;
+    reset(id: string): Promise<WorkbenchSession>;
+    closeSession(id: string): Promise<void>;
+    getSimulator(id: string, options?: Record<string, unknown>): import('./advanced').USSDSimulator;
+    getTester(id: string): import('./compat').USSDTester;
+    close(): Promise<void>;
+}
+export function createWorkbenchServer(options: { workbench: LocalWorkbench }): {
+    server: import('node:http').Server;
+    workbench: LocalWorkbench;
+    /** Listens on 127.0.0.1; port 0 selects an available port. */
+    listen(port?: number): Promise<{ url: string }>;
+    close(): Promise<void>;
+};
+
 /**
  * Create a logging middleware
  */

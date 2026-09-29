@@ -29,5 +29,11 @@ export default [
   {
     files: ['tests/**/*.js'],
     languageOptions: { globals: jestGlobals }
+  },
+  {
+    files: ['lib/workbench/*.js'],
+    languageOptions: { sourceType: 'module', globals: {
+      document: 'readonly', fetch: 'readonly', console: 'readonly'
+    } }
   }
 ];

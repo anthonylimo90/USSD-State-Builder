@@ -65,6 +65,19 @@ assert.equal(typeof root.SessionEventGateway, 'function');
   assert.equal(await machine.processInput('cjs-session', ''), 'CON Welcome');
   assert.equal(machine.getFlowDefinition().flowVersion, 'packed-v1');
   assert.equal((await machine.getSessionData('cjs-session')).__ussdFlow.version, 'packed-v1');
+  const workbench = new root.LocalWorkbench({ flows: [{ id: 'packed', name: 'Packed flow',
+    createMachine: () => root.createApp().flowVersion('packed-v1').logger(null)
+      .state('START', state => state.message('Welcome').on('1').goto('NEXT'))
+      .state('NEXT', state => state.message('Next')).build() }] });
+  const session = await workbench.createSession();
+  await workbench.getTester(session.id).start().input('1').expectState('NEXT').run();
+  assert.equal((await workbench.inspect(session.id)).totalTurns, 2);
+  assert.equal((await workbench.reset(session.id)).state, null);
+  const packageRoot = require('node:path').dirname(require.resolve('ussd-state-builder'));
+  for (const asset of ['index.html', 'ui.js', 'keypad.js', 'style.css']) {
+    assert.ok(require('node:fs').statSync(require('node:path').join(packageRoot, 'lib/workbench', asset)).size > 0);
+  }
+  await workbench.close();
   console.log(JSON.stringify({ root: Object.keys(root).sort(), sdk: Object.keys(sdk).sort() }));
 })().catch(error => { console.error(error); process.exitCode = 1; });
 `);
@@ -92,7 +105,7 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
@@ -109,6 +122,9 @@ const binding = adapter.bindSession(turn);
 const metrics = createExportableMetrics();
 void [binding, new ProviderRequestError('INVALID'), normalizeUssdInput('1*1', 'incremental')];
 void [rootDefault, sdkDefault, machine, menu, metrics];
+const workbench = new LocalWorkbench({ flows: [{ id: 'typed', name: 'Typed flow', createMachine: () => machine }] });
+void workbench.createSession().then(session => workbench.getTester(session.id).start().run());
+void createWorkbenchServer({ workbench }).listen(0);
 `;
   writeFileSync(join(consumer, 'consumer.mts'), consumerSource);
   writeFileSync(join(consumer, 'consumer.ts'), consumerSource);

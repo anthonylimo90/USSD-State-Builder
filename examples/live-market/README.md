@@ -15,6 +15,8 @@ Open <http://localhost:3100> to use the browser keypad. The default demo phone i
 
 Use demo phone numbers only. The server binds to localhost and the Redis container exposes port 16379 on localhost.
 
+Mavuno shares its browser keypad with the [local workbench](../../docs/LOCAL-WORKBENCH.md). Run `npm run workbench` for isolated SDK/traditional sessions with state inspection, public data, trace history and timing, without requiring Redis.
+
 The HTTP endpoint also accepts incremental gateway-style requests:
 
 ```bash

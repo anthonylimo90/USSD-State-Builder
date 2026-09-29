@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>USSD Workbench</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/ui.js"></script>
+</head>
+<body>
+  <header class="topbar"><a class="wordmark" href="/">USSD<span> / Workbench</span></a><span class="local"><i></i>Local simulation</span></header>
+  <main>
+    <aside class="sessions" aria-label="Sessions">
+      <div class="section-heading"><h2>Sessions</h2><span id="session-count">0 / 8</span></div>
+      <label for="flow">Flow</label><select id="flow"></select>
+      <button id="new-session" class="new-session">+ New session</button>
+      <div id="sessions" class="session-list"></div>
+      <p class="session-help">Each session starts with its own application instance. Use synthetic inputs.</p>
+    </aside>
+    <section class="workspace" aria-label="Session workspace">
+      <div class="workspace-heading"><div><p class="eyebrow">ACTIVE SESSION</p><h1 id="flow-name">Choose a flow</h1></div><button id="close-session" class="text-button" disabled>Close session</button></div>
+      <p id="notice" class="notice" role="status">Loading the workbench…</p>
+      <div class="working-area">
+        <section class="handset" aria-label="USSD handset">
+          <div class="handset-status"><span id="session-status">Ready</span><span id="turn-time">— ms</span></div>
+          <div id="screen" class="screen" aria-live="polite">Dial to start.</div>
+          <label for="reply">Reply</label><input id="reply" autocomplete="off" spellcheck="false" maxlength="160" placeholder="Enter a choice or text" disabled>
+          <div class="handset-actions"><button id="send" class="primary" disabled>Dial</button><button id="reset" class="secondary" disabled>Reset</button></div>
+          <div class="keypad" role="group" aria-label="USSD keypad">
+            <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+            <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+            <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+            <button data-key="*">*</button><button data-key="0">0</button><button data-key="#">#</button>
+            <button data-key="" class="clear-key">Clear reply</button>
+          </div>
+        </section>
+        <aside class="inspector" aria-label="Session inspector">
+          <div class="section-heading"><h2>Inspector</h2><span id="coverage">—</span></div>
+          <dl class="facts"><div><dt>Current state</dt><dd id="current-state">—</dd></div><div><dt>Flow version</dt><dd id="flow-version">—</dd></div><div><dt>API</dt><dd id="flow-source">—</dd></div><div><dt>Back navigation</dt><dd id="back-key">—</dd></div></dl>
+          <h3>Declared transitions</h3><div id="transitions" class="transitions">No session selected.</div>
+          <h3>Public session data</h3><pre id="data">{}</pre><p id="hidden-data" class="muted">Only fields declared public appear here.</p>
+          <h3>Navigation history</h3><div id="state-history" class="navigation-history">No previous states.</div>
+        </aside>
+      </div>
+      <section class="turns" aria-label="Turn history">
+        <div class="section-heading"><h2>Turn history</h2><span id="turn-count">0 turns</span></div>
+        <p class="muted history-help">Inputs, responses and error text are excluded from this history.</p>
+        <div class="table-scroll"><table><thead><tr><th>Turn</th><th>Transition</th><th>Outcome</th><th>Time</th></tr></thead><tbody id="history"><tr><td colspan="4" class="empty">Dial to record the first turn.</td></tr></tbody></table></div>
+      </section>
+    </section>
+  </main>
+  <footer>USSD State Builder<span>State is read from the runtime · changes stay in this local session</span></footer>
+</body>
+</html>

@@ -155,6 +155,10 @@ async function createLiveMarket({ redisUrl = 'redis://localhost:6379', prefix = 
       if (req.method === 'GET' && req.url === '/') {
         return send(res, 200, fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
       }
+      if (req.method === 'GET' && req.url === '/keypad.js') {
+        return send(res, 200, fs.readFileSync(path.join(path.dirname(require.resolve('ussd-state-builder')),
+          'lib/workbench/keypad.js'), 'utf8'), 'text/javascript; charset=utf-8');
+      }
       if (req.method === 'GET' && req.url === '/catalog') {
         const categories = await Promise.all(Object.entries(CATALOG).map(async ([name, products]) => [
           name,

@@ -60,7 +60,8 @@
       <p class="muted">New sessions use the same phone number to look up orders. Session ID: <code id="session"></code></p>
     </aside>
   </main>
-  <script>
+  <script type="module">
+    import { attachKeypad } from '/keypad.js';
     let sessionId = crypto.randomUUID();
     let started = false;
     let ended = false;
@@ -83,7 +84,6 @@
     async function submit() {
       if (ended) return;
       const value = started ? input.value.trim() : '';
-      send.disabled = true;
       try {
         const response = await fetch('/ussd', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -94,35 +94,25 @@
         if (response.ok) {
           started = true;
           ended = text.startsWith('END ');
-          send.textContent = ended ? 'Session ended' : 'Send';
+          keypad.setSession({ started, closed: ended });
           await refreshCatalog();
         }
       } catch (error) {
         screen.textContent = `Connection error: ${error.message}`;
-      } finally {
-        input.value = '';
-        send.disabled = ended;
-        input.focus();
       }
     }
 
-    send.addEventListener('click', submit);
-    input.addEventListener('keydown', event => { if (event.key === 'Enter') submit(); });
-    document.getElementById('new').addEventListener('click', () => {
+    const keypad = attachKeypad({ input, send, reset: document.getElementById('new'),
+      keys: document.querySelectorAll('[data-key]'), onSubmit: submit, onReset: () => {
       sessionId = crypto.randomUUID();
       session.textContent = sessionId;
       started = false;
       ended = false;
       screen.textContent = 'Dial to start.';
-      send.textContent = 'Dial';
-      send.disabled = false;
+      keypad.setSession();
       input.value = '';
       input.focus();
-    });
-    document.querySelectorAll('[data-key]').forEach(key => key.addEventListener('click', () => {
-      input.value = key.dataset.key;
-      input.focus();
-    }));
+    } });
     refreshCatalog().catch(() => { document.getElementById('catalog').textContent = 'Inventory unavailable.'; });
   </script>
 </body>
