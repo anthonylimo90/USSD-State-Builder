@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "fixtureType": "turn-sequence",
+  "provenance": "synthetic",
+  "caseId": "onboarding-stock-regression",
+  "flowVersion": "onboarding-stock-v1",
+  "clock": { "startMs": 1780000000000 },
+  "turns": [
+    { "atMs": 0, "input": { "kind": "synthetic", "value": "" }, "external": [], "expected": { "outcome": "success", "state": "HOME" } },
+    { "atMs": 100, "input": { "kind": "synthetic", "value": "1" }, "external": [], "expected": { "outcome": "success", "state": "QUANTITY" } },
+    { "atMs": 200, "input": { "kind": "synthetic", "value": "3" }, "external": [
+      { "operation": "inventory", "atMs": 220, "result": "success", "statusCode": 200, "responseRef": "stock-two" }
+    ], "expected": { "outcome": "success", "state": "QUANTITY" } }
+  ]
+}

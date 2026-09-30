@@ -9,6 +9,8 @@ The [versioned trace and fixture contract](docs/TRACE-AND-FIXTURES.md) defines b
 
 ## Local workbench
 
+New to the project? Start the [flow-to-regression walkthrough](docs/WORKBENCH-QUICKSTART.md) with `npm ci` and `npm run workbench:onboarding`. Create a help path, inspect its transition, reproduce a stock-check failure, export a Jest test and fix the same application.
+
 Run `npm run workbench` from this checkout to open a reusable local keypad with isolated sessions, actual runtime state, public data, navigation history, validation feedback and turn timing. The bundled SDK and traditional examples run without Redis or a provider account. Use `npm run workbench -- --cli` for the interactive simulator, or [attach your own synthetic flow](docs/LOCAL-WORKBENCH.md).
 
 [Replay and test export](docs/REPLAY-AND-TEST-EXPORT.md) turns structural history into an editable synthetic scenario and a standalone Jest regression test. Opt-in factories inject memory storage, virtual time and ordered fake effects; redacted inputs require explicit replacements before execution.

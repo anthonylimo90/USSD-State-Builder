@@ -1,5 +1,7 @@
 # Local workbench
 
+For a first run, follow [Your first flow and regression test](WORKBENCH-QUICKSTART.md). Its dedicated `npm run workbench:onboarding` starter uses port 3201 and one intentionally broken synthetic flow that you repair yourself.
+
 Run `npm ci`, then `npm run workbench` on Node 22 or newer. Open the printed URL (default `http://127.0.0.1:3200`). The bundled SDK and traditional demo shops use in-memory storage and synthetic data; no Redis or telecom account is required. Set `PORT` to choose another local port.
 
 Choose a flow and create a session. **Dial**, reply `1`, enter an invalid quantity to see validation feedback, then reply `2` and enter a synthetic PIN such as `1234`. The inspector reads the actual stored state after each turn, shows public quantity data, and hides the PIN. Create a second session to compare flows; switching preserves each session's screen and history. **Reset** clears that session and creates a fresh application instance. **Close session** deletes its runtime session. The default limit is eight sessions, and sessions stay available until closed, reset or the process stops. Runtime expiry is shown explicitly and requires a reset.

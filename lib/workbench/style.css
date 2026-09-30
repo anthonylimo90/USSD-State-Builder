@@ -5,7 +5,10 @@ button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .45; }
 button, input, select { border-radius: 7px; }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #6da78a; outline-offset: 3px; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid #27694e; outline-offset: 3px; }
+.handset :focus-visible { outline-color: #c0dcaa; }
+.skip-link { position: absolute; top: 8px; left: 18px; transform: translateY(-160%); z-index: 1; padding: 12px; border-radius: 7px; background: #fff; color: #27694e; font-size: 12px; }
+.skip-link:focus { transform: none; }
 .topbar { height: 72px; padding: 0 36px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; background: #fff; }
 .wordmark { color: #222b25; text-decoration: none; font-size: 20px; font-weight: 750; letter-spacing: -.7px; }
 .wordmark span { color: var(--muted); font-weight: 450; }
@@ -79,7 +82,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 19px
 
 .flow-analysis { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 23px; }
 .graph-scroll { margin-top: 18px; overflow: auto; max-height: 430px; background: #f0f3ed; border: 1px solid var(--line); border-radius: 7px; }
-.graph-scroll:focus-visible, summary:focus-visible { outline: 3px solid #6da78a; outline-offset: 3px; }
+.graph-scroll:focus-visible, summary:focus-visible { outline: 3px solid #27694e; outline-offset: 3px; }
 .graph-scroll svg { display: block; }
 .graph-edge { fill: none; stroke: #a3b2a5; stroke-width: 1.5; }
 .graph-edge.unknown { stroke-dasharray: 4 3; }
@@ -106,7 +109,7 @@ summary { cursor: pointer; width: fit-content; }
 .replay-panel { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 23px; }
 .replay-action { width: auto; padding: 10px 16px; margin: 16px 0 0; }
 .replay-panel textarea { display: block; width: 100%; max-height: 420px; padding: 14px; border: 1px solid #cdd4cc; border-radius: 7px; background: #fff; color: #344739; font: 11px/1.6 ui-monospace, monospace; resize: vertical; }
-.replay-panel textarea:focus-visible { outline: 3px solid #6da78a; outline-offset: 3px; }
+.replay-panel textarea:focus-visible { outline: 3px solid #27694e; outline-offset: 3px; }
 .replay-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .replay-actions button { padding: 10px 14px; border: 1px solid #cdd4cc; background: #fff; font-size: 11px; }
 .replay-panel details { color: var(--muted); font-size: 11px; }

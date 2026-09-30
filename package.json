@@ -27,9 +27,11 @@
     "lint": "eslint .",
     "test:package": "node scripts/verify-package.mjs",
     "test:packed-demo": "node scripts/verify-packed-mavuno.mjs",
+    "test:onboarding": "node scripts/verify-workbench-onboarding.mjs",
     "test:types": "tsc --noEmit --strict --module NodeNext --moduleResolution NodeNext types/index.d.ts types/sdk.d.ts",
     "demo:live-market": "node examples/live-market/server.js",
     "workbench": "node examples/workbench/server.js",
+    "workbench:onboarding": "node examples/workbench/onboarding/server.js",
     "benchmark": "node benchmarks/benchmark.js"
   },
   "keywords": [

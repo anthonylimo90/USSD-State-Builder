@@ -8,23 +8,24 @@
   <script type="module" src="/ui.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#workspace">Skip to session workspace</a>
   <header class="topbar"><a class="wordmark" href="/">USSD<span> / Workbench</span></a><span class="local"><i></i>Local simulation</span></header>
   <main>
     <aside class="sessions" aria-label="Sessions">
       <div class="section-heading"><h2>Sessions</h2><span id="session-count">0 / 8</span></div>
-      <label for="flow">Flow</label><select id="flow"></select>
+      <label for="flow">Flow</label><select id="flow" name="flow"></select>
       <button id="new-session" class="new-session">+ New session</button>
       <div id="sessions" class="session-list"></div>
       <p class="session-help">Each session starts with its own application instance. Use synthetic inputs.</p>
     </aside>
-    <section class="workspace" aria-label="Session workspace">
+    <section id="workspace" class="workspace" aria-label="Session workspace" tabindex="-1">
       <div class="workspace-heading"><div><p class="eyebrow">ACTIVE SESSION</p><h1 id="flow-name">Choose a flow</h1></div><button id="close-session" class="text-button" disabled>Close session</button></div>
       <p id="notice" class="notice" role="status">Loading the workbench…</p>
       <div class="working-area">
         <section class="handset" aria-label="USSD handset">
           <div class="handset-status"><span id="session-status">Ready</span><span id="turn-time">— ms</span></div>
           <div id="screen" class="screen" aria-live="polite">Dial to start.</div>
-          <label for="reply">Reply</label><input id="reply" autocomplete="off" spellcheck="false" maxlength="160" placeholder="Enter a choice or text" disabled>
+          <label for="reply">Reply</label><input id="reply" name="reply" autocomplete="off" spellcheck="false" maxlength="160" placeholder="Enter a choice or text" disabled>
           <div class="handset-actions"><button id="send" class="primary" disabled>Dial</button><button id="reset" class="secondary" disabled>Reset</button></div>
           <div class="keypad" role="group" aria-label="USSD keypad">
             <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
@@ -61,10 +62,10 @@
         <p class="muted history-help">Drafts omit recorded inputs and dependencies. Replace placeholders with synthetic choices and named fakes, then set the behavior your regression test should protect.</p>
         <button id="replay-draft" class="new-session replay-action" disabled>Create replay draft</button>
         <label for="replay-fixture">Synthetic scenario (JSON)</label>
-        <textarea id="replay-fixture" rows="12" maxlength="65536" spellcheck="false" placeholder="Create a draft from the full turn history, or paste a synthetic fixture." disabled></textarea>
+        <textarea id="replay-fixture" name="scenario" rows="12" maxlength="65536" autocomplete="off" spellcheck="false" aria-describedby="replay-result" placeholder="Create a draft from the full turn history, or paste a synthetic fixture." disabled></textarea>
         <div class="replay-actions"><button id="replay-run" disabled>Run isolated replay</button><button id="replay-export" disabled>Generate Jest test</button><button id="replay-download" disabled>Download Jest test</button></div>
         <p id="replay-result" class="notice" role="status">Replay runs in a fresh machine with a virtual clock, memory storage and fake dependencies.</p>
-        <details><summary>Jest test preview</summary><pre id="replay-source">No test generated.</pre></details>
+        <details><summary>Jest test preview</summary><pre id="replay-source" tabindex="0" role="region" aria-label="Scrollable Jest test source">No test generated.</pre></details>
       </section>
     </section>
   </main>

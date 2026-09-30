@@ -75,6 +75,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run test:types
       - run: npm run test:package
+      - run: npm run test:onboarding
 
   integration:
     name: Redis integration and featured demo
