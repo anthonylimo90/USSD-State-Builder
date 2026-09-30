@@ -161,3 +161,9 @@ export const InMemoryTurnStore = pkg.InMemoryTurnStore;
 
 // Default export
 export default pkg;
+
+export const ReplayError = pkg.ReplayError;
+export const ReplayClock = pkg.ReplayClock;
+export const replayScenario = pkg.replayScenario;
+export const createReplayDraft = pkg.createReplayDraft;
+export const exportReplayTest = pkg.exportReplayTest;

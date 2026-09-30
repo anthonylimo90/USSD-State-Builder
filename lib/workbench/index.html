@@ -56,6 +56,16 @@
         <p class="muted history-help">Inputs, responses and error text are excluded from this history.</p>
         <div class="table-scroll"><table><thead><tr><th>Turn</th><th>Transition</th><th>Outcome</th><th>Time</th></tr></thead><tbody id="history"><tr><td colspan="4" class="empty">Dial to record the first turn.</td></tr></tbody></table></div>
       </section>
+      <section class="replay-panel" aria-label="Replay and test export">
+        <div class="section-heading"><h2>Replay and test export</h2><span id="replay-availability"></span></div>
+        <p class="muted history-help">Drafts omit recorded inputs and dependencies. Replace placeholders with synthetic choices and named fakes, then set the behavior your regression test should protect.</p>
+        <button id="replay-draft" class="new-session replay-action" disabled>Create replay draft</button>
+        <label for="replay-fixture">Synthetic scenario (JSON)</label>
+        <textarea id="replay-fixture" rows="12" maxlength="65536" spellcheck="false" placeholder="Create a draft from the full turn history, or paste a synthetic fixture." disabled></textarea>
+        <div class="replay-actions"><button id="replay-run" disabled>Run isolated replay</button><button id="replay-export" disabled>Generate Jest test</button><button id="replay-download" disabled>Download Jest test</button></div>
+        <p id="replay-result" class="notice" role="status">Replay runs in a fresh machine with a virtual clock, memory storage and fake dependencies.</p>
+        <details><summary>Jest test preview</summary><pre id="replay-source">No test generated.</pre></details>
+      </section>
     </section>
   </main>
   <footer>USSD State Builder<span>State is read from the runtime · changes stay in this local session</span></footer>

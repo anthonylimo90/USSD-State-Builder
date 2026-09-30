@@ -102,3 +102,12 @@ summary { cursor: pointer; width: fit-content; }
 .diagnostics li > span:first-child { color: var(--muted); text-transform: uppercase; font-size: 9px; letter-spacing: .5px; }
 .diagnostics li[data-severity="error"] { color: #a33d30; }
 .diagnostics li[data-severity="warning"] { color: #916024; }
+
+.replay-panel { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 23px; }
+.replay-action { width: auto; padding: 10px 16px; margin: 16px 0 0; }
+.replay-panel textarea { display: block; width: 100%; max-height: 420px; padding: 14px; border: 1px solid #cdd4cc; border-radius: 7px; background: #fff; color: #344739; font: 11px/1.6 ui-monospace, monospace; resize: vertical; }
+.replay-panel textarea:focus-visible { outline: 3px solid #6da78a; outline-offset: 3px; }
+.replay-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.replay-actions button { padding: 10px 14px; border: 1px solid #cdd4cc; background: #fff; font-size: 11px; }
+.replay-panel details { color: var(--muted); font-size: 11px; }
+#replay-source { margin-top: 12px; max-height: 420px; overflow: auto; }

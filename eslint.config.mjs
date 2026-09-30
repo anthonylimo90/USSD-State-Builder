@@ -33,7 +33,7 @@ export default [
   {
     files: ['lib/workbench/*.js'],
     languageOptions: { sourceType: 'module', globals: {
-      document: 'readonly', fetch: 'readonly', console: 'readonly'
+      Blob: 'readonly', document: 'readonly', fetch: 'readonly', console: 'readonly'
     } }
   }
 ];

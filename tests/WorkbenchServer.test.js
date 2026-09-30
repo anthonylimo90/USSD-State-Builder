@@ -1,6 +1,7 @@
 const http = require('node:http');
 const { createWorkbenchServer, WorkbenchError } = require('..');
 const { createDemoWorkbench } = require('../examples/workbench/server');
+const { regressionFixture } = require('../examples/workbench/replay-flows');
 
 let app;
 let base;
@@ -36,7 +37,7 @@ test('serves the local workspace and shared keypad with same-origin policy', asy
   expect((await request('/graph.js')).text).toContain('renderFlowGraph');
   expect((await request('/style.css')).status).toBe(200);
   const config = await request('/api/workbench');
-  expect(config.json.flows.map(flow => flow.id)).toEqual(['sdk-shop', 'traditional-shop', 'diagnostics', 'dynamic']);
+  expect(config.json.flows.map(flow => flow.id)).toEqual(['sdk-shop', 'traditional-shop', 'diagnostics', 'replay-lab', 'dynamic']);
   expect((await request('/api/workbench', { headers: { host: 'attacker.example' } })).status).toBe(403);
   expect((await request('/api/workbench', { headers: { origin: 'https://attacker.example' } })).status).toBe(403);
   expect((await request('/api/workbench', { headers: { 'sec-fetch-site': 'cross-site' } })).status).toBe(403);
@@ -87,5 +88,44 @@ test('serves structural diagnostics and treats dynamic uncertainty as informatio
   expect(dynamic.analysis).toMatchObject({ valid: true, coverage: 'partial', summary: { errors: 0, warnings: 0 } });
   expect(dynamic.analysis.nodes.find(node => node.id === 'DONE').reachability).toBe('unknown');
   await request(`/api/sessions/${broken.id}`, { method: 'DELETE' });
+  await request(`/api/sessions/${dynamic.id}`, { method: 'DELETE' });
+});
+
+test('HTTP export uses explicit placeholders and isolated replay leaves the failed session unchanged', async () => {
+  const session = (await request('/api/sessions', { method: 'POST', body: { flowId: 'replay-lab' } })).json;
+  const route = `/api/sessions/${session.id}`;
+  expect((await request(`${route}/export`)).json.error).toBe('EXPORT_NEEDS_1_TO_64_TURNS');
+  for (const input of ['', '1', '3']) await request(`${route}/turns`, { method: 'POST', body: { input } });
+  const before = (await request(route)).json;
+  expect(before.history[2].outcome).toBe('error');
+  const captured = (await request(`${route}/export`)).json;
+  expect(captured.fixture.turns[2].input.value).toBe('__REPLACE_INPUT_3__');
+  expect(captured.testSource).not.toContain('Synthetic stock-check defect');
+  const unresolved = await request(`${route}/replay`, { method: 'POST', body: { fixture: captured.fixture } });
+  expect(unresolved).toMatchObject({ status: 400, json: { error: 'SYNTHETIC_REPLACEMENTS_REQUIRED', turn: null } });
+  const fixture = regressionFixture();
+  expect((await request(`${route}/replay`, { method: 'POST', body: { fixture } })).json.passed).toBe(true);
+  expect((await request(route)).json).toEqual(before);
+  const exported = await request(`${route}/export`, { method: 'POST', body: { fixture } });
+  expect(exported.json.testSource).toContain("require('ussd-state-builder')");
+  expect(exported.json.testSource).toContain('inventory-two');
+  fixture.turns[2].expected.state = 'HOME';
+  expect((await request(`${route}/replay`, { method: 'POST', body: { fixture } })).json)
+    .toEqual({ error: 'EXPECTATION_MISMATCH', turn: 3 });
+  await request(route, { method: 'DELETE' });
+});
+
+test('replay API bounds, field validation, opt-in and local-origin checks fail safely', async () => {
+  const session = (await request('/api/sessions', { method: 'POST', body: { flowId: 'sdk-shop' } })).json;
+  const route = `/api/sessions/${session.id}`;
+  for (const action of ['replay', 'export']) {
+    expect((await request(`${route}/${action}`, { method: 'POST', body: { fixture: {}, code: 'PRIVATE_CODE' } })).status).toBe(400);
+    expect((await request(`${route}/${action}`, { method: 'POST', body: { fixture: {} } })).json.error).toBe('INVALID_FIXTURE');
+    expect((await request(`${route}/${action}`, { method: 'POST', body: 'x'.repeat(67000) })).status).toBe(413);
+    expect((await request(`${route}/${action}`, { method: 'POST', body: { fixture: {} }, headers: { origin: 'https://attacker.example' } })).status).toBe(403);
+  }
+  await request(route, { method: 'DELETE' });
+  const dynamic = (await request('/api/sessions', { method: 'POST', body: { flowId: 'dynamic' } })).json;
+  expect((await request(`/api/sessions/${dynamic.id}/export`)).json.error).toBe('REPLAY_NOT_CONFIGURED');
   await request(`/api/sessions/${dynamic.id}`, { method: 'DELETE' });
 });

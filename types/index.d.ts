@@ -202,6 +202,7 @@ export interface Logger {
  * Configuration for the USSD State Machine
  */
 export interface USSDConfig extends FlowVersionOptions {
+    now?: () => number;
     flowVersion?: string;
     /** The initial state when a new session starts */
     initialState: string;
@@ -233,6 +234,7 @@ export interface ProcessInputOptions {
  * Main USSD State Machine class
  */
 export class USSDStateMachine {
+    readonly now: () => number;
     readonly flowVersion: string | null;
     getFlowDefinition(): FlowDefinition;
     prepareTurn(sessionId: string, input: string, options?: ProcessInputOptions & {
@@ -296,6 +298,7 @@ export class USSDStateMachine {
  * In-memory storage options
  */
 export interface InMemoryStorageOptions {
+    now?: () => number;
     /**
      * Maximum number of states to keep in history (default: 20).
      * Prevents unbounded memory growth from repeated back/forward navigation.
@@ -687,7 +690,29 @@ export function createTraceObserver(onEvent: (event: Readonly<TraceEvent>) => vo
 /** Captured-redacted fixtures cannot contain executable inputs or response references. */
 export function createReplayFixture(source: TraceFixture): Readonly<TraceFixture>;
 
+export class ReplayError extends Error { constructor(code: string, turn?: number | null); code: string; turn: number | null; }
+export class ReplayClock {
+    constructor(startMs: number);
+    readonly now: () => number;
+    readonly startMs: number;
+    readonly elapsedMs: number;
+    advanceTo(atMs: number): void;
+    sleep(ms: number): Promise<void>;
+}
+export interface ReplayContext { clock: ReplayClock; storage: InMemoryStorage;
+    effects: { call(operation: string): Promise<any> }; sessionId: string; }
+export interface ReplayOptions { createMachine: (context: ReplayContext) => USSDStateMachine | Promise<USSDStateMachine>;
+    responses?: Record<string, unknown>; }
+export interface ReplayResult { passed: true; caseId: string; turns: Array<{
+    turn: number; atMs: number; outcome: TurnObservation['outcome']; state: string | null }> }
+export interface ReplayExportReference { modulePath: string; factoryExport: string; responsesExport?: string; }
+export function replayScenario(fixture: TraceFixture, options: ReplayOptions): Promise<ReplayResult>;
+export function createReplayDraft(events: TraceEvent[], options?: { caseId?: string; complete?: boolean }): Readonly<TraceFixture>;
+export function exportReplayTest(fixture: TraceFixture, reference: ReplayExportReference): string;
+export interface WorkbenchReplayExport { draft: TraceFixture; fixture: TraceFixture; testSource: string; }
+
 export interface WorkbenchFlow {
+    replay?: ReplayOptions & ReplayExportReference;
     id: string;
     name: string;
     /** Return a fresh machine with synthetic storage and dependencies for each session. */
@@ -720,13 +745,15 @@ export class WorkbenchError extends Error {
 }
 export class LocalWorkbench {
     constructor(options: { flows: WorkbenchFlow[]; maxSessions?: number; maxHistory?: number });
-    describe(): { flows: Array<{ id: string; name: string }>; maxSessions: number; maxHistory: number };
+    describe(): { flows: Array<{ id: string; name: string; replayEnabled: boolean }>; maxSessions: number; maxHistory: number };
     createSession(flowId?: string): Promise<WorkbenchSession>;
     listSessions(): Array<{ id: string; flowId: string; name: string; turns: number; busy: boolean }>;
     inspect(id: string): Promise<WorkbenchSession>;
     send(id: string, input: string): Promise<WorkbenchSession>;
     reset(id: string): Promise<WorkbenchSession>;
     closeSession(id: string): Promise<void>;
+    exportSession(id: string, fixture?: TraceFixture): Promise<WorkbenchReplayExport>;
+    replay(id: string, fixture: TraceFixture): Promise<ReplayResult>;
     getSimulator(id: string, options?: Record<string, unknown>): import('./advanced').USSDSimulator;
     getTester(id: string): import('./compat').USSDTester;
     close(): Promise<void>;

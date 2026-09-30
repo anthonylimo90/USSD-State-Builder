@@ -11,6 +11,8 @@ The [versioned trace and fixture contract](docs/TRACE-AND-FIXTURES.md) defines b
 
 Run `npm run workbench` from this checkout to open a reusable local keypad with isolated sessions, actual runtime state, public data, navigation history, validation feedback and turn timing. The bundled SDK and traditional examples run without Redis or a provider account. Use `npm run workbench -- --cli` for the interactive simulator, or [attach your own synthetic flow](docs/LOCAL-WORKBENCH.md).
 
+[Replay and test export](docs/REPLAY-AND-TEST-EXPORT.md) turns structural history into an editable synthetic scenario and a standalone Jest regression test. Opt-in factories inject memory storage, virtual time and ordered fake effects; redacted inputs require explicit replacements before execution.
+
 ## Featured demo: Mavuno Co-op
 
 [Mavuno Co-op](examples/live-market/README.md) is a runnable, multi-step USSD ordering app built with the SDK's fluent `createApp().state(...).build()` API. Use its browser keypad to browse a catalog, build a cart, choose pickup, place an order, then find and cancel it from a new session. The HTTP server uses Redis storage for sessions. Redis also holds demo inventory and orders, with atomic checkout when two sessions compete for the same stock.

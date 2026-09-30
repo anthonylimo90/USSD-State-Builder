@@ -549,6 +549,7 @@ export class AppBuilder {
   /**
    * Compile and return a USSDStateMachine instance
    */
+  clock(clock: { now: () => number }): AppBuilder;
   build(): SDKStateMachine;
 }
 

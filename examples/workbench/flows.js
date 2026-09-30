@@ -4,8 +4,8 @@ function quantity(input) {
   if (!/^[1-9]$/.test(input)) throw new ValidationError('Enter a quantity from 1 to 9');
 }
 
-function createSdkFlow() {
-  return createApp().flowVersion('shop-v1').storage(new InMemoryStorage()).logger(null)
+function buildSdkFlow(storage, clock) {
+  return createApp().flowVersion('shop-v1').storage(storage).clock(clock).logger(null)
     .state('MENU', state => state.message('Demo shop\n1 Seed pack\n2 Exit')
       .on('1').goto('QUANTITY').on('2').end('Goodbye.'))
     .state('QUANTITY', state => state.validate(quantity).run(input => input ? {
@@ -17,9 +17,9 @@ function createSdkFlow() {
     .start('MENU').build();
 }
 
-function createTraditionalFlow() {
+function buildTraditionalFlow(storage, clock) {
   return new USSDStateMachine({ initialState: 'MENU', flowVersion: 'shop-v1',
-    storage: new InMemoryStorage(), logger: null, states: {
+    storage, now: clock.now, logger: null, states: {
       MENU: { metadata: { dynamic: false, terminal: false, transitions: [
         { input: '1', to: 'QUANTITY', kind: 'route' }, { input: '2', terminal: true, kind: 'route' }
       ] }, handler: input => input === '2' ? { response: 'END Goodbye.' } : input === '1' ?
@@ -37,4 +37,6 @@ function createTraditionalFlow() {
     } });
 }
 
-module.exports = { createSdkFlow, createTraditionalFlow };
+function createSdkFlow() { return buildSdkFlow(new InMemoryStorage(), { now: () => Date.now() }); }
+function createTraditionalFlow() { return buildTraditionalFlow(new InMemoryStorage(), { now: () => Date.now() }); }
+module.exports = { createSdkFlow, createTraditionalFlow, buildSdkFlow, buildTraditionalFlow };

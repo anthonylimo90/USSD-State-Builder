@@ -92,6 +92,7 @@ const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
 const { TRACE_SCHEMA_VERSION, MAX_TRACE_BYTES, MAX_FIXTURE_BYTES,
   createTraceEvent, createTraceObserver, createReplayFixture } = require('./lib/TraceSchema');
+const { ReplayError, ReplayClock, replayScenario, createReplayDraft, exportReplayTest } = require('./lib/Replay');
 const { LocalWorkbench, WorkbenchError } = require('./lib/LocalWorkbench');
 const { createWorkbenchServer } = require('./lib/WorkbenchServer');
 
@@ -193,6 +194,11 @@ module.exports = {
   createTraceEvent,
   createTraceObserver,
   createReplayFixture,
+  ReplayError,
+  ReplayClock,
+  replayScenario,
+  createReplayDraft,
+  exportReplayTest,
   LocalWorkbench,
   WorkbenchError,
   createWorkbenchServer,

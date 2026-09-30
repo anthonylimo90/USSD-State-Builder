@@ -81,6 +81,15 @@ assert.equal(typeof root.SessionEventGateway, 'function');
     assert.ok(require('node:fs').statSync(require('node:path').join(packageRoot, 'lib/workbench', asset)).size > 0);
   }
   await workbench.close();
+  const fixture = { schemaVersion: 1, fixtureType: 'turn-sequence', provenance: 'synthetic',
+    caseId: 'packed-replay', flowVersion: 'packed-v1', clock: { startMs: 1000 }, turns: [
+      { atMs: 0, input: { kind: 'synthetic', value: '' }, external: [], expected: { outcome: 'success', state: 'START' } }
+    ] };
+  const createMachine = ({ storage, clock }) => root.createApp().flowVersion('packed-v1').storage(storage).clock(clock)
+    .logger(null).state('START', state => state.message('Welcome')).build();
+  assert.equal((await root.replayScenario(fixture, { createMachine })).passed, true);
+  assert.equal(new root.ReplayClock(1000).now(), 1000);
+  assert.ok(root.exportReplayTest(fixture, { modulePath: '../replay-factory', factoryExport: 'createMachine' }).includes('replayScenario'));
   console.log(JSON.stringify({ root: Object.keys(root).sort(), sdk: Object.keys(sdk).sort() }));
 })().catch(error => { console.error(error); process.exitCode = 1; });
 `);
@@ -108,7 +117,7 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer, analyzeFlowDefinition, FlowAnalysis, FlowDiagram, StateInspector } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer, analyzeFlowDefinition, FlowAnalysis, FlowDiagram, StateInspector, ReplayClock, ReplayContext, TraceFixture, replayScenario, exportReplayTest } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
@@ -133,6 +142,13 @@ void [rootDefault, sdkDefault, machine, menu, metrics];
 const workbench = new LocalWorkbench({ flows: [{ id: 'typed', name: 'Typed flow', createMachine: () => machine }] });
 void workbench.createSession().then(session => workbench.getTester(session.id).start().run());
 void createWorkbenchServer({ workbench }).listen(0);
+const clock = new ReplayClock(1000);
+const replayFactory = ({ storage, clock }: ReplayContext) => createApp().storage(storage).clock(clock).state('HOME', s => s.message('Home')).build();
+const fixture: TraceFixture = { schemaVersion: 1, fixtureType: 'turn-sequence', provenance: 'synthetic', caseId: 'typed-replay', flowVersion: null,
+  clock: { startMs: 1000 }, turns: [{ atMs: 0, input: { kind: 'synthetic', value: '' }, external: [], expected: { outcome: 'success', state: 'HOME' } }] };
+void replayScenario(fixture, { createMachine: replayFactory });
+void exportReplayTest(fixture, { modulePath: '../factory', factoryExport: 'createMachine' });
+void new InMemoryStorage({ now: clock.now });
 `;
   writeFileSync(join(consumer, 'consumer.mts'), consumerSource);
   writeFileSync(join(consumer, 'consumer.ts'), consumerSource);
