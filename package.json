@@ -33,6 +33,7 @@
     "workbench": "node examples/workbench/server.js",
     "workbench:onboarding": "node examples/workbench/onboarding/server.js",
     "benchmark": "node benchmarks/benchmark.js",
+    "demo:metrics-retention": "node examples/metrics/retention.js",
     "demo:metrics": "node examples/metrics/server.js",
     "test:metrics-prometheus": "node scripts/verify-metric-prometheus.mjs"
   },

@@ -180,3 +180,5 @@ export const buildMetricReport = pkg.buildMetricReport;
 export const selectMetricEvidence = pkg.selectMetricEvidence;
 export const exportMetricReportPrometheus = pkg.exportMetricReportPrometheus;
 export const createMetricOtelBridge = pkg.createMetricOtelBridge;
+
+export const MetricEventBuffer = pkg.MetricEventBuffer;

@@ -1555,4 +1555,42 @@ export interface MetricOtelMeter {
     addBatchObservableCallback(callback: (result: { observe(instrument: object, value: number, attributes?: Record<string, string>): void }) => void, instruments: object[]): void;
     removeBatchObservableCallback(callback: (result: { observe(instrument: object, value: number, attributes?: Record<string, string>): void }) => void, instruments: object[]): void;
 }
-export function createMetricOtelBridge(meter: MetricOtelMeter): { update(events: MetricEvent[], options: MetricReportingOptions): void; close(): void };
+export function createMetricOtelBridge(meter: MetricOtelMeter, options?: { maxSeries?: number }): { update(events: MetricEvent[], options: MetricReportingOptions): void; close(): void };
+
+export interface MetricBufferSnapshot {
+    readonly generation: number;
+    readonly events: ReadonlyArray<Readonly<MetricEvent>>;
+    readonly options: Readonly<MetricReportingOptions>;
+    readonly report: MetricReport;
+}
+export interface MetricBufferOptions {
+    flowVersions: string[];
+    states: string[];
+    retentionMs?: number;
+    maxEvents?: number;
+    maxBytes?: number;
+    maxSessions?: number;
+    maxTombstones?: number;
+    exportTimeoutMs?: number;
+    maxFutureSkewMs?: number;
+    inactivityMs?: number | null;
+    now?: () => number;
+    exporter?: (snapshot: MetricBufferSnapshot, controls: { readonly signal: AbortSignal; readonly isCurrent: () => boolean }) => unknown | Promise<unknown>;
+    onFailure?: (failure: Readonly<{ code: string }>) => unknown;
+}
+export interface MetricBufferStats {
+    accepted: number; duplicates: number; invalid: number; labels: number; expired: number; future: number;
+    capacity: number; denied: number; rejectedClosed: number; failures: number; exports: number; timeouts: number;
+    evictedEvents: number; deletedEvents: number; events: number; bytes: number; sessions: number;
+    tombstones: number; generation: number; exportInFlight: boolean; closed: boolean; ingestionPaused: boolean;
+}
+export class MetricEventBuffer {
+    constructor(options: MetricBufferOptions);
+    record(event: MetricEvent): { accepted: boolean; duplicate?: boolean; reason?: 'invalid' | 'labels' | 'expired' | 'future' | 'capacity' | 'denied' | 'closed' };
+    snapshot(): MetricBufferSnapshot;
+    stats(): MetricBufferStats;
+    deleteSession(sessionId: string): { deletedEvents: number; ingestionPaused?: boolean; closed?: boolean };
+    clear(): void;
+    close(): void;
+    flush(): Promise<{ status: 'exported' | 'busy' | 'no_exporter' | 'closed' | 'failed' | 'invalidated' | 'timeout'; code?: string }>;
+}

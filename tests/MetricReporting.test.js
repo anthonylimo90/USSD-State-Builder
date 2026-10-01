@@ -1,4 +1,4 @@
-const { buildMetricReport, selectMetricEvidence, exportMetricReportPrometheus, createMetricOtelBridge } = require('..');
+const { MetricEventBuffer, buildMetricReport, selectMetricEvidence, exportMetricReportPrometheus, createMetricOtelBridge } = require('..');
 const { scenario } = require('../examples/metrics/scenarios');
 const { MeterProvider, InMemoryMetricExporter, PeriodicExportingMetricReader, AggregationTemporality, DataPointType } = require('@opentelemetry/sdk-metrics');
 const baseline = scenario();
@@ -122,6 +122,22 @@ describe('actual OpenTelemetry SDK integration', () => {
   test('an initially empty cohort can gain instruments without duplicate callback registration', async () => {
     bridge.update([], baseline.options); await collect(); bridge.update(baseline.events, baseline.options);
     expect(points(await collect(), 'ussd_cohort_sessions')).toHaveLength(6);
+  });
+  test('buffer deletion and expiry correct actual SDK series without retaining IDs', async () => {
+    let now = Date.parse(baseline.options.asOf);
+    const buffer = new MetricEventBuffer({ flowVersions: ['mavuno-v1'], states: ['START', 'MENU', 'QUANTITY', 'DONE'],
+      retentionMs: 20000, now: () => now, inactivityMs: baseline.options.inactivityMs,
+      exporter: (snapshot, context) => { if (context.isCurrent()) bridge.update([...snapshot.events], snapshot.options); } });
+    baseline.events.forEach(event => buffer.record(event));
+    await buffer.flush();
+    expect(points(await collect(), 'ussd_cohort_sessions').reduce((sum, point) => sum + point.value, 0)).toBe(6);
+    buffer.deleteSession(baseline.events[0].sessionId); await buffer.flush();
+    const deleted = await collect();
+    expect(points(deleted, 'ussd_cohort_sessions').reduce((sum, point) => sum + point.value, 0)).toBe(5);
+    expect(JSON.stringify(deleted)).not.toContain(baseline.events[0].sessionId);
+    now += 20000; await buffer.flush();
+    expect(points(await collect(), 'ussd_cohort_sessions').every(point => Number.isNaN(point.value))).toBe(true);
+    buffer.close();
   });
   test('rejects JSON collectors without a Meter API', () => expect(() => createMetricOtelBridge({})).toThrow('Meter API'));
 });

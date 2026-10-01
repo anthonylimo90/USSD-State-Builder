@@ -98,3 +98,5 @@ Cumulative SDK readers retain absent gauge values. When a previously exported se
 The automated report tests independently check START reach 4, observed exits 2/4, QUANTITY validation retries 1/1, MENU inferred exits 1/1 and unknown-state reach 2. Late evidence changes those counts without inventing completion. HTTP tests check the same report/export/evidence paths and safe errors. Browser checks cover scenario updates, flow filtering, sufficient/insufficient latency, evidence focus, keyboard access and responsive containment. Packed consumers exercise the new API without an OpenTelemetry runtime dependency.
 
 All examples and measurements are synthetic. Live Mavuno/provider validation remains parked, and no external collector deployment or production observability claim follows from these local checks.
+
+For bounded collection, local deletion and failure isolation, see [retention controls](METRIC-RETENTION.md) and run `npm run demo:metrics-retention`.
