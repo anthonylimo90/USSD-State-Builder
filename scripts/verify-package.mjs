@@ -48,6 +48,8 @@ const sdk = require('ussd-state-builder/sdk');
 const metricId = root.createMetricId('x'.repeat(32), 'session', 'packed-session');
 const metricStart = root.createMetricEvent({ eventType: 'session_start', eventId: metricId, sessionId: metricId, occurredAt: '2026-10-01T00:00:00.000Z' });
 assert.equal(root.aggregateMetricEvents([metricStart, metricStart], { asOf: metricStart.occurredAt }).sessions.total, 1);
+assert.equal(root.buildMetricReport([metricStart], { asOf: metricStart.occurredAt }).flows.length, 1);
+assert.ok(root.exportMetricReportPrometheus([metricStart], { asOf: metricStart.occurredAt }).includes('# TYPE ussd_cohort_sessions gauge'));
 assert.equal(typeof root.USSDStateMachine, 'function');
 assert.equal(typeof root.createApp, 'function');
 const adapter = new root.AfricasTalkingAdapter({ applicationId: 'packed', serviceCode: '*384*000#' });
@@ -116,6 +118,8 @@ assert.equal(sdkNamed.createApp, sdk.createApp);
 const metricId = rootNamed.createMetricId('x'.repeat(32), 'session', 'packed-session');
 const metricStart = rootNamed.createMetricEvent({ eventType: 'session_start', eventId: metricId, sessionId: metricId, occurredAt: '2026-10-01T00:00:00.000Z' });
 assert.equal(rootNamed.aggregateMetricEvents([metricStart], { asOf: metricStart.occurredAt }).sessions.outcomes.open, 1);
+assert.equal(rootNamed.buildMetricReport([metricStart], { asOf: metricStart.occurredAt }).flows.length, 1);
+assert.equal(typeof rootNamed.createMetricOtelBridge, 'function');
 const machine = sdkNamed.createApp().flowVersion('packed-v1').state('START', state => state.message('Welcome')).build();
 assert.equal(await machine.processInput('esm-session', ''), 'CON Welcome');
 assert.equal(machine.getFlowDefinition().flowVersion, 'packed-v1');
@@ -133,13 +137,17 @@ console.log(JSON.stringify({ root: Object.keys(rootNamed).filter(key => key !== 
   }
 
   const consumerSource = `
-import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer, analyzeFlowDefinition, FlowAnalysis, FlowDiagram, StateInspector, ReplayClock, ReplayContext, TraceFixture, replayScenario, exportReplayTest, createMetricId, createMetricEvent, aggregateMetricEvents, metricTurnFromTrace, TraceEvent, MetricAggregation } from 'ussd-state-builder';
+import rootDefault, { createApp, InMemoryStorage, USSDStateMachine, createExportableMetrics, AfricasTalkingAdapter, ProviderRequestError, normalizeUssdInput, TurnGateway, InMemoryTurnStore, AfricasTalkingEventAdapter, RedisSessionEventStore, SessionEventGateway, RedisStorage, LocalWorkbench, createWorkbenchServer, analyzeFlowDefinition, FlowAnalysis, FlowDiagram, StateInspector, ReplayClock, ReplayContext, TraceFixture, replayScenario, exportReplayTest, createMetricId, createMetricEvent, aggregateMetricEvents, metricTurnFromTrace, TraceEvent, MetricAggregation, buildMetricReport, exportMetricReportPrometheus, selectMetricEvidence } from 'ussd-state-builder';
 import sdkDefault, { DynamicMenu } from 'ussd-state-builder/sdk';
 const metricId = createMetricId('x'.repeat(32), 'session', 'typed-session');
 const metricStart = createMetricEvent({ eventType: 'session_start', eventId: metricId, sessionId: metricId, occurredAt: '2026-10-01T00:00:00.000Z' });
 const metricReport: MetricAggregation = aggregateMetricEvents([metricStart], { asOf: metricStart.occurredAt });
 const projectTrace = (trace: TraceEvent) => metricTurnFromTrace(trace, { eventId: metricId, sessionId: metricId, turnId: metricId, position: 0 });
 void [metricReport, projectTrace, metricStart.schemaVersion];
+const cohort = buildMetricReport([metricStart], { asOf: metricStart.occurredAt });
+const exposition: string = exportMetricReportPrometheus([metricStart], { asOf: metricStart.occurredAt });
+const evidence = selectMetricEvidence([metricStart], { asOf: metricStart.occurredAt }, { state: null });
+void [cohort.latency.p99.value, exposition, evidence.truncated];
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
 const analysis: FlowAnalysis = analyzeFlowDefinition(machine.getFlowDefinition());

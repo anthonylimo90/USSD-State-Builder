@@ -6,7 +6,7 @@
 A fluent SDK for building USSD applications in Node.js, with automatic `CON`/`END` handling, validation, storage adapters, middleware, and i18n. See the [support matrix](docs/SUPPORT-MATRIX.md) and [production guide](docs/PRODUCTION.md) before deploying a multi-worker service.
 
 The [versioned trace and fixture contract](docs/TRACE-AND-FIXTURES.md) defines bounded, redacted turn events and distinguishes synthetic test inputs from captured dependency shapes.
-The [metric definitions and aggregation contract](docs/METRIC-DEFINITIONS.md) separates request attempts, logical turns, sessions and business outcomes, with stable deduplication and explicit uncertainty.
+The [metric definitions and aggregation contract](docs/METRIC-DEFINITIONS.md) separates request attempts, logical turns, sessions and business outcomes, with stable deduplication and explicit uncertainty. The [exports and reference dashboard](docs/METRIC-EXPORTS-AND-DASHBOARD.md) add flow/state reports, sample-aware latency, verified Prometheus gauges and a tested OpenTelemetry SDK bridge.
 
 ## Local workbench
 

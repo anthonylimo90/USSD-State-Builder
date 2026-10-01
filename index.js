@@ -92,6 +92,7 @@ const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
 const { TRACE_SCHEMA_VERSION, MAX_TRACE_BYTES, MAX_FIXTURE_BYTES,
   createTraceEvent, createTraceObserver, createReplayFixture } = require('./lib/TraceSchema');
+const { DEFAULT_LATENCY_MIN_SAMPLES, buildMetricReport, selectMetricEvidence, exportMetricReportPrometheus, createMetricOtelBridge } = require('./lib/MetricReporting');
 const { METRIC_SCHEMA_VERSION, createMetricId, createMetricEvent, metricTurnFromTrace, aggregateMetricEvents } = require('./lib/MetricEvents');
 const { ReplayError, ReplayClock, replayScenario, createReplayDraft, exportReplayTest } = require('./lib/Replay');
 const { LocalWorkbench, WorkbenchError } = require('./lib/LocalWorkbench');
@@ -221,6 +222,7 @@ module.exports = {
   SessionEncryption,
   createEncryptedStorage,
 
+  DEFAULT_LATENCY_MIN_SAMPLES, buildMetricReport, selectMetricEvidence, exportMetricReportPrometheus, createMetricOtelBridge,
   METRIC_SCHEMA_VERSION, createMetricId, createMetricEvent, metricTurnFromTrace, aggregateMetricEvents,
 
   // Metrics exporters

@@ -1,0 +1,10 @@
+import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { createMetricOtelBridge, buildMetricReport, exportMetricReportPrometheus } from '../../types/index';
+const meter = new MeterProvider().getMeter('typed-metric-consumer');
+const bridge = createMetricOtelBridge(meter);
+const options = { asOf: '2026-10-01T00:00:00.000Z' };
+bridge.update([], options);
+bridge.close();
+const report = buildMetricReport([], options);
+const text: string = exportMetricReportPrometheus([], options);
+void [report.latency.p95.value, report.states[0]?.observedDropOffRate, text];

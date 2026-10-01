@@ -174,3 +174,9 @@ export const createMetricId = pkg.createMetricId;
 export const createMetricEvent = pkg.createMetricEvent;
 export const metricTurnFromTrace = pkg.metricTurnFromTrace;
 export const aggregateMetricEvents = pkg.aggregateMetricEvents;
+
+export const DEFAULT_LATENCY_MIN_SAMPLES = pkg.DEFAULT_LATENCY_MIN_SAMPLES;
+export const buildMetricReport = pkg.buildMetricReport;
+export const selectMetricEvidence = pkg.selectMetricEvidence;
+export const exportMetricReportPrometheus = pkg.exportMetricReportPrometheus;
+export const createMetricOtelBridge = pkg.createMetricOtelBridge;

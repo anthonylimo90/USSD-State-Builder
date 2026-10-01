@@ -31,7 +31,7 @@ export default [
     languageOptions: { globals: jestGlobals }
   },
   {
-    files: ['lib/workbench/*.js'],
+    files: ['lib/workbench/*.js', 'examples/metrics/ui.js'],
     languageOptions: { sourceType: 'module', globals: {
       Blob: 'readonly', document: 'readonly', fetch: 'readonly', console: 'readonly'
     } }

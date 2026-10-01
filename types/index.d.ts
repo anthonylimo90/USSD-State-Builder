@@ -1522,3 +1522,37 @@ export interface MetricAggregation {
     business: { total: number; outcomes: Record<'completed' | 'cancelled' | 'failed' | 'unknown', number>; completionRate: MetricRate };
 }
 export function aggregateMetricEvents(events: MetricEvent[], options: { asOf: string; inactivityMs?: number | null }): MetricAggregation;
+
+export const DEFAULT_LATENCY_MIN_SAMPLES: Readonly<{ p50: 20; p95: 100; p99: 1000 }>;
+export interface MetricReportingOptions { asOf: string; inactivityMs?: number | null; latencyMinSamples?: Partial<Record<'p50' | 'p95' | 'p99', number>>; }
+export interface MetricLatency {
+    count: number; sumMs: number; minMs: number | null; maxMs: number | null;
+    p50: { value: number | null; minSamples: number }; p95: { value: number | null; minSamples: number }; p99: { value: number | null; minSamples: number };
+}
+export type MetricSessionSummary = Omit<MetricAggregation['sessions'], 'details'>;
+export interface MetricFlowReport {
+    flowVersion: string | null;
+    requests: MetricAggregation['requests'] & { backendErrors: number };
+    turns: MetricAggregation['turns'] & { backendErrors: number };
+    sessions: MetricSessionSummary; business: MetricAggregation['business']; latency: MetricLatency;
+}
+export interface MetricStateReport {
+    flowVersion: string | null; state: string | null; turns: MetricFlowReport['turns']; sessionsReached: number;
+    reachedSessionOutcomes: MetricSessionSummary['outcomes']; exits: MetricSessionSummary['outcomes'];
+    observedDropOffRate: MetricRate; inferredDropOffRate: MetricRate; latency: MetricLatency;
+}
+export interface MetricReport {
+    schemaVersion: 1; asOf: string; inactivityMs: number | null; latencyMinSamples: Record<'p50' | 'p95' | 'p99', number>;
+    summary: Omit<MetricAggregation, 'sessions'> & { sessions: MetricSessionSummary };
+    flows: MetricFlowReport[]; states: MetricStateReport[]; latency: MetricLatency;
+}
+export function buildMetricReport(events: MetricEvent[], options: MetricReportingOptions): MetricReport;
+export function selectMetricEvidence(events: MetricEvent[], options: MetricReportingOptions, filter?: { flowVersion?: string | null; state?: string | null; limit?: number }): { asOf: string; total: number; truncated: boolean; events: Readonly<MetricEvent>[] };
+export function exportMetricReportPrometheus(events: MetricEvent[], options: MetricReportingOptions): string;
+/** Structural subset of the OpenTelemetry Meter API; applications supply their own SDK/provider. */
+export interface MetricOtelMeter {
+    createObservableGauge(name: string, options?: { description?: string; unit?: string }): object;
+    addBatchObservableCallback(callback: (result: { observe(instrument: object, value: number, attributes?: Record<string, string>): void }) => void, instruments: object[]): void;
+    removeBatchObservableCallback(callback: (result: { observe(instrument: object, value: number, attributes?: Record<string, string>): void }) => void, instruments: object[]): void;
+}
+export function createMetricOtelBridge(meter: MetricOtelMeter): { update(events: MetricEvent[], options: MetricReportingOptions): void; close(): void };

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>USSD · Cohort metrics</title><link rel="stylesheet" href="/style.css"><script src="/ui.js" defer></script></head>
+<body>
+<a class="skip" href="#report">Skip to report</a>
+<header><span class="brand">USSD <span>State Builder</span></span><nav aria-label="Exports"><a id="json-link" href="/api/report" target="_blank" rel="noopener">JSON report ↗</a><a id="prom-link" href="/metrics" target="_blank" rel="noopener">Prometheus ↗</a></nav></header>
+<main id="report" tabindex="-1">
+<div class="heading"><div><p class="eyebrow">Reference dashboard · Synthetic evidence</p><h1>Cohort metrics</h1><p class="muted" id="scope">Loading cohort…</p></div><div class="controls"><label for="scenario">Evidence scenario</label><select id="scenario"><option value="baseline">Known cohort</option><option value="late-provider">Late provider closure</option><option value="late-completion">Late confirmed completion</option><option value="latency">1,000-turn latency sample</option></select></div></div>
+<p id="status" role="status" aria-live="polite"></p>
+<section aria-label="Cohort totals" id="totals" class="totals"></section>
+<section><div class="section-heading"><h2>Flow versions</h2><span class="muted">Completion / all started sessions</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Flow version metrics"><table><thead><tr><th scope="col">Flow version</th><th scope="col">Sessions</th><th scope="col">Completion</th><th scope="col">Cancelled</th><th scope="col">Expired</th><th scope="col">Inferred abandoned</th><th scope="col">Unknown</th><th scope="col">Open</th><th scope="col">Turns</th></tr></thead><tbody id="flows"></tbody></table></div></section>
+<section><div class="section-heading"><div><h2>States &amp; drop-off</h2><p class="muted">Observed exits = cancellation + expiry. Inferred abandonment and unknown closures stay separate.</p></div><div class="controls"><label for="version">Show flow</label><select id="version"><option value="all">All versions</option></select></div></div><div class="table-wrap" tabindex="0" role="region" aria-label="State metrics"><table><thead><tr><th scope="col">Flow / state</th><th scope="col">Reached</th><th scope="col">Journey completion</th><th scope="col">Observed exits</th><th scope="col">Inferred abandoned</th><th scope="col">Unknown exits</th><th scope="col">Validation retries</th><th scope="col">Backend errors</th><th scope="col">p50 / p95 / p99 · ms</th><th scope="col">Evidence</th></tr></thead><tbody id="states"></tbody></table></div></section>
+<section><div class="section-heading"><h2>Turn latency</h2><span class="muted">Full logical-turn duration · nearest-rank estimates</span></div><div id="latency" class="latency"></div><p class="muted">A dash means insufficient samples. Default thresholds: p50 ≥ 20, p95 ≥ 100, p99 ≥ 1,000 turns.</p></section>
+<section><div class="section-heading"><h2>Evidence coverage</h2></div><p id="coverage"></p><p class="muted">This snapshot can change when late evidence arrives. Counts are gauges; phone numbers, user inputs and response bodies are excluded.</p></section>
+<section id="evidence-panel" hidden><div class="section-heading"><h2>Redacted evidence</h2><button id="close-evidence">Close evidence</button></div><p id="evidence-scope" class="muted"></p><pre id="evidence" tabindex="0" aria-label="Redacted structural events"></pre></section>
+<footer>Local synthetic reference · No live provider or business traffic</footer>
+</main>
+</body></html>

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Flow/state metric reports, sample-aware turn latency, official-promtool-validated cohort gauges, an actual OpenTelemetry Meter bridge and a runnable synthetic reference dashboard with redacted evidence inspection.
 - Redacted metric event schema, keyed stable identities and deterministic batch aggregation across request attempts, logical turns, started sessions and business operations. Explicit denominators, late-event corrections and inferred/unknown outcomes are separate from legacy runtime metrics.
 - Africa's Talking end-event normalization and bounded Redis reconciliation, with duplicate/out-of-order classification and atomic fencing of late turns. Optional Mavuno callback routes retain order updates beyond handset sessions and show results to a matching caller in a new session.
 - Gateway request deadlines and abort signals through handlers, middleware, initial-data mapping and recovery, cancellable local lock waits, ownership-loss monitoring and Redis server-time commit fencing. Mavuno journals order/cancellation effects atomically and explicitly reconciles confirmed terminal results. Its provider HTTP route includes body reads and caller disconnection in the request budget.

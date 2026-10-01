@@ -76,6 +76,7 @@ jobs:
       - run: npm run test:types
       - run: npm run test:package
       - run: npm run test:onboarding
+      - run: npm run test:metrics-prometheus
 
   integration:
     name: Redis integration and featured demo
