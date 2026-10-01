@@ -1477,3 +1477,48 @@ export class SessionEventGateway {
     constructor(options: { adapter: AfricasTalkingEventAdapter; store: RedisSessionEventStore });
     handle(request: ProviderWireRequest): Promise<ProviderHttpResponse & { classification?: string }>;
 }
+
+/** Pseudonymous correlation evidence, separate from observation IDs in trace v1. */
+export const METRIC_SCHEMA_VERSION: 1;
+export type MetricErrorClass = 'validation' | 'timeout' | 'storage' | 'provider' | 'handler' | 'unknown';
+export interface MetricEventBase {
+    schemaVersion?: 1;
+    eventId: string;
+    occurredAt: string;
+    sessionId: string;
+    flowVersion?: string | null;
+}
+export interface MetricRequestEvent extends MetricEventBase {
+    eventType: 'request'; requestId: string;
+    outcome: 'accepted' | 'replay' | 'rejected' | 'error'; durationMs: number; errorClass?: MetricErrorClass | null;
+}
+export interface MetricTurnEvent extends MetricEventBase {
+    eventType: 'turn'; turnId: string; position: number;
+    previousState: string | null; nextState: string | null;
+    outcome: 'success' | 'validation_error' | 'error' | 'blocked' | 'flow_restart';
+    durationMs: number; errorClass?: MetricErrorClass | null;
+}
+export type MetricEvent = MetricRequestEvent | MetricTurnEvent |
+    (MetricEventBase & { eventType: 'session_start' }) |
+    (MetricEventBase & { eventType: 'session_end'; outcome: 'completed' | 'cancelled' | 'expired' | 'unknown' }) |
+    (MetricEventBase & { eventType: 'provider_end'; outcome: 'Success' | 'Incomplete' | 'Failed' }) |
+    (MetricEventBase & { eventType: 'business_outcome'; businessId: string; outcome: 'completed' | 'cancelled' | 'failed' });
+export function createMetricId(secret: string | Buffer, namespace: 'session' | 'request' | 'turn' | 'event' | 'provider_event' | 'business', key: string): string;
+export function createMetricEvent<T extends MetricEvent>(source: T): Readonly<T & { schemaVersion: 1; flowVersion: string | null }>;
+export function metricTurnFromTrace(trace: TraceEvent, correlation: { eventId: string; sessionId: string; turnId: string; position: number }): Readonly<MetricTurnEvent>;
+export interface MetricRate { numerator: number; denominator: number; value: number | null; }
+export interface MetricSessionDetail {
+    sessionId: string; flowVersion: string | null; startedAt: string; lastActivityAt: string; lastState: string | null;
+    outcome: 'completed' | 'cancelled' | 'expired' | 'abandoned' | 'unknown' | 'open';
+    basis: 'observed' | 'conflict' | 'observed_closure' | 'inferred';
+    providerOutcome: 'Success' | 'Incomplete' | 'Failed' | 'conflict' | null;
+}
+export interface MetricAggregation {
+    schemaVersion: 1; asOf: string; inactivityMs: number | null;
+    evidence: { uniqueEvents: number; futureEvents: number; duplicateEvents: number; duplicateFacts: number; orphanEvents: number; orphanSessions: number };
+    requests: { total: number; outcomes: Record<MetricRequestEvent['outcome'], number>; errorRate: MetricRate; replayRate: MetricRate };
+    turns: { total: number; outcomes: Record<MetricTurnEvent['outcome'], number>; validationRetries: number; validationRetryRate: MetricRate; validationErrorRate: MetricRate; errorRate: MetricRate; errorClasses: Record<MetricErrorClass, number> };
+    sessions: { total: number; outcomes: Record<MetricSessionDetail['outcome'], number>; completionRate: MetricRate; cancellationRate: MetricRate; expiryRate: MetricRate; abandonmentRate: MetricRate; unknownRate: MetricRate; details: MetricSessionDetail[] };
+    business: { total: number; outcomes: Record<'completed' | 'cancelled' | 'failed' | 'unknown', number>; completionRate: MetricRate };
+}
+export function aggregateMetricEvents(events: MetricEvent[], options: { asOf: string; inactivityMs?: number | null }): MetricAggregation;

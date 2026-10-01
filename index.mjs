@@ -167,3 +167,10 @@ export const ReplayClock = pkg.ReplayClock;
 export const replayScenario = pkg.replayScenario;
 export const createReplayDraft = pkg.createReplayDraft;
 export const exportReplayTest = pkg.exportReplayTest;
+
+// Correlated metric evidence and deterministic batch aggregation
+export const METRIC_SCHEMA_VERSION = pkg.METRIC_SCHEMA_VERSION;
+export const createMetricId = pkg.createMetricId;
+export const createMetricEvent = pkg.createMetricEvent;
+export const metricTurnFromTrace = pkg.metricTurnFromTrace;
+export const aggregateMetricEvents = pkg.aggregateMetricEvents;

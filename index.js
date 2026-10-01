@@ -92,6 +92,7 @@ const { PluginManager, createPlugin } = require('./lib/PluginManager');
 const { createApp, AppBuilder, StateBuilder, RouteBuilder, DynamicMenu, DynamicMenuBuilder } = require('./lib/sdk');
 const { TRACE_SCHEMA_VERSION, MAX_TRACE_BYTES, MAX_FIXTURE_BYTES,
   createTraceEvent, createTraceObserver, createReplayFixture } = require('./lib/TraceSchema');
+const { METRIC_SCHEMA_VERSION, createMetricId, createMetricEvent, metricTurnFromTrace, aggregateMetricEvents } = require('./lib/MetricEvents');
 const { ReplayError, ReplayClock, replayScenario, createReplayDraft, exportReplayTest } = require('./lib/Replay');
 const { LocalWorkbench, WorkbenchError } = require('./lib/LocalWorkbench');
 const { createWorkbenchServer } = require('./lib/WorkbenchServer');
@@ -219,6 +220,8 @@ module.exports = {
   // Session encryption
   SessionEncryption,
   createEncryptedStorage,
+
+  METRIC_SCHEMA_VERSION, createMetricId, createMetricEvent, metricTurnFromTrace, aggregateMetricEvents,
 
   // Metrics exporters
   PrometheusExporter,
