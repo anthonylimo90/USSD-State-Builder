@@ -48,12 +48,14 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 - [x] Run local unit, four-adapter/HTTP, consumer, onboarding, demo, metrics, lint and type gates; retain the exact tarball and checksum manifest under ignored `dist/`.
 - [x] Compare unchanged benchmark workloads against 3.0 and retain [raw measurements](release-4.0/benchmark.json).
 - [x] Investigate and improve throughput against 3.0; pass the [repeatable local performance budget](PERFORMANCE-4.0.md). Production workload-specific limits remain application-owned.
-- [ ] Fresh hosted release checks, including Node 26.
-- [ ] Separately authorized tag/publication, registry integrity/provenance and fresh registry-consumer verification.
+- [x] Fresh hosted release checks, including Node 26.
+- [x] Authorized stable tag/publication, registry integrity/provenance and fresh registry-consumer verification.
 
 Packaging does not close P2-01/P2-07 provider evidence or P4-04/P4-05 external pilot/product decisions.
 
 ## Current evidence
+
+- 2026-10-02: Stable 4.0.0 released from `b05e9cfa74c9a13027f80c3644a49a99f3ec2e44`. [Push CI](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/37045762194) and [release CI](https://github.com/anthonylimo90/USSD-State-Builder/actions/runs/37045999875) passed Node 22/24/26, package/types/onboarding/Prometheus, lint and four-adapter/Redis/HTTP/Mavuno gates. Trusted npm publication succeeded under `latest`; a fresh direct registry install passed Node 22/24 CJS/ESM root/SDK turns, terminal replay and readonly storage. npm verified the registry signature and provenance attestation. All 155 published files match the validated local bytes; registry SHA-1 and source commit match. Published-tarball declaration/inventory consumers and Mavuno HTTP order/replay/lookup/cancellation/synthetic callbacks pass. Provider and pilot evidence remain open. See [published verification](RELEASE-4.0.md#published-release-verification--2026-10-02).
 
 - 2026-10-02: 4.0 performance follow-up complete locally. Shared storage getters retain V8 shape stability and prepared-turn isolation; uncontended locks avoid unused promises/waiter sets while queued cancellation remains safe. Static target rendering, empty/debug work and redundant write wrappers are reduced. Terminal data/receipt writes combine only without afterProcess; middleware visibility, protected version metadata and receipt replay are tested. In-memory comparison indices improve 8.8% on Node 22 and 7.4% on Node 24 against 3.0; the ordinary Redis terminal-save flow improves 22.8%/21.8%. All final median-based budgets pass; initial noisy Redis samples and the original regression remain retained. Full Node 22/24 suites each pass 1,181 tests (50 opt-in skipped); all 63 storage/integration checks, onboarding, lint/types and refreshed exact-package/Mavuno gates pass. [Performance evidence](PERFORMANCE-4.0.md) records methodology, raw samples and memory/provider boundaries. No push, tag, publication or deployment occurred.
 
