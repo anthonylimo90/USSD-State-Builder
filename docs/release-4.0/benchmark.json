@@ -1,0 +1,372 @@
+{
+  "runs": [
+    {
+      "version": "3.0.0",
+      "iteration": 0,
+      "seconds": 0.52,
+      "rssMB": 125,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 233792,
+          "avgMs": 0.004,
+          "p50Ms": 0.002,
+          "p95Ms": 0.005,
+          "p99Ms": 0.016
+        },
+        "Validated input flow": {
+          "opsPerSec": 212714,
+          "avgMs": 0.005,
+          "p50Ms": 0.003,
+          "p95Ms": 0.006,
+          "p99Ms": 0.012
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 69156,
+          "avgMs": 0.014,
+          "p50Ms": 0.011,
+          "p95Ms": 0.02,
+          "p99Ms": 0.028
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 245247,
+          "avgMs": 0.004,
+          "p50Ms": 0.003,
+          "p95Ms": 0.005,
+          "p99Ms": 0.009
+        },
+        "Back navigation flow": {
+          "opsPerSec": 143828,
+          "avgMs": 0.007,
+          "p50Ms": 0.005,
+          "p95Ms": 0.009,
+          "p99Ms": 0.015
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 115769,
+          "avgMs": 0.009,
+          "p50Ms": 0.008,
+          "p95Ms": 0.011,
+          "p99Ms": 0.026
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 3763,
+          "avgMs": 0.266,
+          "p50Ms": 0.215,
+          "p95Ms": 0.492,
+          "p99Ms": 0.656
+        }
+      }
+    },
+    {
+      "version": "4.0.0",
+      "iteration": 0,
+      "seconds": 0.4,
+      "rssMB": 147,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 292766,
+          "avgMs": 0.003,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.012
+        },
+        "Validated input flow": {
+          "opsPerSec": 180236,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.007,
+          "p99Ms": 0.017
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 55521,
+          "avgMs": 0.018,
+          "p50Ms": 0.015,
+          "p95Ms": 0.026,
+          "p99Ms": 0.039
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 205183,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.006,
+          "p99Ms": 0.01
+        },
+        "Back navigation flow": {
+          "opsPerSec": 22076,
+          "avgMs": 0.045,
+          "p50Ms": 0.008,
+          "p95Ms": 0.021,
+          "p99Ms": 0.129
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 58522,
+          "avgMs": 0.017,
+          "p50Ms": 0.01,
+          "p95Ms": 0.029,
+          "p99Ms": 0.064
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 2771,
+          "avgMs": 0.361,
+          "p50Ms": 0.311,
+          "p95Ms": 0.67,
+          "p99Ms": 1.435
+        }
+      }
+    },
+    {
+      "version": "4.0.0",
+      "iteration": 1,
+      "seconds": 0.32,
+      "rssMB": 132,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 277053,
+          "avgMs": 0.004,
+          "p50Ms": 0.002,
+          "p95Ms": 0.005,
+          "p99Ms": 0.017
+        },
+        "Validated input flow": {
+          "opsPerSec": 179294,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.007,
+          "p99Ms": 0.019
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 58695,
+          "avgMs": 0.017,
+          "p50Ms": 0.014,
+          "p95Ms": 0.024,
+          "p99Ms": 0.047
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 202142,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.006,
+          "p99Ms": 0.01
+        },
+        "Back navigation flow": {
+          "opsPerSec": 118515,
+          "avgMs": 0.008,
+          "p50Ms": 0.007,
+          "p95Ms": 0.011,
+          "p99Ms": 0.017
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 89382,
+          "avgMs": 0.011,
+          "p50Ms": 0.01,
+          "p95Ms": 0.014,
+          "p99Ms": 0.039
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 2969,
+          "avgMs": 0.337,
+          "p50Ms": 0.277,
+          "p95Ms": 0.586,
+          "p99Ms": 1.965
+        }
+      }
+    },
+    {
+      "version": "3.0.0",
+      "iteration": 1,
+      "seconds": 0.26,
+      "rssMB": 125,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 325179,
+          "avgMs": 0.003,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.01
+        },
+        "Validated input flow": {
+          "opsPerSec": 237085,
+          "avgMs": 0.004,
+          "p50Ms": 0.003,
+          "p95Ms": 0.006,
+          "p99Ms": 0.01
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 74511,
+          "avgMs": 0.013,
+          "p50Ms": 0.011,
+          "p95Ms": 0.02,
+          "p99Ms": 0.028
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 241107,
+          "avgMs": 0.004,
+          "p50Ms": 0.003,
+          "p95Ms": 0.005,
+          "p99Ms": 0.011
+        },
+        "Back navigation flow": {
+          "opsPerSec": 146143,
+          "avgMs": 0.007,
+          "p50Ms": 0.006,
+          "p95Ms": 0.009,
+          "p99Ms": 0.014
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 113466,
+          "avgMs": 0.009,
+          "p50Ms": 0.008,
+          "p95Ms": 0.012,
+          "p99Ms": 0.023
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 3623,
+          "avgMs": 0.276,
+          "p50Ms": 0.232,
+          "p95Ms": 0.55,
+          "p99Ms": 0.85
+        }
+      }
+    },
+    {
+      "version": "3.0.0",
+      "iteration": 2,
+      "seconds": 0.26,
+      "rssMB": 126,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 315067,
+          "avgMs": 0.003,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.01
+        },
+        "Validated input flow": {
+          "opsPerSec": 231871,
+          "avgMs": 0.004,
+          "p50Ms": 0.003,
+          "p95Ms": 0.006,
+          "p99Ms": 0.016
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 72912,
+          "avgMs": 0.014,
+          "p50Ms": 0.011,
+          "p95Ms": 0.021,
+          "p99Ms": 0.035
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 247369,
+          "avgMs": 0.004,
+          "p50Ms": 0.003,
+          "p95Ms": 0.005,
+          "p99Ms": 0.008
+        },
+        "Back navigation flow": {
+          "opsPerSec": 149809,
+          "avgMs": 0.007,
+          "p50Ms": 0.005,
+          "p95Ms": 0.009,
+          "p99Ms": 0.014
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 113915,
+          "avgMs": 0.009,
+          "p50Ms": 0.007,
+          "p95Ms": 0.011,
+          "p99Ms": 0.021
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 3833,
+          "avgMs": 0.261,
+          "p50Ms": 0.228,
+          "p95Ms": 0.505,
+          "p99Ms": 0.593
+        }
+      }
+    },
+    {
+      "version": "4.0.0",
+      "iteration": 2,
+      "seconds": 0.32,
+      "rssMB": 153,
+      "scenarios": {
+        "Simple 2-state flow": {
+          "opsPerSec": 297477,
+          "avgMs": 0.003,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.012
+        },
+        "Validated input flow": {
+          "opsPerSec": 178718,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.007,
+          "p99Ms": 0.017
+        },
+        "Deep 10-state chain": {
+          "opsPerSec": 60025,
+          "avgMs": 0.017,
+          "p50Ms": 0.014,
+          "p95Ms": 0.023,
+          "p99Ms": 0.039
+        },
+        "With 3 middlewares": {
+          "opsPerSec": 206941,
+          "avgMs": 0.005,
+          "p50Ms": 0.004,
+          "p95Ms": 0.006,
+          "p99Ms": 0.01
+        },
+        "Back navigation flow": {
+          "opsPerSec": 114218,
+          "avgMs": 0.009,
+          "p50Ms": 0.007,
+          "p95Ms": 0.011,
+          "p99Ms": 0.029
+        },
+        "Multi-field data collection": {
+          "opsPerSec": 91955,
+          "avgMs": 0.011,
+          "p50Ms": 0.009,
+          "p95Ms": 0.015,
+          "p99Ms": 0.033
+        },
+        "100 concurrent sessions": {
+          "opsPerSec": 2561,
+          "avgMs": 0.39,
+          "p50Ms": 0.329,
+          "p95Ms": 0.664,
+          "p99Ms": 3.271
+        }
+      }
+    }
+  ],
+  "summary": {
+    "3.0.0": {
+      "rssMedianMB": 125,
+      "opsPerSecMedian": {
+        "Simple 2-state flow": 315067,
+        "Validated input flow": 231871,
+        "Deep 10-state chain": 72912,
+        "With 3 middlewares": 245247,
+        "Back navigation flow": 146143,
+        "Multi-field data collection": 113915,
+        "100 concurrent sessions": 3763
+      }
+    },
+    "4.0.0": {
+      "rssMedianMB": 147,
+      "opsPerSecMedian": {
+        "Simple 2-state flow": 292766,
+        "Validated input flow": 179294,
+        "Deep 10-state chain": 58695,
+        "With 3 middlewares": 205183,
+        "Back navigation flow": 114218,
+        "Multi-field data collection": 89382,
+        "100 concurrent sessions": 2771
+      }
+    }
+  }
+}

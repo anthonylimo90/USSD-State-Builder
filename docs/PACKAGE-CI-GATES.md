@@ -1,5 +1,7 @@
 # Package and CI gates
 
+The [prepared 4.0 release](RELEASE-4.0.md) records current local evidence separately from the historical P1-06 checks below. `USSD_PACKAGE_TARBALL=/absolute/path/to/package.tgz npm run test:package` and the same variable with `npm run test:packed-demo` validate a retained artifact instead of repacking. The consumer gate also checks release assets and excludes private/generated files from the inventory.
+
 P1-06 adds executable checks for the publishable package. `npm run test:package` packs the current checkout, installs the tarball into a temporary consumer, runs a one-turn SDK flow through both CommonJS and ESM root/SDK imports, compares their named exports, compares runtime values with TypeScript declaration values, and compiles consumer code with NodeNext and bundler resolution. The temporary project is removed afterward. `npm run test:types` checks the declarations themselves in strict mode. `npm run lint` runs ESLint across the JavaScript source, examples, tests, and verification script.
 
 CI uses `npm ci --ignore-scripts` from the lockfile, tests the maintained Node 22 and 24 LTS lines plus Node 26 Current, and runs Jest with open-handle detection and no forced exit. The integration job starts isolated Redis, MongoDB, and PostgreSQL services and runs the Redis/HTTP suite plus the four-adapter conformance suite. Publishing depends on the test, lint, package, and integration jobs.

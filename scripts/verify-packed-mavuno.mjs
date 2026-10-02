@@ -5,7 +5,7 @@ import http from 'node:http';
 import { createRequire } from 'node:module';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,8 +39,10 @@ function request(port, method, route, body, contentType = 'application/json', to
 }
 
 try {
-  const packed = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary], root));
-  const tarball = join(temporary, packed[0].filename);
+  const packed = process.env.USSD_PACKAGE_TARBALL ? null :
+    JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary], root));
+  const tarball = process.env.USSD_PACKAGE_TARBALL ? resolve(process.env.USSD_PACKAGE_TARBALL) :
+    join(temporary, packed[0].filename);
   mkdirSync(consumer);
   writeFileSync(join(consumer, 'package.json'), JSON.stringify({ name: 'ussd-mavuno-consumer', private: true }));
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', tarball]);
@@ -108,7 +110,7 @@ try {
   await providerDial('provider-lookup', '3*M00002');
   assert.equal((await providerDial('provider-lookup', '3*M00002*1')).body, 'END Order M00002 cancelled.');
   assert.equal(await app.market.getStock('MAIZE'), 8);
-  console.log(`Packed ${packed[0].filename}: browser and provider Mavuno order, receipt replay, end-event acknowledgement, async callback lookup, cancellation, and stock restoration passed.`);
+  console.log(`Packed ${basename(tarball)}: browser and provider Mavuno order, receipt replay, end-event acknowledgement, async callback lookup, cancellation, and stock restoration passed.`);
 } finally {
   if (app) {
     try {

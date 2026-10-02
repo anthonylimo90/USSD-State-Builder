@@ -41,6 +41,18 @@ describe('explicit flow definitions', () => {
     expect(await app.processInput('snapshot', '1')).toBe('END Done');
   });
 
+  test('compiled form transforms retain their original behavior after field edits', async () => {
+    let field;
+    const app = createApp().form('signup', form => {
+      form.field('name', item => { field = item; item.prompt('Name').transform(value => value.trim()); });
+      form.onComplete('done');
+    }).state('done', state => state.message('Saved').end()).logger(null).build();
+    field.transform(value => `CHANGED:${value}`);
+    await app.processInput('form-snapshot', '');
+    await app.processInput('form-snapshot', ' original ');
+    expect((await app.getSessionData('form-snapshot')).name).toBe('original');
+  });
+
   test('retains form relationships, transformed field names and declared sensitivity without values or code', () => {
     const app = createApp().form('signup', f => {
       f.field('pin', field => field.prompt('Private prompt').sensitivity('secret').transform(value => value.trim()));

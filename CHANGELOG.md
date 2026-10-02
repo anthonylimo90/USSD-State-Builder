@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Prepared for **4.0.0**; not yet published. See the [migration guide](docs/MIGRATING-TO-4.md), [support matrix](docs/SUPPORT-MATRIX.md) and [release evidence](docs/RELEASE-4.0.md).
+
+### Breaking changes
+- Compiled machines have fixed, read-only storage. Configure the adapter/wrappers before construction; rebuild deliberately to change it. TypeScript now matches the getter-only runtime.
+- SDK compilation snapshots state declarations and form transforms. Later builder edits do not reconfigure an existing machine; declared SDK diagram output replaces source inference and saved diagram snapshots can change.
+
 ### Added
+- Reusable loopback workbench for SDK/traditional flows with actual state, safe public-data inspection, keyboard keypad, reset/session controls and bounded redacted turn history.
+- Declared flow graphs and diagnostics with explicit unknown dynamic paths, missing targets, navigation conflicts, unreachable states and terminal/dead-end checks.
+- Synthetic scenario replay with injected virtual clocks, ordered fake effects, redacted capture drafts and standalone Jest test export. Captured-redacted inputs require explicit authored replacements.
+- Repeatable developer onboarding guide and gate covering a new help state, stock-check reproduction, exported regression, one-line repair and defect reintroduction. External pilot materials are prepared; recruitment remains open.
+- Versioned redacted trace/fixture APIs with schema/byte limits and opaque observation identities.
 - Opt-in bounded metric evidence buffer with whole-session retention, local deletion, static label rosters, isolated failure diagnostics and one physical exporter slot. Configurable OpenTelemetry lifetime series limits and a synthetic retention demonstration.
 - Flow/state metric reports, sample-aware turn latency, official-promtool-validated cohort gauges, an actual OpenTelemetry Meter bridge and a runnable synthetic reference dashboard with redacted evidence inspection.
 - Redacted metric event schema, keyed stable identities and deterministic batch aggregation across request attempts, logical turns, started sessions and business operations. Explicit denominators, late-event corrections and inferred/unknown outcomes are separate from legacy runtime metrics.
@@ -17,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Framework-neutral Africa's Talking form adapter, explicit cumulative/incremental input normalization, scoped session bindings, transcript comparison and plain-text HTTP responses. Mavuno has an optional provider endpoint backed by atomic turn receipts.
 - Inspectable flow definitions shared by SDK diagrams and state inspection, including form/field metadata and declared sensitivity. SDK routes render without handler source inspection; dynamic behavior reports partial coverage.
 - Opt-in session flow versions, retained original flows, and controlled restart receipts for incompatible active sessions. Retained machines share storage and reuse the entrypoint's session lock.
+
+### Fixed
+- Form transform save closures retain the configured field name and transform; mutating a captured field builder cannot alter an already compiled form.
+
+### Packaging
+- Explicit npm file allowlist includes runtime, types, public docs and runnable examples while excluding test/provider captures, agent configuration and generated archives.
+- Include the MIT license text and a prepared 4.0 migration/evidence packet.
+
+### Known limits
+- Full Mavuno provider walkthrough and actual end-event delivery/authentication remain unverified. Public controls and synthetic integration checks do not close the provider gate.
+- Independent developer pilots, repeat use and a permitted real deployment have not happened. Hosted 4.0 CI and registry publication are separate future gates.
+- Local replay trusts application factories; metrics need application-owned correlation, remote retention/deletion and external-effect reconciliation.
 
 ### Changed
 - SDK builds snapshot declarations so subsequent builder edits do not change a compiled flow. Machines sharing a storage object also share local session locks.

@@ -247,7 +247,7 @@ export class USSDStateMachine {
     /** Session timeout in seconds */
     timeout: number;
     /** Storage adapter */
-    storage: StorageAdapter;
+    readonly storage: StorageAdapter;
     /** Whether back navigation is enabled */
     enableBackNavigation: boolean;
     /** Lifecycle hooks */

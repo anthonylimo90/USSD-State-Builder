@@ -41,7 +41,21 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 - [ ] **P4-04** — External pilots.
 - [ ] **P4-05** — Product decision.
 
+## 4.0 packaging
+
+- [x] Review compatibility since 3.0, align readonly storage declarations and fix compiled form transform snapshots.
+- [x] Prepare stable 4.0.0 metadata, allowlisted npm payload, MIT license, migration guide, support matrix and [release evidence](RELEASE-4.0.md).
+- [x] Run local unit, four-adapter/HTTP, consumer, onboarding, demo, metrics, lint and type gates; retain the exact tarball and checksum manifest under ignored `dist/`.
+- [x] Compare unchanged benchmark workloads against 3.0 and retain [raw measurements](release-4.0/benchmark.json).
+- [ ] Investigate or explicitly accept the measured performance regression with a workload-specific budget.
+- [ ] Fresh hosted release checks, including Node 26.
+- [ ] Separately authorized tag/publication, registry integrity/provenance and fresh registry-consumer verification.
+
+Packaging does not close P2-01/P2-07 provider evidence or P4-04/P4-05 external pilot/product decisions.
+
 ## Current evidence
+
+- 2026-10-02: Stable 4.0.0 packaging prepared locally. Both Node 22/24 suites pass 1,177 tests (50 opt-in skipped); four-adapter conformance plus Redis/HTTP passes 63. Installed-tarball CJS/ESM/type/inventory and Mavuno journeys, disposable onboarding, Prometheus, retention, lint and declarations pass. Fixed readonly storage types and a compiled-form transform snapshot defect; npm payload now has an explicit allowlist and MIT text. Production/optional npm audit reports zero vulnerabilities. The unchanged three-run alternating benchmark comparison shows 7–26% lower throughput and median RSS 125→147 MB; performance acceptance/investigation and fresh hosted CI remain pending. No tag, push, publication, deployment or provider/pilot completion is claimed. See [release evidence](RELEASE-4.0.md).
 
 - 2026-09-27: Work started on P1-01. Baseline is `8ee06ca` and package version `2.7.0`. The earlier review recorded 888 passing unit tests and 15 passing Redis/HTTP integration tests. See the roadmap for reproduced defects R1–R5.
 - 2026-09-27: P1-01 complete. [Runtime contract](RUNTIME-CONTRACT.md) records target behavior and compatibility boundaries. The four focused probes in `tests/roadmap/reproduce-current-gaps.js` each failed against the baseline as expected: R1 wrong displayed item, R2 absent lifecycle events, R3 refresh/back conflict, R4 invalid histogram buckets. P1-02 is next.

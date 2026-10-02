@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
@@ -35,8 +35,22 @@ function declaredValues(file) {
 }
 
 try {
-  const packed = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary], root));
-  const tarball = join(temporary, packed[0].filename);
+  const packed = process.env.USSD_PACKAGE_TARBALL ? null :
+    JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary], root));
+  const tarball = process.env.USSD_PACKAGE_TARBALL ? resolve(process.env.USSD_PACKAGE_TARBALL) :
+    join(temporary, packed[0].filename);
+  const inventory = run('tar', ['-tzf', tarball], root).trim().split('\n');
+  for (const asset of ['LICENSE', 'README.md', 'CHANGELOG.md', 'docs/MIGRATING-TO-4.md',
+    'docs/RELEASE-4.0.md', 'docs/SUPPORT-MATRIX.md', 'examples/live-market/.env.example']) {
+    assert.ok(inventory.includes(`package/${asset}`), `Missing release asset: ${asset}`);
+  }
+  for (const path of inventory) {
+    assert.ok(!/^package\/(?:tests|coverage|node_modules|dist|\.github|\.agents|\.codex)(?:\/|$)/.test(path),
+      `Unexpected private/generated package entry: ${path}`);
+    assert.ok(!/^package\/(?:AGENTS|CLAUDE)\.md$/.test(path), `Unexpected agent instructions: ${path}`);
+    assert.ok(!/(?:^|\/)\.env(?:$|\.(?!example$))/.test(path), `Unexpected environment file: ${path}`);
+    assert.ok(!/\.tgz$/.test(path), `Unexpected nested archive: ${path}`);
+  }
   mkdirSync(consumer);
   writeFileSync(join(consumer, 'package.json'), JSON.stringify({ name: 'ussd-package-consumer', private: true }));
   run('npm', ['install', '--offline', '--ignore-scripts', '--omit=optional', '--no-audit', '--no-fund', '--no-package-lock', tarball]);
@@ -159,6 +173,8 @@ buffer.close();
 const storage = new InMemoryStorage();
 const machine: USSDStateMachine = createApp().flowVersion('typed-v1', { previousFlows: [] }).state('START', s => s.run((input, id, context) => { context.signal?.throwIfAborted(); void context.deadlineAt; return 'Welcome'; }).save('name').sensitivity('public').metadata({ dynamic: false })).storage(storage).build();
 const analysis: FlowAnalysis = analyzeFlowDefinition(machine.getFlowDefinition());
+// @ts-expect-error The storage adapter is fixed for a compiled machine's lifetime.
+machine.storage = storage;
 const inspected: FlowAnalysis = new StateInspector(machine).analyze();
 const diagramAnalysis: FlowAnalysis = new FlowDiagram(machine).analyze();
 const sdkInspection: FlowAnalysis = createApp().state('HOME', s => s.end()).build().inspect().analyze();
@@ -203,7 +219,8 @@ void new InMemoryStorage({ now: clock.now });
   }
   const manifest = JSON.parse(readFileSync(join(consumer, 'node_modules/ussd-state-builder/package.json'), 'utf8'));
   assert.equal(manifest.name, 'ussd-state-builder');
-  console.log(`Packed ${packed[0].filename}: CJS, ESM, declaration parity, NodeNext, and bundler checks passed.`);
+  assert.equal(manifest.version, JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version);
+  console.log(`Packed ${basename(tarball)}: release inventory, CJS, ESM, declaration parity, NodeNext, and bundler checks passed.`);
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

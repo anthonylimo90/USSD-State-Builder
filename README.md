@@ -3,6 +3,8 @@
 [![npm version](https://badge.fury.io/js/ussd-state-builder.svg)](https://www.npmjs.com/package/ussd-state-builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+The checkout prepares **4.0.0**. Read the [3.0 → 4.0 migration guide](docs/MIGRATING-TO-4.md) and [release evidence](docs/RELEASE-4.0.md) before upgrading. This checkout has not been published as 4.0.0.
+
 A fluent SDK for building USSD applications in Node.js, with automatic `CON`/`END` handling, validation, storage adapters, middleware, and i18n. See the [support matrix](docs/SUPPORT-MATRIX.md) and [production guide](docs/PRODUCTION.md) before deploying a multi-worker service.
 
 The [versioned trace and fixture contract](docs/TRACE-AND-FIXTURES.md) defines bounded, redacted turn events and distinguishes synthetic test inputs from captured dependency shapes.
@@ -33,7 +35,7 @@ Open [http://localhost:3100](http://localhost:3100). This is a local simulation 
 npm install ussd-state-builder
 ```
 
-Version 3.0 requires Node.js 22 or newer. See the [3.0 migration guide](docs/MIGRATING-TO-3.md) before upgrading an existing application and the [release evidence](docs/RELEASE-3.0.md) for validation and performance limits.
+Node.js 22 or newer is required. The command above installs the published package; this checkout's prepared 4.0.0 artifact is installed with `npm install /absolute/path/to/dist/ussd-state-builder-4.0.0.tgz`. See the [4.0 migration guide](docs/MIGRATING-TO-4.md) and [release evidence](docs/RELEASE-4.0.md) before upgrading. Historical [3.0 evidence](docs/RELEASE-3.0.md) remains available.
 
 ## Quick Start
 
