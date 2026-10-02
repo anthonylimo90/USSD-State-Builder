@@ -1,6 +1,6 @@
-# Prepared 4.0.0 release
+# 4.0.0 release evidence
 
-Prepared locally on 2 October 2026 from the Phase 2–4 implementation. This is a stable-version package preparation, not a published release. No 4.0 tag, npm publication or deployment has occurred. The major version reflects the getter-only storage contract and compiled builder snapshots; see [migration](MIGRATING-TO-4.md), [support matrix](SUPPORT-MATRIX.md) and [changelog](../CHANGELOG.md).
+Prepared locally on 2 October 2026 from the Phase 2–4 implementation. This document records validation before publication; hosted CI and registry results belong to the [GitHub release](https://github.com/anthonylimo90/USSD-State-Builder/releases/tag/v4.0.0). It does not establish an application deployment. The major version reflects the getter-only storage contract and compiled builder snapshots; see [migration](MIGRATING-TO-4.md), [support matrix](SUPPORT-MATRIX.md) and [changelog](../CHANGELOG.md).
 
 ## Scope
 

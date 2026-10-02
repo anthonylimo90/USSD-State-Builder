@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Prepared for **4.0.0**; not yet published. See the [migration guide](docs/MIGRATING-TO-4.md), [support matrix](docs/SUPPORT-MATRIX.md) and [release evidence](docs/RELEASE-4.0.md).
+## [4.0.0] - 2026-10-02
+
+Major release for the Phase 2–4 SDK, provider gateway, workbench and metrics changes. See the [migration guide](docs/MIGRATING-TO-4.md), [support matrix](docs/SUPPORT-MATRIX.md) and [release evidence](docs/RELEASE-4.0.md).
 
 ### Breaking changes
 - Compiled machines have fixed, read-only storage. Configure the adapter/wrappers before construction; rebuild deliberately to change it. TypeScript now matches the getter-only runtime.
@@ -34,11 +36,11 @@ Prepared for **4.0.0**; not yet published. See the [migration guide](docs/MIGRAT
 
 ### Packaging
 - Explicit npm file allowlist includes runtime, types, public docs and runnable examples while excluding test/provider captures, agent configuration and generated archives.
-- Include the MIT license text and a prepared 4.0 migration/evidence packet.
+- Include the MIT license text and a 4.0 migration/evidence packet.
 
 ### Known limits
 - Full Mavuno provider walkthrough and actual end-event delivery/authentication remain unverified. Public controls and synthetic integration checks do not close the provider gate.
-- Independent developer pilots, repeat use and a permitted real deployment have not happened. Hosted 4.0 CI and registry publication are separate future gates.
+- Independent developer pilots, repeat use and a permitted real deployment have not happened. Hosted CI and registry publication do not establish this external validation.
 - Local replay trusts application factories; metrics need application-owned correlation, remote retention/deletion and external-effect reconciliation.
 
 ### Changed
