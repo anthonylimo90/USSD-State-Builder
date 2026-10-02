@@ -47,13 +47,15 @@ Status key: `[ ]` queued, `[~]` in progress, `[x]` verified complete.
 - [x] Prepare stable 4.0.0 metadata, allowlisted npm payload, MIT license, migration guide, support matrix and [release evidence](RELEASE-4.0.md).
 - [x] Run local unit, four-adapter/HTTP, consumer, onboarding, demo, metrics, lint and type gates; retain the exact tarball and checksum manifest under ignored `dist/`.
 - [x] Compare unchanged benchmark workloads against 3.0 and retain [raw measurements](release-4.0/benchmark.json).
-- [ ] Investigate or explicitly accept the measured performance regression with a workload-specific budget.
+- [x] Investigate and improve throughput against 3.0; pass the [repeatable local performance budget](PERFORMANCE-4.0.md). Production workload-specific limits remain application-owned.
 - [ ] Fresh hosted release checks, including Node 26.
 - [ ] Separately authorized tag/publication, registry integrity/provenance and fresh registry-consumer verification.
 
 Packaging does not close P2-01/P2-07 provider evidence or P4-04/P4-05 external pilot/product decisions.
 
 ## Current evidence
+
+- 2026-10-02: 4.0 performance follow-up complete locally. Shared storage getters retain V8 shape stability and prepared-turn isolation; uncontended locks avoid unused promises/waiter sets while queued cancellation remains safe. Static target rendering, empty/debug work and redundant write wrappers are reduced. Terminal data/receipt writes combine only without afterProcess; middleware visibility, protected version metadata and receipt replay are tested. In-memory comparison indices improve 8.8% on Node 22 and 7.4% on Node 24 against 3.0; the ordinary Redis terminal-save flow improves 22.8%/21.8%. All final median-based budgets pass; initial noisy Redis samples and the original regression remain retained. Full Node 22/24 suites each pass 1,181 tests (50 opt-in skipped); all 63 storage/integration checks, onboarding, lint/types and refreshed exact-package/Mavuno gates pass. [Performance evidence](PERFORMANCE-4.0.md) records methodology, raw samples and memory/provider boundaries. No push, tag, publication or deployment occurred.
 
 - 2026-10-02: Stable 4.0.0 packaging prepared locally. Both Node 22/24 suites pass 1,177 tests (50 opt-in skipped); four-adapter conformance plus Redis/HTTP passes 63. Installed-tarball CJS/ESM/type/inventory and Mavuno journeys, disposable onboarding, Prometheus, retention, lint and declarations pass. Fixed readonly storage types and a compiled-form transform snapshot defect; npm payload now has an explicit allowlist and MIT text. Production/optional npm audit reports zero vulnerabilities. The unchanged three-run alternating benchmark comparison shows 7–26% lower throughput and median RSS 125→147 MB; performance acceptance/investigation and fresh hosted CI remain pending. No tag, push, publication, deployment or provider/pilot completion is claimed. See [release evidence](RELEASE-4.0.md).
 

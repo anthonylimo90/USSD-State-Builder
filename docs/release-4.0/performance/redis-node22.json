@@ -1,0 +1,563 @@
+{
+  "schemaVersion": 1,
+  "node": "v22.21.1",
+  "sources": {
+    "baseline": {
+      "ref": "v3.0.0",
+      "commit": "4dddf1063f398501767a9e9d02f64a4f16bbc1d9",
+      "dirty": false,
+      "version": "3.0.0",
+      "runtimeSha256": "13b2907e1bb4dbbaa86131438cdb8aaf2d6fd68a68709ce4624d61dd9c84f4d5"
+    },
+    "reference": {
+      "ref": "38244ba",
+      "commit": "38244bae94384110a4d8fa19fd894937b6831a89",
+      "dirty": false,
+      "version": "4.0.0",
+      "runtimeSha256": "81b16b968ca720ae9e460500ac4b3bac5c7592a8d3ec69acc3acf7b389294ac6"
+    },
+    "candidate": {
+      "ref": null,
+      "commit": "38244bae94384110a4d8fa19fd894937b6831a89",
+      "dirty": true,
+      "version": "4.0.0",
+      "runtimeSha256": "89574c9bae70c0821a5497c1425f3222f028a08f0f5f789b2761abbd9d4ce4ee"
+    }
+  },
+  "harnessSha256": "b4de05a402724ba99d297e4f1eb744c12425548414697ee1843a3bb5c23ff787",
+  "methodology": {
+    "suite": "redis",
+    "runsPerSourceAndScenario": 9,
+    "scale": 3,
+    "isolatedProcesses": true,
+    "warmup": "100 separate sessions",
+    "order": "rotating sources",
+    "units": "completed scenarios/s; concurrent scenario is a batch of 100 sessions",
+    "rss": "end of scenario, not peak or retained-heap measurement"
+  },
+  "budget": {
+    "noMedianThroughputRegression": true,
+    "minimumGeomeanGainPercent": 5
+  },
+  "passed": true,
+  "geomeanGainPercent": 22.779922779922778,
+  "failures": [],
+  "summary": [
+    {
+      "scenario": "Redis validated terminal save",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 518,
+          "p50Ms": 1.90325,
+          "p95Ms": 2.13775,
+          "p99Ms": 2.360709,
+          "rssBytes": 100073472
+        },
+        "reference": {
+          "operationsPerSecond": 516,
+          "p50Ms": 1.937416,
+          "p95Ms": 2.192375,
+          "p99Ms": 2.510875,
+          "rssBytes": 100073472
+        },
+        "candidate": {
+          "operationsPerSecond": 636,
+          "p50Ms": 1.576459,
+          "p95Ms": 1.780125,
+          "p99Ms": 1.996833,
+          "rssBytes": 100204544
+        }
+      },
+      "gainPercent": 22.779922779922778,
+      "referenceGainPercent": 23.25581395348837
+    }
+  ],
+  "samples": [
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1618.749125,
+      "opsPerSec": 556,
+      "avgMs": 1.7986101388888889,
+      "p50Ms": 1.84825,
+      "p95Ms": 2.076,
+      "p99Ms": 2.324959,
+      "memory": {
+        "rssBytes": 100073472,
+        "heapUsedBytes": 23965120,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1764.918292,
+      "opsPerSec": 510,
+      "avgMs": 1.9610203244444444,
+      "p50Ms": 1.951792,
+      "p95Ms": 2.171417,
+      "p99Ms": 2.510875,
+      "memory": {
+        "rssBytes": 100597760,
+        "heapUsedBytes": 30363312,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1425.72675,
+      "opsPerSec": 631,
+      "avgMs": 1.5841408333333333,
+      "p50Ms": 1.583458,
+      "p95Ms": 1.770458,
+      "p99Ms": 1.954084,
+      "memory": {
+        "rssBytes": 100433920,
+        "heapUsedBytes": 22293080,
+        "heapTotalBytes": 56770560
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1879.345209,
+      "opsPerSec": 479,
+      "avgMs": 2.0881613433333333,
+      "p50Ms": 1.97075,
+      "p95Ms": 2.324833,
+      "p99Ms": 3.691334,
+      "memory": {
+        "rssBytes": 99926016,
+        "heapUsedBytes": 29672128,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1414.911583,
+      "opsPerSec": 636,
+      "avgMs": 1.5721239811111112,
+      "p50Ms": 1.581709,
+      "p95Ms": 1.797917,
+      "p99Ms": 2.301166,
+      "memory": {
+        "rssBytes": 100204544,
+        "heapUsedBytes": 23568024,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1752.045667,
+      "opsPerSec": 514,
+      "avgMs": 1.9467174077777778,
+      "p50Ms": 1.916333,
+      "p95Ms": 2.145333,
+      "p99Ms": 2.412167,
+      "memory": {
+        "rssBytes": 100253696,
+        "heapUsedBytes": 23544256,
+        "heapTotalBytes": 56770560
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1429.369875,
+      "opsPerSec": 630,
+      "avgMs": 1.58818875,
+      "p50Ms": 1.576459,
+      "p95Ms": 1.755083,
+      "p99Ms": 1.958208,
+      "memory": {
+        "rssBytes": 100073472,
+        "heapUsedBytes": 23256192,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1739.006667,
+      "opsPerSec": 518,
+      "avgMs": 1.9322296300000001,
+      "p50Ms": 1.915792,
+      "p95Ms": 2.141083,
+      "p99Ms": 2.360709,
+      "memory": {
+        "rssBytes": 99729408,
+        "heapUsedBytes": 24486816,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1731.046459,
+      "opsPerSec": 520,
+      "avgMs": 1.9233849544444444,
+      "p50Ms": 1.917584,
+      "p95Ms": 2.236833,
+      "p99Ms": 2.542166,
+      "memory": {
+        "rssBytes": 100057088,
+        "heapUsedBytes": 30294496,
+        "heapTotalBytes": 55984128
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1755.121958,
+      "opsPerSec": 513,
+      "avgMs": 1.9501355088888888,
+      "p50Ms": 1.933541,
+      "p95Ms": 2.250208,
+      "p99Ms": 3.403125,
+      "memory": {
+        "rssBytes": 99811328,
+        "heapUsedBytes": 23938560,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1745.346875,
+      "opsPerSec": 516,
+      "avgMs": 1.9392743055555555,
+      "p50Ms": 1.889167,
+      "p95Ms": 2.19325,
+      "p99Ms": 3.1715,
+      "memory": {
+        "rssBytes": 100073472,
+        "heapUsedBytes": 29037568,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1395.141791,
+      "opsPerSec": 645,
+      "avgMs": 1.5501575455555556,
+      "p50Ms": 1.551708,
+      "p95Ms": 1.771084,
+      "p99Ms": 1.996833,
+      "memory": {
+        "rssBytes": 99450880,
+        "heapUsedBytes": 22553976,
+        "heapTotalBytes": 55984128
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1771.19875,
+      "opsPerSec": 508,
+      "avgMs": 1.9679986111111112,
+      "p50Ms": 1.959875,
+      "p95Ms": 2.158083,
+      "p99Ms": 2.334583,
+      "memory": {
+        "rssBytes": 100155392,
+        "heapUsedBytes": 30215200,
+        "heapTotalBytes": 55984128
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1451.228583,
+      "opsPerSec": 620,
+      "avgMs": 1.6124762033333333,
+      "p50Ms": 1.598625,
+      "p95Ms": 1.802292,
+      "p99Ms": 2.087625,
+      "memory": {
+        "rssBytes": 100220928,
+        "heapUsedBytes": 24259264,
+        "heapTotalBytes": 56770560
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1884.17375,
+      "opsPerSec": 478,
+      "avgMs": 2.093526388888889,
+      "p50Ms": 1.952042,
+      "p95Ms": 2.295917,
+      "p99Ms": 3.768083,
+      "memory": {
+        "rssBytes": 100106240,
+        "heapUsedBytes": 23278784,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1435.5355,
+      "opsPerSec": 627,
+      "avgMs": 1.5950394444444445,
+      "p50Ms": 1.5845,
+      "p95Ms": 1.780125,
+      "p99Ms": 1.9745,
+      "memory": {
+        "rssBytes": 100761600,
+        "heapUsedBytes": 24091848,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1744.639833,
+      "opsPerSec": 516,
+      "avgMs": 1.9384887033333333,
+      "p50Ms": 1.90325,
+      "p95Ms": 2.13775,
+      "p99Ms": 2.400333,
+      "memory": {
+        "rssBytes": 99860480,
+        "heapUsedBytes": 23502960,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1795.424625,
+      "opsPerSec": 501,
+      "avgMs": 1.9949162500000002,
+      "p50Ms": 1.987917,
+      "p95Ms": 2.192375,
+      "p99Ms": 2.356208,
+      "memory": {
+        "rssBytes": 100237312,
+        "heapUsedBytes": 29904872,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1730.8015,
+      "opsPerSec": 520,
+      "avgMs": 1.923112777777778,
+      "p50Ms": 1.894041,
+      "p95Ms": 2.135667,
+      "p99Ms": 2.281083,
+      "memory": {
+        "rssBytes": 100450304,
+        "heapUsedBytes": 23269872,
+        "heapTotalBytes": 57032704
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1737.62325,
+      "opsPerSec": 518,
+      "avgMs": 1.9306925000000001,
+      "p50Ms": 1.90475,
+      "p95Ms": 2.144417,
+      "p99Ms": 2.405875,
+      "memory": {
+        "rssBytes": 99221504,
+        "heapUsedBytes": 29163576,
+        "heapTotalBytes": 55721984
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1291.287875,
+      "opsPerSec": 697,
+      "avgMs": 1.4347643055555555,
+      "p50Ms": 1.479041,
+      "p95Ms": 1.667625,
+      "p99Ms": 1.853667,
+      "memory": {
+        "rssBytes": 99926016,
+        "heapUsedBytes": 24418656,
+        "heapTotalBytes": 56246272
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 7,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1733.830583,
+      "opsPerSec": 519,
+      "avgMs": 1.9264784255555554,
+      "p50Ms": 1.924791,
+      "p95Ms": 2.400917,
+      "p99Ms": 4.248125,
+      "memory": {
+        "rssBytes": 83181568,
+        "heapUsedBytes": 29194632,
+        "heapTotalBytes": 56770560
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 7,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1326.860208,
+      "opsPerSec": 678,
+      "avgMs": 1.4742891200000001,
+      "p50Ms": 1.573459,
+      "p95Ms": 1.781916,
+      "p99Ms": 2.070417,
+      "memory": {
+        "rssBytes": 99614720,
+        "heapUsedBytes": 23884904,
+        "heapTotalBytes": 56246272
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 7,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1672.380333,
+      "opsPerSec": 538,
+      "avgMs": 1.85820037,
+      "p50Ms": 1.885542,
+      "p95Ms": 2.104583,
+      "p99Ms": 2.309834,
+      "memory": {
+        "rssBytes": 99762176,
+        "heapUsedBytes": 23769480,
+        "heapTotalBytes": 55984128
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 8,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1378.414958,
+      "opsPerSec": 653,
+      "avgMs": 1.5315721755555556,
+      "p50Ms": 1.538917,
+      "p95Ms": 1.844542,
+      "p99Ms": 2.268084,
+      "memory": {
+        "rssBytes": 100352000,
+        "heapUsedBytes": 23586784,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 8,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1692.760541,
+      "opsPerSec": 532,
+      "avgMs": 1.8808450455555557,
+      "p50Ms": 1.881625,
+      "p95Ms": 2.103542,
+      "p99Ms": 2.199708,
+      "memory": {
+        "rssBytes": 100073472,
+        "heapUsedBytes": 23012152,
+        "heapTotalBytes": 56508416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 8,
+      "scenario": "Redis validated terminal save",
+      "name": "Redis validated terminal save",
+      "iterations": 900,
+      "totalMs": 1742.67425,
+      "opsPerSec": 516,
+      "avgMs": 1.9363047222222223,
+      "p50Ms": 1.937416,
+      "p95Ms": 2.150333,
+      "p99Ms": 2.318083,
+      "memory": {
+        "rssBytes": 100646912,
+        "heapUsedBytes": 30379280,
+        "heapTotalBytes": 57294848
+      }
+    }
+  ]
+}

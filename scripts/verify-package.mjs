@@ -41,7 +41,8 @@ try {
     join(temporary, packed[0].filename);
   const inventory = run('tar', ['-tzf', tarball], root).trim().split('\n');
   for (const asset of ['LICENSE', 'README.md', 'CHANGELOG.md', 'docs/MIGRATING-TO-4.md',
-    'docs/RELEASE-4.0.md', 'docs/SUPPORT-MATRIX.md', 'examples/live-market/.env.example']) {
+    'docs/RELEASE-4.0.md', 'docs/SUPPORT-MATRIX.md', 'docs/PERFORMANCE-4.0.md',
+    'benchmarks/compare.mjs', 'benchmarks/redis-benchmark.cjs', 'examples/live-market/.env.example']) {
     assert.ok(inventory.includes(`package/${asset}`), `Missing release asset: ${asset}`);
   }
   for (const path of inventory) {

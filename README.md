@@ -29,6 +29,10 @@ REDIS_URL=redis://localhost:16379 npm run demo:live-market
 
 Open [http://localhost:3100](http://localhost:3100). This is a local simulation with no payment or fulfillment. The [demo guide](examples/live-market/README.md) includes the HTTP request format and Redis integration test.
 
+## Performance
+
+Local release preparation includes a [performance comparison](docs/PERFORMANCE-4.0.md) against 3.0. From this Git checkout, `npm run benchmark:compare -- --baseline=v3.0.0 --runs=7 --scale=10` runs isolated workloads and checks the local comparison budget. The guide includes the Redis comparison and raw evidence; these are not provider-capacity guarantees.
+
 ## Installation
 
 ```bash

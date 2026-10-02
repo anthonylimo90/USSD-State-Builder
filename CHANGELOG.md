@@ -42,6 +42,8 @@ Prepared for **4.0.0**; not yet published. See the [migration guide](docs/MIGRAT
 - Local replay trusts application factories; metrics need application-owned correlation, remote retention/deletion and external-effect reconciliation.
 
 ### Changed
+- Share compiled machine storage getter/default clock functions; allocate local waiters only on contention. Preserve shared-storage serialization, cancellation, staging and version semantics.
+- Skip unused debug payloads, empty back-navigation middleware and asynchronous static target resolution. Combine terminal data and replay receipt in one storage write when no afterProcess hook needs the data first. [Local performance comparisons](docs/PERFORMANCE-4.0.md) beat 3.0; ordinary turns still are not complete-turn transactions.
 - SDK builds snapshot declarations so subsequent builder edits do not change a compiled flow. Machines sharing a storage object also share local session locks.
 
 ## [3.0.0] - 2026-09-28

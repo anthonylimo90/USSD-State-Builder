@@ -14,7 +14,8 @@ const jestGlobals = Object.fromEntries([
 export default [
   { ignores: ['coverage/**', 'node_modules/**'] },
   {
-    files: ['*.js', '*.mjs', 'lib/**/*.js', 'examples/**/*.js', 'scripts/**/*.js', 'tests/**/*.js'],
+    files: ['*.js', '*.mjs', 'lib/**/*.js', 'examples/**/*.js', 'scripts/**/*.js', 'tests/**/*.js',
+      'benchmarks/**/*.js', 'benchmarks/**/*.mjs', 'benchmarks/**/*.cjs'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'commonjs', globals: nodeGlobals },
     rules: {
       ...js.configs.recommended.rules,
@@ -23,7 +24,7 @@ export default [
     }
   },
   {
-    files: ['*.mjs', 'scripts/**/*.mjs'],
+    files: ['*.mjs', 'scripts/**/*.mjs', 'benchmarks/**/*.mjs'],
     languageOptions: { sourceType: 'module' }
   },
   {

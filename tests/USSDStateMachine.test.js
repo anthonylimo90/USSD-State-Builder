@@ -138,6 +138,73 @@ describe('USSDStateMachine', () => {
     expect(await ussdStateMachine.getCurrentState('terminal')).toBe('MENU');
   });
 
+  test.each([null, 'v1'])('terminal data and replay receipt share one storage write (version %s)', async version => {
+    const storage = new InMemoryStorage();
+    await storage.setState('terminal-data', 'START', 300);
+    if (version) await storage.setData('terminal-data', { __ussdFlow: { version } }, 300);
+    const write = jest.spyOn(storage, 'setData');
+    const incoming = { name: 'Ada', __ussdFlow: { version: 'wrong' },
+      __ussdLifecycle: { completedResponse: 'END Wrong' } };
+    const machine = new USSDStateMachine({ initialState: 'START', storage,
+      ...(version ? { flowVersion: version } : {}), logger: null,
+      states: { START: { handler: () => ({ response: 'END Saved', data: incoming }) } }
+    });
+    expect(await machine.processInput('terminal-data', 'Ada')).toBe('END Saved');
+    expect(write).toHaveBeenCalledTimes(1);
+    const saved = await storage.getData('terminal-data');
+    expect(saved).toMatchObject({ name: 'Ada', __ussdLifecycle: { completedResponse: 'END Saved' } });
+    expect(saved.__ussdFlow).toEqual(version ? { version } : undefined);
+    expect(incoming.__ussdFlow.version).toBe('wrong');
+    expect(incoming.__ussdLifecycle.completedResponse).toBe('END Wrong');
+    expect(await machine.processInput('terminal-data', 'again')).toBe('END Saved');
+    expect(write).toHaveBeenCalledTimes(1);
+  });
+
+  test('afterProcess sees terminal handler data before choosing a continued response', async () => {
+    const storage = new InMemoryStorage();
+    const machine = new USSDStateMachine({ initialState: 'START', storage, logger: null,
+      states: { START: { handler: () => ({ response: 'END Saved', data: { name: 'Ada' } }) } }
+    });
+    machine.use('afterProcess', async context => {
+      expect(await storage.getData(context.sessionId)).toEqual({ name: 'Ada' });
+      context.response = 'CON Review Ada';
+    });
+    expect(await machine.processInput('continued', 'Ada')).toBe('CON Review Ada');
+    expect(await storage.getData('continued')).toEqual({ name: 'Ada' });
+  });
+
+  test('cancelled shared-storage waiters cannot release another turn or block surviving waiters', async () => {
+    const storage = new InMemoryStorage();
+    let entered, finish;
+    const started = new Promise(resolve => { entered = resolve; });
+    const held = new Promise(resolve => { finish = resolve; });
+    const handled = [];
+    const config = { initialState: 'COUNTER', storage, logger: null, states: {
+      COUNTER: { handler: async (input, id, context) => {
+        handled.push(input);
+        if (input === 'hold') { entered(); await held; }
+        const count = (context.sessionData?.count || 0) + 1;
+        return { response: `CON ${count}`, data: { count } };
+      } }
+    } };
+    const first = new USSDStateMachine(config), second = new USSDStateMachine(config);
+    const owner = first.processInput('shared-lock', 'hold');
+    await started;
+    const controller = new AbortController();
+    const cancelled = second.processInput('shared-lock', 'cancelled', { signal: controller.signal });
+    const surviving = first.processInput('shared-lock', 'surviving');
+    controller.abort(new Error('Cancelled queued turn'));
+    await expect(cancelled).rejects.toThrow('Cancelled queued turn');
+    const last = second.processInput('shared-lock', 'last');
+    expect(await second.processInput('independent-lock', 'independent')).toBe('CON 1');
+    expect(handled).toEqual(['hold', 'independent']);
+    finish();
+    expect(await owner).toBe('CON 1');
+    expect(await Promise.all([surviving, last])).toEqual(['CON 2', 'CON 3']);
+    expect(await storage.getData('shared-lock')).toEqual({ count: 3 });
+    expect(first._sessionLocks.size).toBe(0);
+  });
+
   test('rejects an invalid response before changing state, history, data, or lifecycle', async () => {
     const storage = new InMemoryStorage();
     await storage.setState('invalid', 'START', 300);

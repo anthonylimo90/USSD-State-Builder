@@ -5,8 +5,15 @@
  * Run: node benchmarks/benchmark.js
  */
 
-const { createApp } = require('../lib/sdk');
-const InMemoryStorage = require('../lib/InMemoryStorage');
+const path = require('node:path');
+const fs = require('node:fs');
+const root = process.env.USSD_BENCHMARK_ROOT || path.resolve(__dirname, '..');
+const { createApp } = require(path.join(root, 'lib/sdk'));
+const InMemoryStorage = require(path.join(root, 'lib/InMemoryStorage'));
+const scale = Number(process.env.USSD_BENCHMARK_SCALE || 1);
+if (!Number.isInteger(scale) || scale < 1 || scale > 20) {
+    throw new Error('USSD_BENCHMARK_SCALE must be an integer from 1 to 20');
+}
 
 class BenchmarkRunner {
     constructor() {
@@ -14,9 +21,12 @@ class BenchmarkRunner {
     }
 
     async run(name, fn, iterations = 10000) {
+        if (process.env.USSD_BENCHMARK_SCENARIO && name !== process.env.USSD_BENCHMARK_SCENARIO) return;
+        iterations *= scale;
         // Warmup
-        for (let i = 0; i < Math.min(100, iterations / 10); i++) {
-            await fn(i);
+        for (let i = 0; i < Math.min(200 * scale, iterations / 10); i++) {
+            // Keep terminal warmup receipts out of measured session IDs.
+            await fn(-i - 1);
         }
 
         // Actual benchmark
@@ -239,6 +249,13 @@ async function main() {
     console.log(`  RSS: ${Math.round(mem.rss / 1024 / 1024)}MB`);
     console.log(`  Heap Used: ${Math.round(mem.heapUsed / 1024 / 1024)}MB`);
     console.log(`  Heap Total: ${Math.round(mem.heapTotal / 1024 / 1024)}MB`);
+    if (!bench.results.length) throw new Error('Unknown benchmark scenario');
+    if (process.env.USSD_BENCHMARK_OUTPUT) {
+        fs.writeFileSync(process.env.USSD_BENCHMARK_OUTPUT, JSON.stringify({
+            node: process.version, scale, results: bench.results,
+            memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, heapTotalBytes: mem.heapTotal }
+        }));
+    }
 }
 
 main().catch(error => {

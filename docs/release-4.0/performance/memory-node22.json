@@ -1,0 +1,3185 @@
+{
+  "schemaVersion": 1,
+  "node": "v22.21.1",
+  "sources": {
+    "baseline": {
+      "ref": "v3.0.0",
+      "commit": "4dddf1063f398501767a9e9d02f64a4f16bbc1d9",
+      "dirty": false,
+      "version": "3.0.0",
+      "runtimeSha256": "13b2907e1bb4dbbaa86131438cdb8aaf2d6fd68a68709ce4624d61dd9c84f4d5"
+    },
+    "reference": {
+      "ref": "38244ba",
+      "commit": "38244bae94384110a4d8fa19fd894937b6831a89",
+      "dirty": false,
+      "version": "4.0.0",
+      "runtimeSha256": "81b16b968ca720ae9e460500ac4b3bac5c7592a8d3ec69acc3acf7b389294ac6"
+    },
+    "candidate": {
+      "ref": null,
+      "commit": "38244bae94384110a4d8fa19fd894937b6831a89",
+      "dirty": true,
+      "version": "4.0.0",
+      "runtimeSha256": "89574c9bae70c0821a5497c1425f3222f028a08f0f5f789b2761abbd9d4ce4ee"
+    }
+  },
+  "harnessSha256": "62e86bc97183bcb7e49b70a9d1e9921b5657d71112b480136ca9eec8e6693d53",
+  "methodology": {
+    "suite": "memory",
+    "runsPerSourceAndScenario": 7,
+    "scale": 10,
+    "isolatedProcesses": true,
+    "warmup": "up to 200 \u00d7 scale separate sessions",
+    "order": "rotating sources",
+    "units": "completed scenarios/s; concurrent scenario is a batch of 100 sessions",
+    "rss": "end of scenario, not peak or retained-heap measurement"
+  },
+  "budget": {
+    "noMedianThroughputRegression": true,
+    "minimumGeomeanGainPercent": 5
+  },
+  "passed": true,
+  "geomeanGainPercent": 8.835755762764608,
+  "failures": [],
+  "summary": [
+    {
+      "scenario": "Simple 2-state flow",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 388463,
+          "p50Ms": 0.002,
+          "p95Ms": 0.003,
+          "p99Ms": 0.006,
+          "rssBytes": 152879104
+        },
+        "reference": {
+          "operationsPerSecond": 355275,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.008,
+          "rssBytes": 156008448
+        },
+        "candidate": {
+          "operationsPerSecond": 408925,
+          "p50Ms": 0.002,
+          "p95Ms": 0.003,
+          "p99Ms": 0.005,
+          "rssBytes": 158138368
+        }
+      },
+      "gainPercent": 5.267425726517061,
+      "referenceGainPercent": 15.100978115544294
+    },
+    {
+      "scenario": "Validated input flow",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 317966,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.006,
+          "rssBytes": 166051840
+        },
+        "reference": {
+          "operationsPerSecond": 244479,
+          "p50Ms": 0.003,
+          "p95Ms": 0.005,
+          "p99Ms": 0.008,
+          "rssBytes": 170098688
+        },
+        "candidate": {
+          "operationsPerSecond": 338926,
+          "p50Ms": 0.002,
+          "p95Ms": 0.004,
+          "p99Ms": 0.006,
+          "rssBytes": 161300480
+        }
+      },
+      "gainPercent": 6.591899762867737,
+      "referenceGainPercent": 38.631947938268716
+    },
+    {
+      "scenario": "Deep 10-state chain",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 86104,
+          "p50Ms": 0.01,
+          "p95Ms": 0.013,
+          "p99Ms": 0.089,
+          "rssBytes": 80756736
+        },
+        "reference": {
+          "operationsPerSecond": 67510,
+          "p50Ms": 0.013,
+          "p95Ms": 0.017,
+          "p99Ms": 0.094,
+          "rssBytes": 83476480
+        },
+        "candidate": {
+          "operationsPerSecond": 94680,
+          "p50Ms": 0.009,
+          "p95Ms": 0.013,
+          "p99Ms": 0.079,
+          "rssBytes": 83148800
+        }
+      },
+      "gainPercent": 9.96004831366719,
+      "referenceGainPercent": 40.245889497852176
+    },
+    {
+      "scenario": "With 3 middlewares",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 268598,
+          "p50Ms": 0.003,
+          "p95Ms": 0.004,
+          "p99Ms": 0.007,
+          "rssBytes": 150798336
+        },
+        "reference": {
+          "operationsPerSecond": 220467,
+          "p50Ms": 0.004,
+          "p95Ms": 0.005,
+          "p99Ms": 0.009,
+          "rssBytes": 153321472
+        },
+        "candidate": {
+          "operationsPerSecond": 278806,
+          "p50Ms": 0.003,
+          "p95Ms": 0.004,
+          "p99Ms": 0.007,
+          "rssBytes": 153976832
+        }
+      },
+      "gainPercent": 3.8004750593824133,
+      "referenceGainPercent": 26.461556604843352
+    },
+    {
+      "scenario": "Back navigation flow",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 160228,
+          "p50Ms": 0.005,
+          "p95Ms": 0.007,
+          "p99Ms": 0.015,
+          "rssBytes": 105627648
+        },
+        "reference": {
+          "operationsPerSecond": 123613,
+          "p50Ms": 0.006,
+          "p95Ms": 0.009,
+          "p99Ms": 0.03,
+          "rssBytes": 108478464
+        },
+        "candidate": {
+          "operationsPerSecond": 180677,
+          "p50Ms": 0.004,
+          "p95Ms": 0.007,
+          "p99Ms": 0.01,
+          "rssBytes": 107741184
+        }
+      },
+      "gainPercent": 12.762438525101727,
+      "referenceGainPercent": 46.16342941276403
+    },
+    {
+      "scenario": "Multi-field data collection",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 146074,
+          "p50Ms": 0.005,
+          "p95Ms": 0.008,
+          "p99Ms": 0.019,
+          "rssBytes": 110018560
+        },
+        "reference": {
+          "operationsPerSecond": 117973,
+          "p50Ms": 0.007,
+          "p95Ms": 0.01,
+          "p99Ms": 0.019,
+          "rssBytes": 112885760
+        },
+        "candidate": {
+          "operationsPerSecond": 153145,
+          "p50Ms": 0.005,
+          "p95Ms": 0.008,
+          "p99Ms": 0.014,
+          "rssBytes": 114229248
+        }
+      },
+      "gainPercent": 4.840697180880915,
+      "referenceGainPercent": 29.81360141727345
+    },
+    {
+      "scenario": "100 concurrent sessions",
+      "medians": {
+        "baseline": {
+          "operationsPerSecond": 3313,
+          "p50Ms": 0.218,
+          "p95Ms": 0.849,
+          "p99Ms": 1.335,
+          "rssBytes": 171261952
+        },
+        "reference": {
+          "operationsPerSecond": 2690,
+          "p50Ms": 0.264,
+          "p95Ms": 1.125,
+          "p99Ms": 1.795,
+          "rssBytes": 188612608
+        },
+        "candidate": {
+          "operationsPerSecond": 3958,
+          "p50Ms": 0.201,
+          "p95Ms": 0.743,
+          "p99Ms": 1.02,
+          "rssBytes": 167133184
+        }
+      },
+      "gainPercent": 19.468759432538473,
+      "referenceGainPercent": 47.137546468401496
+    }
+  ],
+  "samples": [
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 267,
+      "opsPerSec": 374816,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.007",
+      "minMs": "0.001",
+      "maxMs": "2.625",
+      "memory": {
+        "rssBytes": 153092096,
+        "heapUsedBytes": 69595592,
+        "heapTotalBytes": 99270656
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 279,
+      "opsPerSec": 358594,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.008",
+      "minMs": "0.001",
+      "maxMs": "4.020",
+      "memory": {
+        "rssBytes": 156368896,
+        "heapUsedBytes": 56017472,
+        "heapTotalBytes": 100581376
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 303,
+      "opsPerSec": 329922,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.007",
+      "minMs": "0.001",
+      "maxMs": "14.577",
+      "memory": {
+        "rssBytes": 159744000,
+        "heapUsedBytes": 61608136,
+        "heapTotalBytes": 103464960
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 285,
+      "opsPerSec": 350756,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "5.047",
+      "memory": {
+        "rssBytes": 155910144,
+        "heapUsedBytes": 56507192,
+        "heapTotalBytes": 100057088
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 245,
+      "opsPerSec": 408925,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.007",
+      "minMs": "0.001",
+      "maxMs": "2.243",
+      "memory": {
+        "rssBytes": 156762112,
+        "heapUsedBytes": 63825576,
+        "heapTotalBytes": 100319232
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 254,
+      "opsPerSec": 393530,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.001",
+      "maxMs": "2.208",
+      "memory": {
+        "rssBytes": 153223168,
+        "heapUsedBytes": 63990616,
+        "heapTotalBytes": 99794944
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 245,
+      "opsPerSec": 408633,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.001",
+      "maxMs": "1.345",
+      "memory": {
+        "rssBytes": 158072832,
+        "heapUsedBytes": 63239784,
+        "heapTotalBytes": 101629952
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 267,
+      "opsPerSec": 374154,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.006",
+      "minMs": "0.001",
+      "maxMs": "1.942",
+      "memory": {
+        "rssBytes": 152076288,
+        "heapUsedBytes": 59301984,
+        "heapTotalBytes": 98222080
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 281,
+      "opsPerSec": 355275,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "2.620",
+      "memory": {
+        "rssBytes": 156008448,
+        "heapUsedBytes": 66632592,
+        "heapTotalBytes": 100319232
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 257,
+      "opsPerSec": 388995,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.006",
+      "minMs": "0.001",
+      "maxMs": "1.406",
+      "memory": {
+        "rssBytes": 151257088,
+        "heapUsedBytes": 65746672,
+        "heapTotalBytes": 97959936
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 292,
+      "opsPerSec": 342842,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.009",
+      "minMs": "0.002",
+      "maxMs": "1.805",
+      "memory": {
+        "rssBytes": 156188672,
+        "heapUsedBytes": 56703360,
+        "heapTotalBytes": 100057088
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 235,
+      "opsPerSec": 426023,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.001",
+      "maxMs": "1.712",
+      "memory": {
+        "rssBytes": 158138368,
+        "heapUsedBytes": 62241840,
+        "heapTotalBytes": 101629952
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 290,
+      "opsPerSec": 344964,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.010",
+      "minMs": "0.002",
+      "maxMs": "2.084",
+      "memory": {
+        "rssBytes": 155828224,
+        "heapUsedBytes": 56866296,
+        "heapTotalBytes": 100057088
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 229,
+      "opsPerSec": 437216,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.004",
+      "minMs": "0.001",
+      "maxMs": "1.657",
+      "memory": {
+        "rssBytes": 158351360,
+        "heapUsedBytes": 62030984,
+        "heapTotalBytes": 101367808
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 249,
+      "opsPerSec": 402411,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.001",
+      "maxMs": "1.476",
+      "memory": {
+        "rssBytes": 152649728,
+        "heapUsedBytes": 63499680,
+        "heapTotalBytes": 99008512
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 252,
+      "opsPerSec": 396461,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.007",
+      "minMs": "0.001",
+      "maxMs": "1.820",
+      "memory": {
+        "rssBytes": 158695424,
+        "heapUsedBytes": 62396416,
+        "heapTotalBytes": 101892096
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 257,
+      "opsPerSec": 388463,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.006",
+      "minMs": "0.001",
+      "maxMs": "1.389",
+      "memory": {
+        "rssBytes": 152879104,
+        "heapUsedBytes": 59867856,
+        "heapTotalBytes": 99270656
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 281,
+      "opsPerSec": 356430,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.009",
+      "minMs": "0.002",
+      "maxMs": "1.654",
+      "memory": {
+        "rssBytes": 155729920,
+        "heapUsedBytes": 56005336,
+        "heapTotalBytes": 99794944
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 271,
+      "opsPerSec": 368925,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.006",
+      "minMs": "0.001",
+      "maxMs": "6.963",
+      "memory": {
+        "rssBytes": 153288704,
+        "heapUsedBytes": 60515216,
+        "heapTotalBytes": 99008512
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 249,
+      "opsPerSec": 400816,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.002",
+      "maxMs": "1.894",
+      "memory": {
+        "rssBytes": 156270592,
+        "heapUsedBytes": 67779952,
+        "heapTotalBytes": 100319232
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Simple 2-state flow",
+      "name": "Simple 2-state flow",
+      "iterations": 100000,
+      "totalMs": 236,
+      "opsPerSec": 423335,
+      "avgMs": "0.002",
+      "p50Ms": "0.002",
+      "p95Ms": "0.003",
+      "p99Ms": "0.005",
+      "minMs": "0.001",
+      "maxMs": "1.437",
+      "memory": {
+        "rssBytes": 157908992,
+        "heapUsedBytes": 61906856,
+        "heapTotalBytes": 101629952
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 314,
+      "opsPerSec": 317966,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.828",
+      "memory": {
+        "rssBytes": 166363136,
+        "heapUsedBytes": 72252272,
+        "heapTotalBytes": 113426432
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 409,
+      "opsPerSec": 244479,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.003",
+      "maxMs": "3.900",
+      "memory": {
+        "rssBytes": 168968192,
+        "heapUsedBytes": 68489792,
+        "heapTotalBytes": 113033216
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 295,
+      "opsPerSec": 338926,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.912",
+      "memory": {
+        "rssBytes": 170721280,
+        "heapUsedBytes": 66485264,
+        "heapTotalBytes": 114638848
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 399,
+      "opsPerSec": 250781,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.003",
+      "maxMs": "2.227",
+      "memory": {
+        "rssBytes": 170524672,
+        "heapUsedBytes": 68273856,
+        "heapTotalBytes": 114081792
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 285,
+      "opsPerSec": 350520,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.005",
+      "minMs": "0.002",
+      "maxMs": "2.091",
+      "memory": {
+        "rssBytes": 172867584,
+        "heapUsedBytes": 80134864,
+        "heapTotalBytes": 116834304
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 347,
+      "opsPerSec": 288150,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.010",
+      "minMs": "0.002",
+      "maxMs": "4.891",
+      "memory": {
+        "rssBytes": 163708928,
+        "heapUsedBytes": 67062656,
+        "heapTotalBytes": 110673920
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 296,
+      "opsPerSec": 337507,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.556",
+      "memory": {
+        "rssBytes": 161300480,
+        "heapUsedBytes": 73555896,
+        "heapTotalBytes": 105824256
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 346,
+      "opsPerSec": 288672,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.009",
+      "minMs": "0.002",
+      "maxMs": "2.730",
+      "memory": {
+        "rssBytes": 167542784,
+        "heapUsedBytes": 73944416,
+        "heapTotalBytes": 114999296
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 420,
+      "opsPerSec": 238058,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.011",
+      "minMs": "0.003",
+      "maxMs": "1.918",
+      "memory": {
+        "rssBytes": 170590208,
+        "heapUsedBytes": 74514456,
+        "heapTotalBytes": 114737152
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 410,
+      "opsPerSec": 244183,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.019",
+      "minMs": "0.002",
+      "maxMs": "4.296",
+      "memory": {
+        "rssBytes": 166051840,
+        "heapUsedBytes": 75208992,
+        "heapTotalBytes": 113426432
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 443,
+      "opsPerSec": 225560,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.013",
+      "minMs": "0.003",
+      "maxMs": "2.741",
+      "memory": {
+        "rssBytes": 168001536,
+        "heapUsedBytes": 75761336,
+        "heapTotalBytes": 111067136
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 307,
+      "opsPerSec": 325488,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "3.311",
+      "memory": {
+        "rssBytes": 161234944,
+        "heapUsedBytes": 80581904,
+        "heapTotalBytes": 105824256
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 431,
+      "opsPerSec": 231997,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.012",
+      "minMs": "0.003",
+      "maxMs": "2.032",
+      "memory": {
+        "rssBytes": 170098688,
+        "heapUsedBytes": 74864424,
+        "heapTotalBytes": 114212864
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 324,
+      "opsPerSec": 308874,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.010",
+      "minMs": "0.002",
+      "maxMs": "2.088",
+      "memory": {
+        "rssBytes": 160333824,
+        "heapUsedBytes": 68986296,
+        "heapTotalBytes": 105201664
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 314,
+      "opsPerSec": 318213,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.945",
+      "memory": {
+        "rssBytes": 167215104,
+        "heapUsedBytes": 82126064,
+        "heapTotalBytes": 114212864
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 288,
+      "opsPerSec": 347581,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.556",
+      "memory": {
+        "rssBytes": 161005568,
+        "heapUsedBytes": 68976880,
+        "heapTotalBytes": 105201664
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 311,
+      "opsPerSec": 321690,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "2.047",
+      "memory": {
+        "rssBytes": 164544512,
+        "heapUsedBytes": 65371528,
+        "heapTotalBytes": 111198208
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 393,
+      "opsPerSec": 254239,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.007",
+      "minMs": "0.003",
+      "maxMs": "2.248",
+      "memory": {
+        "rssBytes": 170672128,
+        "heapUsedBytes": 76749224,
+        "heapTotalBytes": 115785728
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 309,
+      "opsPerSec": 323749,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.006",
+      "minMs": "0.002",
+      "maxMs": "1.853",
+      "memory": {
+        "rssBytes": 164806656,
+        "heapUsedBytes": 65833384,
+        "heapTotalBytes": 111198208
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 382,
+      "opsPerSec": 261861,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.007",
+      "minMs": "0.003",
+      "maxMs": "2.162",
+      "memory": {
+        "rssBytes": 170033152,
+        "heapUsedBytes": 72454248,
+        "heapTotalBytes": 114212864
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Validated input flow",
+      "name": "Validated input flow",
+      "iterations": 100000,
+      "totalMs": 282,
+      "opsPerSec": 354725,
+      "avgMs": "0.003",
+      "p50Ms": "0.002",
+      "p95Ms": "0.004",
+      "p99Ms": "0.005",
+      "minMs": "0.002",
+      "maxMs": "3.286",
+      "memory": {
+        "rssBytes": 161628160,
+        "heapUsedBytes": 83312160,
+        "heapTotalBytes": 106086400
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 117,
+      "opsPerSec": 85639,
+      "avgMs": "0.012",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.089",
+      "minMs": "0.009",
+      "maxMs": "0.467",
+      "memory": {
+        "rssBytes": 80314368,
+        "heapUsedBytes": 11078824,
+        "heapTotalBytes": 28655616
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 147,
+      "opsPerSec": 68110,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.092",
+      "minMs": "0.012",
+      "maxMs": "0.420",
+      "memory": {
+        "rssBytes": 83492864,
+        "heapUsedBytes": 15679912,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 104,
+      "opsPerSec": 96048,
+      "avgMs": "0.010",
+      "p50Ms": "0.009",
+      "p95Ms": "0.015",
+      "p99Ms": "0.075",
+      "minMs": "0.008",
+      "maxMs": "0.345",
+      "memory": {
+        "rssBytes": 83525632,
+        "heapUsedBytes": 14774120,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 148,
+      "opsPerSec": 67510,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.097",
+      "minMs": "0.012",
+      "maxMs": "0.393",
+      "memory": {
+        "rssBytes": 83771392,
+        "heapUsedBytes": 15433984,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 105,
+      "opsPerSec": 94998,
+      "avgMs": "0.010",
+      "p50Ms": "0.009",
+      "p95Ms": "0.012",
+      "p99Ms": "0.077",
+      "minMs": "0.008",
+      "maxMs": "0.472",
+      "memory": {
+        "rssBytes": 82935808,
+        "heapUsedBytes": 13221032,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 116,
+      "opsPerSec": 86574,
+      "avgMs": "0.011",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.086",
+      "minMs": "0.009",
+      "maxMs": "0.325",
+      "memory": {
+        "rssBytes": 80429056,
+        "heapUsedBytes": 11884256,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 105,
+      "opsPerSec": 94834,
+      "avgMs": "0.010",
+      "p50Ms": "0.009",
+      "p95Ms": "0.013",
+      "p99Ms": "0.079",
+      "minMs": "0.008",
+      "maxMs": "0.502",
+      "memory": {
+        "rssBytes": 83787776,
+        "heapUsedBytes": 14807832,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 116,
+      "opsPerSec": 86510,
+      "avgMs": "0.011",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.090",
+      "minMs": "0.009",
+      "maxMs": "0.633",
+      "memory": {
+        "rssBytes": 81018880,
+        "heapUsedBytes": 18847504,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 149,
+      "opsPerSec": 67144,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.094",
+      "minMs": "0.012",
+      "maxMs": "0.384",
+      "memory": {
+        "rssBytes": 82493440,
+        "heapUsedBytes": 15539216,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 116,
+      "opsPerSec": 86104,
+      "avgMs": "0.012",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.091",
+      "minMs": "0.009",
+      "maxMs": "0.497",
+      "memory": {
+        "rssBytes": 80936960,
+        "heapUsedBytes": 12690864,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 147,
+      "opsPerSec": 68225,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.095",
+      "minMs": "0.012",
+      "maxMs": "0.422",
+      "memory": {
+        "rssBytes": 83968000,
+        "heapUsedBytes": 15955376,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 106,
+      "opsPerSec": 93995,
+      "avgMs": "0.011",
+      "p50Ms": "0.009",
+      "p95Ms": "0.015",
+      "p99Ms": "0.085",
+      "minMs": "0.008",
+      "maxMs": "0.368",
+      "memory": {
+        "rssBytes": 83050496,
+        "heapUsedBytes": 14870888,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 148,
+      "opsPerSec": 67499,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.096",
+      "minMs": "0.012",
+      "maxMs": "0.436",
+      "memory": {
+        "rssBytes": 82870272,
+        "heapUsedBytes": 15976200,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 106,
+      "opsPerSec": 93970,
+      "avgMs": "0.011",
+      "p50Ms": "0.009",
+      "p95Ms": "0.013",
+      "p99Ms": "0.080",
+      "minMs": "0.008",
+      "maxMs": "0.418",
+      "memory": {
+        "rssBytes": 82919424,
+        "heapUsedBytes": 15317872,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 118,
+      "opsPerSec": 84809,
+      "avgMs": "0.012",
+      "p50Ms": "0.010",
+      "p95Ms": "0.014",
+      "p99Ms": "0.091",
+      "minMs": "0.009",
+      "maxMs": "0.549",
+      "memory": {
+        "rssBytes": 80789504,
+        "heapUsedBytes": 12368008,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 106,
+      "opsPerSec": 94207,
+      "avgMs": "0.011",
+      "p50Ms": "0.009",
+      "p95Ms": "0.014",
+      "p99Ms": "0.080",
+      "minMs": "0.008",
+      "maxMs": "0.382",
+      "memory": {
+        "rssBytes": 83558400,
+        "heapUsedBytes": 14763936,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 115,
+      "opsPerSec": 87139,
+      "avgMs": "0.011",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.088",
+      "minMs": "0.009",
+      "maxMs": "0.321",
+      "memory": {
+        "rssBytes": 80756736,
+        "heapUsedBytes": 17306056,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 145,
+      "opsPerSec": 68768,
+      "avgMs": "0.014",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.092",
+      "minMs": "0.012",
+      "maxMs": "0.538",
+      "memory": {
+        "rssBytes": 83476480,
+        "heapUsedBytes": 17450136,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 117,
+      "opsPerSec": 85475,
+      "avgMs": "0.012",
+      "p50Ms": "0.010",
+      "p95Ms": "0.013",
+      "p99Ms": "0.089",
+      "minMs": "0.009",
+      "maxMs": "0.770",
+      "memory": {
+        "rssBytes": 80445440,
+        "heapUsedBytes": 18808112,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 149,
+      "opsPerSec": 67188,
+      "avgMs": "0.015",
+      "p50Ms": "0.013",
+      "p95Ms": "0.017",
+      "p99Ms": "0.094",
+      "minMs": "0.012",
+      "maxMs": "0.658",
+      "memory": {
+        "rssBytes": 83361792,
+        "heapUsedBytes": 15953736,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Deep 10-state chain",
+      "name": "Deep 10-state chain",
+      "iterations": 10000,
+      "totalMs": 106,
+      "opsPerSec": 94680,
+      "avgMs": "0.010",
+      "p50Ms": "0.009",
+      "p95Ms": "0.013",
+      "p99Ms": "0.078",
+      "minMs": "0.008",
+      "maxMs": "0.431",
+      "memory": {
+        "rssBytes": 83148800,
+        "heapUsedBytes": 13073144,
+        "heapTotalBytes": 28393472
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 380,
+      "opsPerSec": 263114,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.767",
+      "memory": {
+        "rssBytes": 150323200,
+        "heapUsedBytes": 62376008,
+        "heapTotalBytes": 97943552
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 466,
+      "opsPerSec": 214726,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.006",
+      "p99Ms": "0.010",
+      "minMs": "0.003",
+      "maxMs": "3.668",
+      "memory": {
+        "rssBytes": 157433856,
+        "heapUsedBytes": 77557720,
+        "heapTotalBytes": 102531072
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 394,
+      "opsPerSec": 253945,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.009",
+      "minMs": "0.002",
+      "maxMs": "1.834",
+      "memory": {
+        "rssBytes": 152535040,
+        "heapUsedBytes": 69938296,
+        "heapTotalBytes": 97812480
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 475,
+      "opsPerSec": 210674,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.006",
+      "p99Ms": "0.013",
+      "minMs": "0.003",
+      "maxMs": "2.615",
+      "memory": {
+        "rssBytes": 158236672,
+        "heapUsedBytes": 70744384,
+        "heapTotalBytes": 103972864
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 359,
+      "opsPerSec": 278806,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "2.309",
+      "memory": {
+        "rssBytes": 153305088,
+        "heapUsedBytes": 74667960,
+        "heapTotalBytes": 98336768
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 386,
+      "opsPerSec": 259265,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.002",
+      "maxMs": "1.623",
+      "memory": {
+        "rssBytes": 150798336,
+        "heapUsedBytes": 62211184,
+        "heapTotalBytes": 98729984
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 358,
+      "opsPerSec": 279180,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "2.439",
+      "memory": {
+        "rssBytes": 157892608,
+        "heapUsedBytes": 69536752,
+        "heapTotalBytes": 102694912
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 373,
+      "opsPerSec": 267850,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.008",
+      "minMs": "0.002",
+      "maxMs": "1.688",
+      "memory": {
+        "rssBytes": 150241280,
+        "heapUsedBytes": 62954712,
+        "heapTotalBytes": 97943552
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 444,
+      "opsPerSec": 224994,
+      "avgMs": "0.004",
+      "p50Ms": "0.004",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.003",
+      "maxMs": "2.127",
+      "memory": {
+        "rssBytes": 153075712,
+        "heapUsedBytes": 72356184,
+        "heapTotalBytes": 98598912
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 370,
+      "opsPerSec": 270439,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.947",
+      "memory": {
+        "rssBytes": 151797760,
+        "heapUsedBytes": 61472512,
+        "heapTotalBytes": 99254272
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 448,
+      "opsPerSec": 223084,
+      "avgMs": "0.004",
+      "p50Ms": "0.004",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.003",
+      "maxMs": "1.672",
+      "memory": {
+        "rssBytes": 153321472,
+        "heapUsedBytes": 79072800,
+        "heapTotalBytes": 98598912
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 369,
+      "opsPerSec": 271272,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.005",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.803",
+      "memory": {
+        "rssBytes": 153976832,
+        "heapUsedBytes": 74796464,
+        "heapTotalBytes": 98598912
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 454,
+      "opsPerSec": 220467,
+      "avgMs": "0.004",
+      "p50Ms": "0.004",
+      "p95Ms": "0.005",
+      "p99Ms": "0.009",
+      "minMs": "0.003",
+      "maxMs": "1.627",
+      "memory": {
+        "rssBytes": 153649152,
+        "heapUsedBytes": 79055832,
+        "heapTotalBytes": 99647488
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 356,
+      "opsPerSec": 281075,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.617",
+      "memory": {
+        "rssBytes": 153468928,
+        "heapUsedBytes": 74681896,
+        "heapTotalBytes": 98598912
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 372,
+      "opsPerSec": 268598,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.749",
+      "memory": {
+        "rssBytes": 150634496,
+        "heapUsedBytes": 74877912,
+        "heapTotalBytes": 98336768
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 361,
+      "opsPerSec": 277040,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.885",
+      "memory": {
+        "rssBytes": 155631616,
+        "heapUsedBytes": 80290512,
+        "heapTotalBytes": 100433920
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 368,
+      "opsPerSec": 271813,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "2.542",
+      "memory": {
+        "rssBytes": 155500544,
+        "heapUsedBytes": 75822856,
+        "heapTotalBytes": 103317504
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 462,
+      "opsPerSec": 216463,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.005",
+      "p99Ms": "0.010",
+      "minMs": "0.003",
+      "maxMs": "1.646",
+      "memory": {
+        "rssBytes": 152174592,
+        "heapUsedBytes": 63429672,
+        "heapTotalBytes": 97452032
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 365,
+      "opsPerSec": 274132,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.809",
+      "memory": {
+        "rssBytes": 151027712,
+        "heapUsedBytes": 67146984,
+        "heapTotalBytes": 98336768
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 442,
+      "opsPerSec": 226122,
+      "avgMs": "0.004",
+      "p50Ms": "0.004",
+      "p95Ms": "0.005",
+      "p99Ms": "0.008",
+      "minMs": "0.003",
+      "maxMs": "1.619",
+      "memory": {
+        "rssBytes": 150011904,
+        "heapUsedBytes": 61390696,
+        "heapTotalBytes": 96108544
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "With 3 middlewares",
+      "name": "With 3 middlewares",
+      "iterations": 100000,
+      "totalMs": 358,
+      "opsPerSec": 279131,
+      "avgMs": "0.004",
+      "p50Ms": "0.003",
+      "p95Ms": "0.004",
+      "p99Ms": "0.007",
+      "minMs": "0.002",
+      "maxMs": "1.718",
+      "memory": {
+        "rssBytes": 154091520,
+        "heapUsedBytes": 64947632,
+        "heapTotalBytes": 99024896
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 116,
+      "opsPerSec": 171989,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.007",
+      "p99Ms": "0.012",
+      "minMs": "0.004",
+      "maxMs": "1.660",
+      "memory": {
+        "rssBytes": 105775104,
+        "heapUsedBytes": 28951328,
+        "heapTotalBytes": 52314112
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 145,
+      "opsPerSec": 138346,
+      "avgMs": "0.007",
+      "p50Ms": "0.006",
+      "p95Ms": "0.009",
+      "p99Ms": "0.021",
+      "minMs": "0.005",
+      "maxMs": "1.382",
+      "memory": {
+        "rssBytes": 108691456,
+        "heapUsedBytes": 28651528,
+        "heapTotalBytes": 52576256
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 105,
+      "opsPerSec": 190115,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.011",
+      "minMs": "0.004",
+      "maxMs": "1.543",
+      "memory": {
+        "rssBytes": 107577344,
+        "heapUsedBytes": 32215448,
+        "heapTotalBytes": 51789824
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 159,
+      "opsPerSec": 125868,
+      "avgMs": "0.008",
+      "p50Ms": "0.006",
+      "p95Ms": "0.009",
+      "p99Ms": "0.036",
+      "minMs": "0.006",
+      "maxMs": "1.364",
+      "memory": {
+        "rssBytes": 108642304,
+        "heapUsedBytes": 21765048,
+        "heapTotalBytes": 52576256
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 109,
+      "opsPerSec": 183529,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.015",
+      "minMs": "0.004",
+      "maxMs": "1.402",
+      "memory": {
+        "rssBytes": 107298816,
+        "heapUsedBytes": 32764728,
+        "heapTotalBytes": 51527680
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 118,
+      "opsPerSec": 169702,
+      "avgMs": "0.006",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.015",
+      "minMs": "0.004",
+      "maxMs": "1.705",
+      "memory": {
+        "rssBytes": 105627648,
+        "heapUsedBytes": 29167040,
+        "heapTotalBytes": 52576256
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 110,
+      "opsPerSec": 181339,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.009",
+      "minMs": "0.004",
+      "maxMs": "1.939",
+      "memory": {
+        "rssBytes": 107708416,
+        "heapUsedBytes": 32813664,
+        "heapTotalBytes": 51789824
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 125,
+      "opsPerSec": 160228,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.007",
+      "p99Ms": "0.011",
+      "minMs": "0.004",
+      "maxMs": "2.963",
+      "memory": {
+        "rssBytes": 105644032,
+        "heapUsedBytes": 25630008,
+        "heapTotalBytes": 52314112
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 158,
+      "opsPerSec": 126524,
+      "avgMs": "0.008",
+      "p50Ms": "0.006",
+      "p95Ms": "0.009",
+      "p99Ms": "0.017",
+      "minMs": "0.005",
+      "maxMs": "2.361",
+      "memory": {
+        "rssBytes": 108478464,
+        "heapUsedBytes": 26787664,
+        "heapTotalBytes": 52838400
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 121,
+      "opsPerSec": 164669,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.007",
+      "p99Ms": "0.012",
+      "minMs": "0.004",
+      "maxMs": "1.489",
+      "memory": {
+        "rssBytes": 105218048,
+        "heapUsedBytes": 29482232,
+        "heapTotalBytes": 52051968
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 162,
+      "opsPerSec": 123613,
+      "avgMs": "0.008",
+      "p50Ms": "0.006",
+      "p95Ms": "0.010",
+      "p99Ms": "0.023",
+      "minMs": "0.005",
+      "maxMs": "1.895",
+      "memory": {
+        "rssBytes": 108478464,
+        "heapUsedBytes": 28751384,
+        "heapTotalBytes": 52576256
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 113,
+      "opsPerSec": 176234,
+      "avgMs": "0.006",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.010",
+      "minMs": "0.004",
+      "maxMs": "1.848",
+      "memory": {
+        "rssBytes": 107741184,
+        "heapUsedBytes": 31825584,
+        "heapTotalBytes": 51789824
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 165,
+      "opsPerSec": 121128,
+      "avgMs": "0.008",
+      "p50Ms": "0.006",
+      "p95Ms": "0.009",
+      "p99Ms": "0.039",
+      "minMs": "0.005",
+      "maxMs": "1.907",
+      "memory": {
+        "rssBytes": 108855296,
+        "heapUsedBytes": 27072480,
+        "heapTotalBytes": 52838400
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 111,
+      "opsPerSec": 180677,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.010",
+      "minMs": "0.004",
+      "maxMs": "1.842",
+      "memory": {
+        "rssBytes": 107757568,
+        "heapUsedBytes": 32085536,
+        "heapTotalBytes": 52051968
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 138,
+      "opsPerSec": 144694,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.009",
+      "p99Ms": "0.035",
+      "minMs": "0.004",
+      "maxMs": "1.703",
+      "memory": {
+        "rssBytes": 105611264,
+        "heapUsedBytes": 31140792,
+        "heapTotalBytes": 52051968
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 112,
+      "opsPerSec": 178397,
+      "avgMs": "0.005",
+      "p50Ms": "0.004",
+      "p95Ms": "0.007",
+      "p99Ms": "0.010",
+      "minMs": "0.004",
+      "maxMs": "1.417",
+      "memory": {
+        "rssBytes": 107773952,
+        "heapUsedBytes": 32406240,
+        "heapTotalBytes": 51789824
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 132,
+      "opsPerSec": 151846,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.031",
+      "minMs": "0.004",
+      "maxMs": "3.470",
+      "memory": {
+        "rssBytes": 105496576,
+        "heapUsedBytes": 27260144,
+        "heapTotalBytes": 52051968
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 172,
+      "opsPerSec": 116360,
+      "avgMs": "0.009",
+      "p50Ms": "0.006",
+      "p95Ms": "0.010",
+      "p99Ms": "0.030",
+      "minMs": "0.005",
+      "maxMs": "5.758",
+      "memory": {
+        "rssBytes": 108478464,
+        "heapUsedBytes": 21163664,
+        "heapTotalBytes": 52838400
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 130,
+      "opsPerSec": 153886,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.015",
+      "minMs": "0.004",
+      "maxMs": "1.611",
+      "memory": {
+        "rssBytes": 106151936,
+        "heapUsedBytes": 29369392,
+        "heapTotalBytes": 52314112
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 195,
+      "opsPerSec": 102351,
+      "avgMs": "0.010",
+      "p50Ms": "0.006",
+      "p95Ms": "0.013",
+      "p99Ms": "0.074",
+      "minMs": "0.005",
+      "maxMs": "2.571",
+      "memory": {
+        "rssBytes": 108052480,
+        "heapUsedBytes": 21194192,
+        "heapTotalBytes": 52576256
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Back navigation flow",
+      "name": "Back navigation flow",
+      "iterations": 20000,
+      "totalMs": 121,
+      "opsPerSec": 165075,
+      "avgMs": "0.006",
+      "p50Ms": "0.004",
+      "p95Ms": "0.008",
+      "p99Ms": "0.018",
+      "minMs": "0.004",
+      "maxMs": "2.050",
+      "memory": {
+        "rssBytes": 107970560,
+        "heapUsedBytes": 31567384,
+        "heapTotalBytes": 52314112
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 149,
+      "opsPerSec": 134249,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.026",
+      "minMs": "0.005",
+      "maxMs": "3.680",
+      "memory": {
+        "rssBytes": 109740032,
+        "heapUsedBytes": 26969088,
+        "heapTotalBytes": 58818560
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 205,
+      "opsPerSec": 97612,
+      "avgMs": "0.010",
+      "p50Ms": "0.007",
+      "p95Ms": "0.011",
+      "p99Ms": "0.051",
+      "minMs": "0.006",
+      "maxMs": "1.805",
+      "memory": {
+        "rssBytes": 112214016,
+        "heapUsedBytes": 40151488,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 144,
+      "opsPerSec": 139352,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.009",
+      "p99Ms": "0.030",
+      "minMs": "0.004",
+      "maxMs": "2.108",
+      "memory": {
+        "rssBytes": 113885184,
+        "heapUsedBytes": 36298776,
+        "heapTotalBytes": 57769984
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 170,
+      "opsPerSec": 117973,
+      "avgMs": "0.008",
+      "p50Ms": "0.007",
+      "p95Ms": "0.009",
+      "p99Ms": "0.018",
+      "minMs": "0.006",
+      "maxMs": "2.965",
+      "memory": {
+        "rssBytes": 112803840,
+        "heapUsedBytes": 24811232,
+        "heapTotalBytes": 58638336
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 124,
+      "opsPerSec": 160903,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.010",
+      "minMs": "0.004",
+      "maxMs": "1.951",
+      "memory": {
+        "rssBytes": 114278400,
+        "heapUsedBytes": 36630280,
+        "heapTotalBytes": 58032128
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 130,
+      "opsPerSec": 154438,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.010",
+      "minMs": "0.005",
+      "maxMs": "1.976",
+      "memory": {
+        "rssBytes": 109543424,
+        "heapUsedBytes": 28130624,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 151,
+      "opsPerSec": 132031,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.009",
+      "p99Ms": "0.033",
+      "minMs": "0.005",
+      "maxMs": "2.214",
+      "memory": {
+        "rssBytes": 114245632,
+        "heapUsedBytes": 36412032,
+        "heapTotalBytes": 58032128
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 152,
+      "opsPerSec": 131747,
+      "avgMs": "0.007",
+      "p50Ms": "0.006",
+      "p95Ms": "0.008",
+      "p99Ms": "0.023",
+      "minMs": "0.005",
+      "maxMs": "2.241",
+      "memory": {
+        "rssBytes": 110870528,
+        "heapUsedBytes": 28176656,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 196,
+      "opsPerSec": 102034,
+      "avgMs": "0.010",
+      "p50Ms": "0.007",
+      "p95Ms": "0.011",
+      "p99Ms": "0.043",
+      "minMs": "0.006",
+      "maxMs": "2.358",
+      "memory": {
+        "rssBytes": 114278400,
+        "heapUsedBytes": 40362448,
+        "heapTotalBytes": 59080704
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 129,
+      "opsPerSec": 154452,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.007",
+      "p99Ms": "0.011",
+      "minMs": "0.005",
+      "maxMs": "2.048",
+      "memory": {
+        "rssBytes": 110346240,
+        "heapUsedBytes": 27768280,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 162,
+      "opsPerSec": 123523,
+      "avgMs": "0.008",
+      "p50Ms": "0.007",
+      "p95Ms": "0.009",
+      "p99Ms": "0.012",
+      "minMs": "0.006",
+      "maxMs": "2.281",
+      "memory": {
+        "rssBytes": 112164864,
+        "heapUsedBytes": 24818432,
+        "heapTotalBytes": 58376192
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 124,
+      "opsPerSec": 161245,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.010",
+      "minMs": "0.005",
+      "maxMs": "1.844",
+      "memory": {
+        "rssBytes": 113917952,
+        "heapUsedBytes": 36332616,
+        "heapTotalBytes": 58032128
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 169,
+      "opsPerSec": 118625,
+      "avgMs": "0.008",
+      "p50Ms": "0.007",
+      "p95Ms": "0.010",
+      "p99Ms": "0.019",
+      "minMs": "0.006",
+      "maxMs": "1.938",
+      "memory": {
+        "rssBytes": 112885760,
+        "heapUsedBytes": 24904888,
+        "heapTotalBytes": 58638336
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 131,
+      "opsPerSec": 153145,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.014",
+      "minMs": "0.005",
+      "maxMs": "1.814",
+      "memory": {
+        "rssBytes": 114229248,
+        "heapUsedBytes": 36714656,
+        "heapTotalBytes": 58294272
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 136,
+      "opsPerSec": 147078,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.019",
+      "minMs": "0.005",
+      "maxMs": "2.507",
+      "memory": {
+        "rssBytes": 109821952,
+        "heapUsedBytes": 28282072,
+        "heapTotalBytes": 58294272
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 126,
+      "opsPerSec": 158718,
+      "avgMs": "0.006",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.010",
+      "minMs": "0.005",
+      "maxMs": "2.011",
+      "memory": {
+        "rssBytes": 114196480,
+        "heapUsedBytes": 36145528,
+        "heapTotalBytes": 58032128
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 137,
+      "opsPerSec": 146074,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.012",
+      "minMs": "0.005",
+      "maxMs": "3.346",
+      "memory": {
+        "rssBytes": 110133248,
+        "heapUsedBytes": 28001664,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 161,
+      "opsPerSec": 124551,
+      "avgMs": "0.008",
+      "p50Ms": "0.007",
+      "p95Ms": "0.009",
+      "p99Ms": "0.012",
+      "minMs": "0.006",
+      "maxMs": "1.960",
+      "memory": {
+        "rssBytes": 114376704,
+        "heapUsedBytes": 24770096,
+        "heapTotalBytes": 59162624
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 142,
+      "opsPerSec": 140985,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.009",
+      "p99Ms": "0.026",
+      "minMs": "0.005",
+      "maxMs": "1.993",
+      "memory": {
+        "rssBytes": 110018560,
+        "heapUsedBytes": 28275544,
+        "heapTotalBytes": 58556416
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 171,
+      "opsPerSec": 116892,
+      "avgMs": "0.008",
+      "p50Ms": "0.007",
+      "p95Ms": "0.010",
+      "p99Ms": "0.027",
+      "minMs": "0.006",
+      "maxMs": "1.845",
+      "memory": {
+        "rssBytes": 113197056,
+        "heapUsedBytes": 24851272,
+        "heapTotalBytes": 58638336
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "Multi-field data collection",
+      "name": "Multi-field data collection",
+      "iterations": 20000,
+      "totalMs": 139,
+      "opsPerSec": 143388,
+      "avgMs": "0.007",
+      "p50Ms": "0.005",
+      "p95Ms": "0.008",
+      "p99Ms": "0.020",
+      "minMs": "0.005",
+      "maxMs": "2.020",
+      "memory": {
+        "rssBytes": 114900992,
+        "heapUsedBytes": 36358992,
+        "heapTotalBytes": 58294272
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 0,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 278,
+      "opsPerSec": 3592,
+      "avgMs": "0.278",
+      "p50Ms": "0.208",
+      "p95Ms": "0.820",
+      "p99Ms": "1.135",
+      "minMs": "0.173",
+      "maxMs": "2.696",
+      "memory": {
+        "rssBytes": 171261952,
+        "heapUsedBytes": 72225696,
+        "heapTotalBytes": 117342208
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 0,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 372,
+      "opsPerSec": 2690,
+      "avgMs": "0.371",
+      "p50Ms": "0.267",
+      "p95Ms": "1.184",
+      "p99Ms": "1.735",
+      "minMs": "0.219",
+      "maxMs": "3.739",
+      "memory": {
+        "rssBytes": 188612608,
+        "heapUsedBytes": 103198848,
+        "heapTotalBytes": 132284416
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 0,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 253,
+      "opsPerSec": 3958,
+      "avgMs": "0.252",
+      "p50Ms": "0.201",
+      "p95Ms": "0.743",
+      "p99Ms": "1.020",
+      "minMs": "0.162",
+      "maxMs": "2.527",
+      "memory": {
+        "rssBytes": 167100416,
+        "heapUsedBytes": 85400928,
+        "heapTotalBytes": 111738880
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 1,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 365,
+      "opsPerSec": 2737,
+      "avgMs": "0.365",
+      "p50Ms": "0.264",
+      "p95Ms": "1.094",
+      "p99Ms": "1.619",
+      "minMs": "0.219",
+      "maxMs": "4.437",
+      "memory": {
+        "rssBytes": 191905792,
+        "heapUsedBytes": 101517504,
+        "heapTotalBytes": 134397952
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 1,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 412,
+      "opsPerSec": 2430,
+      "avgMs": "0.411",
+      "p50Ms": "0.245",
+      "p95Ms": "1.228",
+      "p99Ms": "2.943",
+      "minMs": "0.159",
+      "maxMs": "18.231",
+      "memory": {
+        "rssBytes": 167034880,
+        "heapUsedBytes": 85243664,
+        "heapTotalBytes": 112001024
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 1,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 360,
+      "opsPerSec": 2781,
+      "avgMs": "0.359",
+      "p50Ms": "0.246",
+      "p95Ms": "1.110",
+      "p99Ms": "1.802",
+      "minMs": "0.179",
+      "maxMs": "3.386",
+      "memory": {
+        "rssBytes": 172261376,
+        "heapUsedBytes": 72656784,
+        "heapTotalBytes": 116817920
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 2,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 261,
+      "opsPerSec": 3832,
+      "avgMs": "0.261",
+      "p50Ms": "0.202",
+      "p95Ms": "0.769",
+      "p99Ms": "1.097",
+      "minMs": "0.168",
+      "maxMs": "2.711",
+      "memory": {
+        "rssBytes": 167051264,
+        "heapUsedBytes": 88934928,
+        "heapTotalBytes": 111738880
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 2,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 329,
+      "opsPerSec": 3041,
+      "avgMs": "0.329",
+      "p50Ms": "0.221",
+      "p95Ms": "0.976",
+      "p99Ms": "1.935",
+      "minMs": "0.181",
+      "maxMs": "3.215",
+      "memory": {
+        "rssBytes": 171147264,
+        "heapUsedBytes": 67854240,
+        "heapTotalBytes": 117342208
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 2,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 418,
+      "opsPerSec": 2393,
+      "avgMs": "0.418",
+      "p50Ms": "0.282",
+      "p95Ms": "1.250",
+      "p99Ms": "2.030",
+      "minMs": "0.234",
+      "maxMs": "3.561",
+      "memory": {
+        "rssBytes": 190103552,
+        "heapUsedBytes": 105744360,
+        "heapTotalBytes": 133873664
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 3,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 302,
+      "opsPerSec": 3313,
+      "avgMs": "0.302",
+      "p50Ms": "0.218",
+      "p95Ms": "0.849",
+      "p99Ms": "1.335",
+      "minMs": "0.177",
+      "maxMs": "2.716",
+      "memory": {
+        "rssBytes": 170459136,
+        "heapUsedBytes": 71817104,
+        "heapTotalBytes": 117080064
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 3,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 488,
+      "opsPerSec": 2047,
+      "avgMs": "0.488",
+      "p50Ms": "0.264",
+      "p95Ms": "1.138",
+      "p99Ms": "2.959",
+      "minMs": "0.221",
+      "maxMs": "31.376",
+      "memory": {
+        "rssBytes": 186646528,
+        "heapUsedBytes": 109228680,
+        "heapTotalBytes": 130711552
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 3,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 241,
+      "opsPerSec": 4150,
+      "avgMs": "0.241",
+      "p50Ms": "0.199",
+      "p95Ms": "0.575",
+      "p99Ms": "0.999",
+      "minMs": "0.161",
+      "maxMs": "2.352",
+      "memory": {
+        "rssBytes": 167526400,
+        "heapUsedBytes": 83061584,
+        "heapTotalBytes": 112525312
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 4,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 393,
+      "opsPerSec": 2546,
+      "avgMs": "0.392",
+      "p50Ms": "0.269",
+      "p95Ms": "1.125",
+      "p99Ms": "1.994",
+      "minMs": "0.221",
+      "maxMs": "6.785",
+      "memory": {
+        "rssBytes": 189890560,
+        "heapUsedBytes": 101789232,
+        "heapTotalBytes": 134135808
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 4,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 239,
+      "opsPerSec": 4179,
+      "avgMs": "0.239",
+      "p50Ms": "0.194",
+      "p95Ms": "0.649",
+      "p99Ms": "0.966",
+      "minMs": "0.160",
+      "maxMs": "2.548",
+      "memory": {
+        "rssBytes": 167165952,
+        "heapUsedBytes": 84943656,
+        "heapTotalBytes": 112263168
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 4,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 332,
+      "opsPerSec": 3011,
+      "avgMs": "0.332",
+      "p50Ms": "0.229",
+      "p95Ms": "0.926",
+      "p99Ms": "1.645",
+      "minMs": "0.175",
+      "maxMs": "4.007",
+      "memory": {
+        "rssBytes": 173195264,
+        "heapUsedBytes": 68180976,
+        "heapTotalBytes": 118915072
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 5,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 259,
+      "opsPerSec": 3863,
+      "avgMs": "0.259",
+      "p50Ms": "0.206",
+      "p95Ms": "0.758",
+      "p99Ms": "1.185",
+      "minMs": "0.162",
+      "maxMs": "2.316",
+      "memory": {
+        "rssBytes": 167133184,
+        "heapUsedBytes": 77691976,
+        "heapTotalBytes": 112525312
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 5,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 278,
+      "opsPerSec": 3604,
+      "avgMs": "0.277",
+      "p50Ms": "0.208",
+      "p95Ms": "0.835",
+      "p99Ms": "1.113",
+      "minMs": "0.176",
+      "maxMs": "2.469",
+      "memory": {
+        "rssBytes": 171261952,
+        "heapUsedBytes": 70834744,
+        "heapTotalBytes": 117604352
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 5,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 350,
+      "opsPerSec": 2855,
+      "avgMs": "0.350",
+      "p50Ms": "0.257",
+      "p95Ms": "1.027",
+      "p99Ms": "1.795",
+      "minMs": "0.219",
+      "maxMs": "3.025",
+      "memory": {
+        "rssBytes": 187695104,
+        "heapUsedBytes": 104413016,
+        "heapTotalBytes": 131497984
+      }
+    },
+    {
+      "source": "baseline",
+      "iteration": 6,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 280,
+      "opsPerSec": 3577,
+      "avgMs": "0.279",
+      "p50Ms": "0.206",
+      "p95Ms": "0.819",
+      "p99Ms": "1.147",
+      "minMs": "0.173",
+      "maxMs": "2.824",
+      "memory": {
+        "rssBytes": 171884544,
+        "heapUsedBytes": 72048040,
+        "heapTotalBytes": 117342208
+      }
+    },
+    {
+      "source": "reference",
+      "iteration": 6,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 332,
+      "opsPerSec": 3011,
+      "avgMs": "0.332",
+      "p50Ms": "0.251",
+      "p95Ms": "1.034",
+      "p99Ms": "1.280",
+      "minMs": "0.218",
+      "maxMs": "2.888",
+      "memory": {
+        "rssBytes": 187957248,
+        "heapUsedBytes": 98004040,
+        "heapTotalBytes": 132808704
+      }
+    },
+    {
+      "source": "candidate",
+      "iteration": 6,
+      "scenario": "100 concurrent sessions",
+      "name": "100 concurrent sessions",
+      "iterations": 1000,
+      "totalMs": 218,
+      "opsPerSec": 4584,
+      "avgMs": "0.218",
+      "p50Ms": "0.183",
+      "p95Ms": "0.525",
+      "p99Ms": "0.797",
+      "minMs": "0.159",
+      "maxMs": "2.313",
+      "memory": {
+        "rssBytes": 167428096,
+        "heapUsedBytes": 83615864,
+        "heapTotalBytes": 111738880
+      }
+    }
+  ]
+}
