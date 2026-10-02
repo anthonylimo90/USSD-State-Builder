@@ -807,3 +807,5 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 ## License
 
 MIT © [Anthony Kiplimo](https://github.com/anthonylimo)
+
+The [external pilot packet](docs/EXTERNAL-PILOTS.md) includes setup observations, a participant register, repeat-use evidence and an owner-approved deployment checklist. Recruitment remains open.
