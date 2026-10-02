@@ -12,7 +12,7 @@ The owner confirms participants, schedules sessions and owns any infrastructure 
 
 ## Give each participant this packet
 
-1. A specific source revision or installed tarball and Node version. Current published npm 3.0.0 does not contain the subsequent unreleased workbench/metrics additions. For those features, use a tarball packed from the selected checkout; do not assume npm latest matches it. Record the revision and install source separately. Do not push/publish a package just to start a pilot.
+1. A specific source revision or installed tarball and Node version. The 3.0.0 release predates the subsequent unreleased workbench/metrics additions. For those features, use a tarball packed from the selected checkout; do not assume npm latest matches it. Record the revision and install source separately. Do not push/publish a package just to start a pilot.
 2. [First flow and workbench walkthrough](WORKBENCH-QUICKSTART.md), the root README and the runnable Mavuno fluent SDK example.
 3. [Starter run guide](../examples/live-market/README.md), [environment example](../examples/live-market/.env.example), [provider walkthrough](MAVUNO-SANDBOX-WALKTHROUGH.md), [support matrix](SUPPORT-MATRIX.md) and [runtime contract](RUNTIME-CONTRACT.md).
 4. [Metric definitions](METRIC-DEFINITIONS.md), [dashboard](METRIC-EXPORTS-AND-DASHBOARD.md) and [retention/deletion controls](METRIC-RETENTION.md), when observability is relevant to the participant's use case.

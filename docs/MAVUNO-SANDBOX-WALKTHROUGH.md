@@ -1,6 +1,6 @@
 # Mavuno Co-op sandbox walkthrough
 
-Status: local preparation complete; the complete Mavuno journey has **not yet been observed through Africa's Talking**. The [2026-09-29 attempt](../tests/fixtures/africas-talking/captured/2026-09-29-mavuno-attempt.md) passed public controls, but the provider's first dial targeted an older stopped tunnel and the simulator then stalled. Do not close P2-07 or the Phase 2 gate until the checklist below is filled with actual provider traffic. The earlier [probe capture](AFRICAS-TALKING-SANDBOX.md) ran fixed menus, not Mavuno.
+Status: the [2026-10-02 rerun](../tests/fixtures/africas-talking/captured/2026-10-02-mavuno-attempt.md) passed local/public controls, but two simulator connections stalled before dialing. Local preparation complete; the complete Mavuno journey has **not yet been observed through Africa's Talking**. The [2026-09-29 attempt](../tests/fixtures/africas-talking/captured/2026-09-29-mavuno-attempt.md) passed public controls, but the provider's first dial targeted an older stopped tunnel and the simulator then stalled. Do not close P2-07 or the Phase 2 gate until the checklist below is filled with actual provider traffic. The earlier [probe capture](AFRICAS-TALKING-SANDBOX.md) ran fixed menus, not Mavuno.
 
 ## Prepare the starter
 
