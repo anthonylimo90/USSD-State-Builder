@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Ordinary `.save()` input after a dynamic-menu selection no longer consumes the cleared selection marker.
+- Completed versioned sessions run `beforeProcess` middleware before replaying their response, including after their original state is removed. Incompatible active sessions still receive the controlled restart response.
+- MongoDB storage statistics use the database command API supported by the v6 driver.
+
 ## [4.0.0] - 2026-10-02
 
 Major release for the Phase 2–4 SDK, provider gateway, workbench and metrics changes. See the [migration guide](docs/MIGRATING-TO-4.md), [support matrix](docs/SUPPORT-MATRIX.md) and [release evidence](docs/RELEASE-4.0.md).

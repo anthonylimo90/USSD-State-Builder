@@ -107,6 +107,22 @@ describe('DynamicMenu', () => {
       expect(data._dynamicMenu).toBeNull();
     });
 
+    test.each(['field', 'callback'])('saves ordinary input after a dynamic selection using a %s', async saveMode => {
+      const saveQuantity = saveMode === 'field' ? 'quantity' : input => ({ quantity: input });
+      const app = createApp()
+        .state('items', s => s.dynamicMenu(async () => ['Seed pack']).save('item').next('quantity'))
+        .state('quantity', s => s.message('Enter quantity').save(saveQuantity).next('done'))
+        .state('done', s => s.run((input, sid, ctx) =>
+          `${ctx.sessionData.item}: ${ctx.sessionData.quantity}`).end())
+        .logger(null)
+        .build();
+
+      expect(await app.processInput('quantity', '')).toContain('Seed pack');
+      expect(await app.processInput('quantity', '1')).toBe('CON Enter quantity');
+      expect(await app.processInput('quantity', '5')).toBe('END Seed pack: 5');
+      expect(await app.getSessionData('quantity')).toMatchObject({ item: 'Seed pack', quantity: '5' });
+    });
+
     test('a route target sees data saved by the source state', async () => {
       const app = createApp()
         .state('home', s => s.message('Home').save('choice').on('1').goto('result'))

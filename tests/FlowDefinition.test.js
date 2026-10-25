@@ -123,12 +123,45 @@ describe('session flow versions', () => {
     app.use('beforeProcess', middleware);
     const response = await app.processInput('incompatible', '1');
     expect(response).toBe('END This service has changed. Please dial again to restart.');
-    expect(await app.processInput('incompatible', '1')).toBe(response);
     expect(middleware).not.toHaveBeenCalled();
+    expect(await app.processInput('incompatible', '1')).toBe(response);
+    expect(middleware).toHaveBeenCalledTimes(1);
     expect(handler).not.toHaveBeenCalled();
     expect(await storage.getState('incompatible')).toBe('home');
     expect((await storage.getData('incompatible')).__ussdFlow.version).toBe('v1');
     expect(await app.isSessionActive('incompatible')).toBe(false);
+  });
+
+  test.each(['same flow', 'removed state', 'new version'])('runs request middleware before completed replay with %s', async deployment => {
+    const storage = new InMemoryStorage();
+    const effect = jest.fn(() => ({ response: 'END Original receipt' }));
+    const original = createApp().flowVersion('v1').storage(storage).logger(null)
+      .state('done', s => s.run(effect)).build();
+    await original.processInput('receipt', '');
+
+    const app = deployment === 'same flow' ? original : createApp()
+      .flowVersion(deployment === 'new version' ? 'v2' : 'v1').storage(storage).logger(null)
+      .state('home', s => s.message('New home')).build();
+    const events = [];
+    let blocked = true;
+    app.use('beforeProcess', async (context, next) => {
+      events.push('before');
+      if (blocked) {
+        context.blocked = true;
+        context.response = 'END Access denied';
+        return;
+      }
+      await next();
+    });
+    app.use('onSessionEnd', async () => { events.push('end'); });
+
+    expect(await app.processInput('receipt', '1')).toBe('END Access denied');
+    blocked = false;
+    expect(await app.processInput('receipt', '1')).toBe('END Original receipt');
+    expect(events).toEqual(['before', 'before']);
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect((await storage.getData('receipt')).__ussdFlow.version).toBe('v1');
+    expect((await storage.getData('receipt')).__ussdLifecycle.completedResponse).toBe('END Original receipt');
   });
 
   test('serves original handlers, navigation, data and hooks when an old definition is retained', async () => {
